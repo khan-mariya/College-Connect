@@ -1,6 +1,7 @@
 import './App.css'
 import { useEffect, useState } from 'react'
 import collegeConnectLogo from "./assets/college-connect-logo.png";
+const API_URL = import.meta.env.VITE_API_URL || "http://localhost:5000";
 
 function App() {
 
@@ -259,7 +260,7 @@ const [profileForm, setProfileForm] = useState({
       setProfileSaving(true)
 
       const response = await fetch(
-        `http://localhost:5000/api/users/${userId}/profile`,
+        `${API_URL}/api/users/${userId}/profile`,
         {
           method: "PUT",
 
@@ -340,7 +341,7 @@ const [profileForm, setProfileForm] = useState({
       setViewingProfileLoading(true)
 
       const response = await fetch(
-        `http://localhost:5000/api/users/${userId}`
+        (`${API_URL}/api/users/${userId}`)
       )
 
       const data = await response.json()
@@ -448,7 +449,7 @@ const [profileForm, setProfileForm] = useState({
     }
 
     const response = await fetch(
-      "http://localhost:5000/api/projects",
+      `${API_URL}/api/projects`,
       {
         method: "POST",
          headers: {
@@ -523,7 +524,7 @@ const [profileForm, setProfileForm] = useState({
       setQuerySaving(true)
 
       const response = await fetch(
-        "http://localhost:5000/api/queries",
+        `${API_URL}/api/queries`,
         {
           method: "POST",
           headers: {
@@ -577,7 +578,7 @@ const [profileForm, setProfileForm] = useState({
       }))
 
       const response = await fetch(
-        `http://localhost:5000/api/queries/${queryId}/answers`,
+        `${API_URL}/api/queries/${queryId}/answers`,
         {
           headers: {
             Authorization: `Bearer ${localStorage.getItem("collegeConnectToken")}`,
@@ -641,7 +642,7 @@ const [profileForm, setProfileForm] = useState({
       }))
 
       const response = await fetch(
-        `http://localhost:5000/api/queries/${queryId}/answers`,
+        `${API_URL}/api/queries/${queryId}/answers`,
         {
           method: "POST",
           headers: {
@@ -702,7 +703,7 @@ const [profileForm, setProfileForm] = useState({
 
     try {
       const response = await fetch(
-        `http://localhost:5000/api/answers/${answerId}`,
+       `${API_URL}/api/answers/${answerId}`,
         {
           method: "DELETE",
           headers: {
@@ -753,7 +754,7 @@ const [profileForm, setProfileForm] = useState({
       }))
 
       const response = await fetch(
-        "http://localhost:5000/api/saved-answers",
+        (`${API_URL}/api/saved-answers`),
         {
           method: "POST",
           headers: {
@@ -809,7 +810,7 @@ const [profileForm, setProfileForm] = useState({
       }))
 
       const response = await fetch(
-        `http://localhost:5000/api/saved-answers/${answerId}`,
+        (`${API_URL}/api/saved-answers/${answerId}`),
         {
           method: "DELETE",
           headers: {
@@ -856,7 +857,7 @@ const [profileForm, setProfileForm] = useState({
       setSavedAnswersLoading(true)
 
       const response = await fetch(
-        `http://localhost:5000/api/saved-answers/${userId}`,
+        `${API_URL}/api/saved-answers/${userId}`,
         {
           headers: {
             Authorization: `Bearer ${localStorage.getItem("collegeConnectToken")}`,
@@ -908,7 +909,7 @@ const [profileForm, setProfileForm] = useState({
       setQueryDeleting(true)
 
       const response = await fetch(
-        `http://localhost:5000/api/queries/${selectedDeleteQuery}`,
+        `${API_URL}/api/queries/${selectedDeleteQuery}`,
         {
           method: "DELETE",
           headers: {
@@ -997,7 +998,7 @@ const fetchNotifications = async () => {
     setNotificationsLoading(true)
 
     const response = await fetch(
-      `http://localhost:5000/api/notifications`,
+      `${API_URL}/api/notifications`,
       {
         headers: {
           Authorization: `Bearer ${localStorage.getItem("collegeConnectToken")}`,
@@ -1025,7 +1026,7 @@ const fetchUnreadNotificationCount = async () => {
 
   try {
     const response = await fetch(
-      `http://localhost:5000/api/notifications/unread-count`,
+      `${API_URL}/api/notifications/unread-count`,
       {
         headers: {
           Authorization: `Bearer ${localStorage.getItem("collegeConnectToken")}`,
@@ -1058,7 +1059,7 @@ const handleNotificationClick = async () => {
 const handleMarkNotificationRead = async (notificationId) => {
   try {
     const response = await fetch(
-      `http://localhost:5000/api/notifications/${notificationId}/read`,
+      `${API_URL}/api/notifications/${notificationId}/read`,
       {
         method: "PUT",
         headers: {
@@ -1093,7 +1094,7 @@ const handleMarkAllNotificationsRead = async () => {
 
   try {
     const response = await fetch(
-      "http://localhost:5000/api/notifications/read-all",
+      `${API_URL}/api/notifications/read-all`,
       {
         method: "PUT",
         headers: {
@@ -1145,7 +1146,7 @@ useEffect(() => {
       setStudyMaterialsLoading(true)
 
       const response = await fetch(
-        `http://localhost:5000/api/study-materials?degree=${encodeURIComponent(
+        `${API_URL}/api/study-materials?degree=${encodeURIComponent(
           currentUser?.degree || ""
         )}&year=${encodeURIComponent(currentUser?.year || "")}`,
         {
@@ -1201,7 +1202,7 @@ useEffect(() => {
       formData.append("file", materialForm.file)
 
       const response = await fetch(
-        "http://localhost:5000/api/study-materials",
+        `${API_URL}/api/study-materials`,
         {
           method: "POST",
           headers: {
@@ -1266,7 +1267,7 @@ useEffect(() => {
       }))
 
       const response = await fetch(
-        `http://localhost:5000/api/study-materials/${materialId}`,
+        `${API_URL}/api/study-materials/${materialId}`,
         {
           method: "DELETE",
           headers: {
@@ -1321,7 +1322,7 @@ useEffect(() => {
       }))
 
       const response = await fetch(
-        "http://localhost:5000/api/connections",
+        `${API_URL}/api/connections`,
         {
           method: "POST",
           headers: {
@@ -1361,7 +1362,7 @@ useEffect(() => {
     setConnectionsLoading(true)
 
     const response = await fetch(
-      `http://localhost:5000/api/connections/${userId}`,
+      `${API_URL}/api/connections/${userId}`,
       {
         headers: {
           Authorization: `Bearer ${localStorage.getItem("collegeConnectToken")}`,
@@ -1397,7 +1398,7 @@ const handleAcceptConnection = async (connectionId) => {
 
   try {
     const response = await fetch(
-      `http://localhost:5000/api/connections/${connectionId}/accept`,
+      `${API_URL}/api/connections/${connectionId}/accept`,
       {
         method: "PUT",
         headers: {
@@ -1420,7 +1421,7 @@ await fetchConnections()
     // Refresh notifications
     if (currentUser?._id || currentUser?.id) {
       const notificationResponse = await fetch(
-        `http://localhost:5000/api/notifications`,
+        `${API_URL}/api/notifications`,
         {
           headers: {
             Authorization: `Bearer ${localStorage.getItem("collegeConnectToken")}`,
@@ -1467,7 +1468,7 @@ const handleRejectConnection = async (connectionId) => {
 
   try {
     const response = await fetch(
-      `http://localhost:5000/api/connections/${connectionId}/reject`,
+      `${API_URL}/api/connections/${connectionId}/reject`,
       {
         method: "PUT",
         headers: {
@@ -1490,7 +1491,7 @@ await fetchConnections()
     // Refresh notifications
     if (currentUser?._id || currentUser?.id) {
       const notificationResponse = await fetch(
-        `http://localhost:5000/api/notifications`,
+        `${API_URL}/api/notifications`,
         {
           headers: {
             Authorization: `Bearer ${localStorage.getItem("collegeConnectToken")}`,
@@ -1536,7 +1537,7 @@ const fetchChatMessages = async (user1, user2) => {
     setChatLoading(true)
 
     const response = await fetch(
-      `http://localhost:5000/api/messages?user1=${user1}&user2=${user2}`,
+      `${API_URL}/api/messages?user1=${user1}&user2=${user2}`,
       {
         headers: {
           Authorization: `Bearer ${localStorage.getItem("collegeConnectToken")}`,
@@ -1587,7 +1588,7 @@ const handleSendMessage = async () => {
     setChatSending(true)
 
     const response = await fetch(
-      "http://localhost:5000/api/messages",
+      `${API_URL}/api/messages`,
       {
         method: "POST",
         headers: {
@@ -1812,7 +1813,7 @@ const isAcceptedConnection =
         setStudentsLoading(true)
 
 const response = await fetch(
-  "http://localhost:5000/api/students",
+  `${API_URL}/api/students`,
   {
     headers: {
       Authorization: `Bearer ${localStorage.getItem("collegeConnectToken")}`,
@@ -1867,7 +1868,7 @@ const response = await fetch(
         setProjectsLoading(true)
 
         const response = await fetch(
-          "http://localhost:5000/api/projects",
+          `${API_URL}/api/projects`,
           {
             headers: {
               Authorization: `Bearer ${localStorage.getItem("collegeConnectToken")}`,
@@ -1931,7 +1932,7 @@ const response = await fetch(
         setQueriesLoading(true)
 
         const response = await fetch(
-          "http://localhost:5000/api/queries",
+          `${API_URL}/api/queries`,
           {
             headers: {
               Authorization: `Bearer ${localStorage.getItem("collegeConnectToken")}`,
@@ -2038,7 +2039,7 @@ useEffect(() => {
 
     try {
       const response = await fetch(
-        "http://localhost:5000/api/auth/register",
+        `${API_URL}/api/auth/register`,
         {
           method: "POST",
           headers: {
@@ -2121,7 +2122,7 @@ useEffect(() => {
     try {
 
       const response = await fetch(
-        "http://localhost:5000/api/auth/login",
+        `${API_URL}/api/auth/login`,
         {
           method: "POST",
 
@@ -2597,7 +2598,7 @@ if (page === "forgot") {
               setForgotMessage("Sending reset link...")
 
               const response = await fetch(
-                "http://localhost:5000/api/auth/forgot-password",
+                `${API_URL}/api/auth/forgot-password`,
                 {
                   method: "POST",
                   headers: {
@@ -4820,7 +4821,7 @@ if (page === "chat") {
       {project.projectFileUrl && (
 
         <a
-          href={`http://localhost:5000${project.projectFileUrl}`}
+          href={`${API_URL}${project.projectFileUrl}`}
           target="_blank"
           rel="noreferrer"
           className="project-view-link"
