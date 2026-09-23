@@ -1905,6 +1905,151 @@ mongoose
     console.log(
       "MongoDB connected successfully"
     );
+    // =====================================================
+// NOTIFICATIONS
+// =====================================================
+
+// GET UNREAD NOTIFICATION COUNT
+app.get(
+  "/api/notifications/unread-count",
+  authMiddleware,
+  async (req, res) => {
+    try {
+      const count = await Notification.countDocuments({
+        user: req.user._id,
+        isRead: false,
+      });
+
+      res.status(200).json({
+        count,
+      });
+    } catch (error) {
+      console.error(
+        "Unread notification count error:",
+        error
+      );
+
+      res.status(500).json({
+        message: "Unable to fetch notification count.",
+      });
+    }
+  }
+);
+
+
+// GET ALL NOTIFICATIONS
+app.get(
+  "/api/notifications",
+  authMiddleware,
+  async (req, res) => {
+    try {
+      const notifications =
+        await Notification.find({
+          user: req.user._id,
+        })
+          .sort({
+            createdAt: -1,
+          });
+
+      res.status(200).json({
+        notifications,
+      });
+    } catch (error) {
+      console.error(
+        "Notifications fetch error:",
+        error
+      );
+
+      res.status(500).json({
+        message: "Unable to fetch notifications.",
+      });
+    }
+  }
+);
+
+
+// MARK SINGLE NOTIFICATION AS READ
+app.put(
+  "/api/notifications/:notificationId/read",
+  authMiddleware,
+  async (req, res) => {
+    try {
+      const { notificationId } =
+        req.params;
+
+      const notification =
+        await Notification.findOneAndUpdate(
+          {
+            _id: notificationId,
+            user: req.user._id,
+          },
+          {
+            isRead: true,
+          },
+          {
+            new: true,
+          }
+        );
+
+      if (!notification) {
+        return res.status(404).json({
+          message: "Notification not found.",
+        });
+      }
+
+      res.status(200).json({
+        message:
+          "Notification marked as read.",
+        notification,
+      });
+    } catch (error) {
+      console.error(
+        "Mark notification read error:",
+        error
+      );
+
+      res.status(500).json({
+        message:
+          "Unable to mark notification as read.",
+      });
+    }
+  }
+);
+
+
+// MARK ALL NOTIFICATIONS AS READ
+app.put(
+  "/api/notifications/read-all",
+  authMiddleware,
+  async (req, res) => {
+    try {
+      await Notification.updateMany(
+        {
+          user: req.user._id,
+          isRead: false,
+        },
+        {
+          isRead: true,
+        }
+      );
+
+      res.status(200).json({
+        message:
+          "All notifications marked as read.",
+      });
+    } catch (error) {
+      console.error(
+        "Mark all notifications read error:",
+        error
+      );
+
+      res.status(500).json({
+        message:
+          "Unable to mark all notifications as read.",
+      });
+    }
+  }
+);
     // =========================
 // CONNECTIONS + BLOCKS + PRIVATE CHAT
 // =========================

@@ -2056,7 +2056,9 @@ const response = await fetch(
   `${API_URL}/api/students`,
   {
     headers: {
-      Authorization: `Bearer ${localStorage.getItem("collegeConnectToken")}`,
+      Authorization: `Bearer ${localStorage.getItem(
+        "collegeConnectToken"
+      )}`,
     },
   }
 )
