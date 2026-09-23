@@ -8780,3 +8780,1500 @@ html, body {
   object-fit: contain;
   display: block;
 }
+/* LOGOUT BUTTON */
+
+.profile-logout-section {
+  display: flex;
+  justify-content: center;
+  margin-top: 28px;
+  padding-top: 20px;
+  border-top: 1px solid #e2e8f0;
+}
+
+.logout-button {
+  min-width: 140px;
+  padding: 11px 24px;
+  border: none;
+  border-radius: 10px;
+  background: linear-gradient(
+    135deg,
+    #7dd3fc,
+    #86efac
+  );
+  color: #1e293b;
+  font-size: 14px;
+  font-weight: 700;
+  cursor: pointer;
+  transition: 0.2s ease;
+}
+
+.logout-button:hover {
+  transform: translateY(-2px);
+  box-shadow: 0 8px 18px rgba(30, 41, 59, 0.12);
+}
+.edit-profile-photo {
+  display: flex;
+  flex-direction: column;
+  align-items: flex-start;
+  width: 100%;
+  margin-bottom: 28px;
+}
+
+.profile-photo-picker {
+  display: flex;
+  flex-direction: row;
+  align-items: center;
+  gap: 10px;
+  margin-top: 8px;
+  width: fit-content;
+}
+
+.profile-photo-add-button {
+  width: 28px;
+  height: 28px;
+  padding: 0;
+  border: none;
+  border-radius: 50%;
+  background: #1e293b;
+  color: #ffffff;
+  font-size: 18px;
+  font-weight: 700;
+  line-height: 28px;
+  cursor: pointer;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+/* =========================
+   PHOTO CROPPER
+========================= */
+
+.photo-cropper-overlay {
+  position: fixed;
+  inset: 0;
+  background: rgba(15, 23, 42, 0.65);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  z-index: 9999;
+  padding: 20px;
+}
+
+.photo-cropper-box {
+  width: 100%;
+  max-width: 420px;
+  background: #ffffff;
+  border-radius: 18px;
+  padding: 24px;
+  box-shadow: 0 20px 50px rgba(15, 23, 42, 0.25);
+}
+
+.photo-cropper-box h3 {
+  margin: 0 0 18px;
+  color: #1e293b;
+  font-size: 20px;
+  text-align: center;
+}
+
+.photo-cropper-preview {
+  width: 280px;
+  height: 280px;
+  margin: 0 auto 20px;
+  border-radius: 12px;
+  overflow: hidden;
+  background: #e2e8f0;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  position: relative;
+}
+
+.photo-cropper-preview img {
+  width: 100%;
+  height: 100%;
+  object-fit: cover;
+  transition: transform 0.15s ease;
+}
+
+.photo-cropper-controls {
+  margin-top: 15px;
+}
+
+.photo-cropper-controls label {
+  display: block;
+  margin-bottom: 8px;
+  color: #1e293b;
+  font-size: 14px;
+  font-weight: 600;
+}
+
+.photo-cropper-controls input[type="range"] {
+  width: 100%;
+  accent-color: #7dd3fc;
+}
+
+.photo-cropper-actions {
+  display: flex;
+  justify-content: flex-end;
+  gap: 10px;
+  margin-top: 22px;
+}
+
+.photo-cropper-actions button {
+  padding: 10px 18px;
+  border: none;
+  border-radius: 9px;
+  font-size: 14px;
+  font-weight: 600;
+  cursor: pointer;
+}
+
+.photo-cropper-actions button:first-child {
+  background: #e2e8f0;
+  color: #1e293b;
+}
+
+.photo-cropper-actions button:last-child {
+  background: linear-gradient(
+    135deg,
+    #7dd3fc,
+    #86efac
+  );
+  color: #1e293b;
+}
+/* FIX PROFILE AVATAR SIZE */
+
+.profile-large-avatar {
+  width: 110px;
+  height: 110px;
+  min-width: 110px;
+  min-height: 110px;
+  border-radius: 50%;
+  overflow: hidden;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+
+.profile-large-avatar .profile-avatar-image {
+  width: 100% !important;
+  height: 100% !important;
+  max-width: 100%;
+  max-height: 100%;
+  object-fit: cover;
+  display: block;
+}
+.save-profile-button {
+  min-width: 140px;
+  padding: 11px 24px;
+  border: none;
+  border-radius: 10px;
+
+  background: linear-gradient(
+    135deg,
+    #7dd3fc,
+    #86efac
+  );
+
+  color: #1e293b;
+  font-size: 14px;
+  font-weight: 700;
+  cursor: pointer;
+  transition: 0.2s ease;
+}
+
+.save-profile-button:hover {
+  transform: translateY(-2px);
+  box-shadow: 0 8px 18px rgba(30, 41, 59, 0.12);
+}
+
+.save-profile-button:disabled {
+  opacity: 0.7;
+  cursor: not-allowed;
+  transform: none;
+}
+.profile-photo-remove-button {
+  height: 28px;
+  padding: 0 12px;
+
+  border: 1px solid #cbd5e1;
+  border-radius: 8px;
+
+  background: #ffffff;
+  color: #64748b;
+
+  font-size: 12px;
+  font-weight: 600;
+
+  cursor: pointer;
+  transition: all 0.2s ease;
+}
+
+.profile-photo-remove-button:hover {
+  border-color: #94a3b8;
+  background: #f8fafc;
+  color: #1e293b;
+}
+.success-toast {
+  position: fixed;
+  top: 80px;
+  right: 24px;
+  z-index: 10000;
+
+  display: flex;
+  align-items: center;
+  gap: 10px;
+
+  padding: 13px 18px;
+
+  background: linear-gradient(
+    135deg,
+    #e0f2fe,
+    #fef9c3,
+    #dcfce7
+  );
+
+  border: 1px solid #86efac;
+  border-radius: 12px;
+
+  color: #1e293b;
+  font-size: 14px;
+  font-weight: 600;
+
+  box-shadow: 0 8px 24px rgba(30, 41, 59, 0.14);
+
+  animation: successToastIn 0.3s ease;
+}
+
+.success-toast-icon {
+  width: 22px;
+  height: 22px;
+
+  display: flex;
+  align-items: center;
+  justify-content: center;
+
+  border-radius: 50%;
+
+  background: #86efac;
+  color: #1e293b;
+
+  font-size: 13px;
+  font-weight: 800;
+}
+
+@keyframes successToastIn {
+  from {
+    opacity: 0;
+    transform: translateY(-10px);
+  }
+
+  to {
+    opacity: 1;
+    transform: translateY(0);
+  }
+}
+/* ================================
+   COMMON APP TOAST
+================================ */
+
+.app-toast {
+  position: fixed;
+  top: 80px;
+  left: 50%;
+  transform: translateX(-50%);
+  z-index: 10000;
+  min-width: 300px;
+  max-width: 420px;
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  padding: 14px 18px;
+  border-radius: 14px;
+  color: #1e293b;
+  font-size: 14px;
+  font-weight: 600;
+  box-shadow: 0 10px 30px rgba(30, 41, 59, 0.15);
+  animation: appToastIn 0.3s ease;
+}
+
+/* Success — soft green + blue + yellow */
+.app-toast.success {
+  background: linear-gradient(
+    135deg,
+    #dcfce7,
+    #e0f2fe,
+    #fef9c3
+  );
+
+  border: 1px solid #86efac;
+}
+
+/* Warning — soft purple */
+.app-toast.warning {
+  background: #f3e8ff;
+  border: 1px solid #d8b4fe;
+}
+
+/* Info — soft blue + green tint */
+.app-toast.info {
+  background: linear-gradient(
+    135deg,
+    #e0f2fe,
+    #ecfeff,
+    #dcfce7
+  );
+
+  border: 1px solid #7dd3fc;
+}
+
+/* Error — very soft red */
+.app-toast.error {
+  background: #fef2f2;
+  border: 1px solid #fecaca;
+}
+
+/* Toast icon */
+.app-toast-icon {
+  width: 25px;
+  height: 25px;
+  min-width: 25px;
+
+  display: flex;
+  align-items: center;
+  justify-content: center;
+
+  border-radius: 50%;
+
+  font-size: 14px;
+  font-weight: 800;
+}
+
+/* Success icon */
+.app-toast.success .app-toast-icon {
+  background: #86efac;
+  color: #14532d;
+}
+
+/* Warning icon */
+.app-toast.warning .app-toast-icon {
+  background: #d8b4fe;
+  color: #581c87;
+}
+
+/* Info icon */
+.app-toast.info .app-toast-icon {
+  background: #7dd3fc;
+  color: #0c4a6e;
+}
+
+/* Error icon */
+.app-toast.error .app-toast-icon {
+  background: #fecaca;
+  color: #991b1b;
+}
+
+@keyframes appToastIn {
+  from {
+    opacity: 0;
+    transform: translateY(-12px);
+  }
+
+  to {
+    opacity: 1;
+    transform: translateY(0);
+  }
+}
+
+/* Mobile */
+@media (max-width: 600px) {
+  .app-toast {
+    top: 70px;
+    left: 16px;
+    right: 16px;
+
+    min-width: unset;
+    max-width: none;
+
+    font-size: 13px;
+  }
+}
+/* =========================
+   LOGOUT CONFIRM MODAL
+========================= */
+
+.logout-confirm-overlay {
+  position: fixed;
+  inset: 0;
+  background: rgba(15, 23, 42, 0.45);
+  backdrop-filter: blur(4px);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  z-index: 9999;
+}
+
+.logout-confirm-box {
+  width: min(420px, calc(100% - 40px));
+  background: #ffffff;
+  border-radius: 20px;
+  padding: 30px;
+  text-align: center;
+  box-shadow: 0 20px 60px rgba(15, 23, 42, 0.2);
+  animation: logoutModalIn 0.2s ease;
+}
+
+.logout-confirm-icon {
+  width: 52px;
+  height: 52px;
+  margin: 0 auto 16px;
+  border-radius: 50%;
+  background: #fee2e2;
+  color: #dc2626;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-size: 25px;
+  font-weight: 700;
+}
+
+.logout-confirm-box h3 {
+  margin: 0 0 8px;
+  color: #1e293b;
+  font-size: 22px;
+}
+
+.logout-confirm-box p {
+  margin: 0 0 25px;
+  color: #64748b;
+  font-size: 15px;
+}
+
+.logout-confirm-actions {
+  display: flex;
+  gap: 12px;
+  justify-content: center;
+}
+
+.logout-cancel-btn,
+.logout-confirm-btn {
+  flex: 1;
+  padding: 11px 20px;
+  border-radius: 10px;
+  font-size: 14px;
+  font-weight: 600;
+  cursor: pointer;
+  transition: 0.2s ease;
+}
+
+.logout-cancel-btn {
+  background: #f1f5f9;
+  color: #334155;
+  border: 1px solid #e2e8f0;
+}
+
+.logout-cancel-btn:hover {
+  background: #e2e8f0;
+}
+
+.logout-confirm-btn {
+  background: #ef4444;
+  color: #ffffff;
+  border: none;
+}
+
+.logout-confirm-btn:hover {
+  background: #dc2626;
+}
+
+@keyframes logoutModalIn {
+  from {
+    opacity: 0;
+    transform: translateY(10px) scale(0.97);
+  }
+
+  to {
+    opacity: 1;
+    transform: translateY(0) scale(1);
+  }
+}
+
+/* =========================================================
+   COLLEGE CONNECT
+   FINAL RESPONSIVE / MOBILE CSS
+   ========================================================= */
+
+/* -------------------------------
+   TABLET
+-------------------------------- */
+
+@media (max-width: 900px) {
+
+  /* GLOBAL */
+  html,
+  body,
+  #root {
+    width: 100%;
+    max-width: 100%;
+    overflow-x: hidden;
+  }
+
+  .app {
+    width: 100%;
+    max-width: 100%;
+    overflow-x: hidden;
+  }
+
+  /* NAVBAR */
+  .navbar {
+    padding: 0 4%;
+    height: 70px;
+  }
+
+  .nav-links {
+    gap: 18px;
+  }
+
+  .nav-actions {
+    gap: 10px;
+  }
+
+  /* HERO */
+  .hero {
+    grid-template-columns: 1fr;
+    gap: 35px;
+    min-height: auto;
+    padding: 55px 5% 65px;
+    text-align: center;
+  }
+
+  .hero-left {
+    max-width: 100%;
+    margin: 0 auto;
+  }
+
+  .hero-label {
+    margin-left: auto;
+    margin-right: auto;
+  }
+
+  /* GENERAL CONTAINERS */
+  .dashboard-container,
+  .dashboard-main,
+  .students-container,
+  .projects-container,
+  .queries-container,
+  .study-hub-container,
+  .profile-container {
+    width: 92%;
+    max-width: 100%;
+    margin-left: auto;
+    margin-right: auto;
+  }
+
+  /* FEATURE CARDS */
+  .dashboard-feature-grid {
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+    gap: 15px;
+  }
+
+  /* PROFILE */
+  .profile-main-header {
+    width: 100%;
+  }
+
+  /* CHAT */
+  .chat-container,
+  .chat-page,
+  .chat-layout {
+    width: 100%;
+    max-width: 100%;
+  }
+
+}
+
+
+/* =========================================================
+   MOBILE
+   ========================================================= */
+
+@media (max-width: 600px) {
+
+  /* -------------------------------
+     GLOBAL
+  -------------------------------- */
+
+  html,
+  body,
+  #root {
+    width: 100%;
+    min-width: 0;
+    max-width: 100%;
+    overflow-x: hidden;
+  }
+
+  body {
+    font-size: 14px;
+  }
+
+  .app {
+    width: 100%;
+    min-width: 0;
+    max-width: 100%;
+    overflow-x: hidden;
+  }
+
+  *,
+  *::before,
+  *::after {
+    max-width: 100%;
+  }
+
+
+  /* -------------------------------
+     NAVBAR
+  -------------------------------- */
+
+  .navbar {
+    width: 100%;
+    height: auto;
+    min-height: 64px;
+
+    padding: 10px 16px;
+
+    gap: 10px;
+  }
+
+  .brand {
+    min-width: 0;
+    flex-shrink: 1;
+  }
+
+  .brand-mark {
+    width: 36px;
+    height: 36px;
+    min-width: 36px;
+    border-radius: 10px;
+  }
+
+  .brand-name {
+    font-size: 15px;
+    white-space: nowrap;
+  }
+
+  .nav-links {
+    display: none;
+  }
+
+  .nav-actions {
+    margin-left: auto;
+    gap: 8px;
+    flex-shrink: 0;
+  }
+
+  .nav-login {
+    font-size: 12px;
+  }
+
+  .nav-register {
+    padding: 9px 12px;
+    font-size: 11px;
+    border-radius: 9px;
+  }
+
+
+  /* -------------------------------
+     HERO
+  -------------------------------- */
+
+  .hero {
+    width: 100%;
+    min-height: auto;
+
+    display: flex;
+    flex-direction: column;
+
+    padding: 42px 20px 55px;
+
+    gap: 35px;
+  }
+
+  .hero-left {
+    width: 100%;
+    max-width: 100%;
+  }
+
+  .hero-label {
+    margin-left: auto;
+    margin-right: auto;
+    font-size: 10px;
+  }
+
+  .hero h1 {
+    font-size: clamp(32px, 9vw, 46px);
+    line-height: 1.08;
+    word-break: normal;
+  }
+
+  .hero p {
+    font-size: 14px;
+    line-height: 1.7;
+  }
+
+
+  /* -------------------------------
+     GENERAL SECTIONS
+  -------------------------------- */
+
+  .dashboard-container,
+  .dashboard-main,
+  .students-container,
+  .projects-container,
+  .queries-container,
+  .study-hub-container,
+  .profile-container {
+    width: 100%;
+    max-width: 100%;
+
+    padding-left: 16px;
+    padding-right: 16px;
+
+    margin-left: auto;
+    margin-right: auto;
+
+    box-sizing: border-box;
+  }
+
+
+  /* -------------------------------
+     DASHBOARD
+  -------------------------------- */
+
+  .dashboard-header {
+    width: 100%;
+    max-width: 100%;
+
+    padding-left: 16px;
+    padding-right: 16px;
+
+    box-sizing: border-box;
+  }
+
+  .dashboard-nav {
+    gap: 4px;
+    flex-wrap: wrap;
+  }
+
+  .dashboard-header-right {
+    flex-shrink: 0;
+  }
+
+  .dashboard-welcome-section {
+    width: 100%;
+    padding: 24px 16px;
+    box-sizing: border-box;
+  }
+
+  .dashboard-welcome-section h1 {
+    font-size: clamp(25px, 7vw, 34px);
+    line-height: 1.2;
+  }
+
+  .welcome-text {
+    width: 100%;
+    min-width: 0;
+  }
+
+  .welcome-text p {
+    font-size: 13px;
+    line-height: 1.6;
+  }
+
+
+  /* -------------------------------
+     DASHBOARD FEATURE CARDS
+  -------------------------------- */
+
+  .dashboard-feature-grid {
+    width: 100%;
+
+    display: grid;
+    grid-template-columns: 1fr;
+
+    gap: 14px;
+  }
+
+  .dashboard-feature-card {
+    width: 100%;
+    min-width: 0;
+
+    padding: 20px;
+
+    box-sizing: border-box;
+  }
+
+  .feature-card-top {
+    width: 100%;
+  }
+
+  .feature-card-content {
+    width: 100%;
+    min-width: 0;
+  }
+
+  .feature-card-content h3 {
+    font-size: 19px;
+  }
+
+  .feature-card-content p {
+    font-size: 13px;
+    line-height: 1.6;
+  }
+
+  .feature-link {
+    font-size: 12px;
+  }
+
+
+  /* -------------------------------
+     BOTTOM DASHBOARD CARD
+  -------------------------------- */
+
+  .dashboard-bottom-card {
+    width: calc(100% - 32px);
+    margin-left: 16px;
+    margin-right: 16px;
+
+    box-sizing: border-box;
+  }
+
+  .bottom-card-content {
+    padding: 24px 20px;
+  }
+
+  .bottom-card-content h2 {
+    font-size: 22px;
+    line-height: 1.3;
+  }
+
+
+  /* -------------------------------
+     BUTTONS
+  -------------------------------- */
+
+  button {
+    max-width: 100%;
+  }
+
+  .notification-button {
+    width: 38px;
+    height: 38px;
+    min-width: 38px;
+  }
+
+
+  /* -------------------------------
+     PAGE HEADERS
+  -------------------------------- */
+
+  .page-header,
+  .section-header,
+  .projects-header,
+  .queries-header,
+  .study-hub-header {
+    width: 100%;
+    min-width: 0;
+
+    flex-wrap: wrap;
+    gap: 12px;
+  }
+
+  .page-header h1,
+  .section-header h1,
+  .projects-header h1,
+  .queries-header h1,
+  .study-hub-header h1 {
+    font-size: 25px;
+    line-height: 1.25;
+  }
+
+
+  /* -------------------------------
+     STUDENTS
+  -------------------------------- */
+
+  .students-grid,
+  .student-grid {
+    width: 100%;
+
+    display: grid;
+    grid-template-columns: 1fr;
+
+    gap: 14px;
+  }
+
+  .student-card {
+    width: 100%;
+    min-width: 0;
+
+    box-sizing: border-box;
+  }
+
+
+  /* -------------------------------
+     PROJECTS
+  -------------------------------- */
+
+  .projects-grid,
+  .project-grid {
+    width: 100%;
+
+    display: grid;
+    grid-template-columns: 1fr;
+
+    gap: 15px;
+  }
+
+  .project-card {
+    width: 100%;
+    min-width: 0;
+
+    box-sizing: border-box;
+  }
+
+  .project-card h3,
+  .project-title {
+    font-size: 18px;
+    line-height: 1.35;
+    overflow-wrap: anywhere;
+  }
+
+  .project-card p,
+  .project-description {
+    font-size: 13px;
+    line-height: 1.6;
+
+    overflow-wrap: anywhere;
+  }
+
+
+  /* -------------------------------
+     QUERIES
+  -------------------------------- */
+
+  .queries-list,
+  .query-list {
+    width: 100%;
+  }
+
+  .query-card {
+    width: 100%;
+    min-width: 0;
+
+    box-sizing: border-box;
+  }
+
+  .query-card h3,
+  .query-title {
+    font-size: 17px;
+    line-height: 1.4;
+  }
+
+  .query-card p,
+  .query-text {
+    font-size: 13px;
+    line-height: 1.6;
+
+    overflow-wrap: anywhere;
+  }
+
+
+  /* -------------------------------
+     STUDY HUB
+  -------------------------------- */
+
+  .study-material-grid,
+  .study-grid,
+  .materials-grid {
+    width: 100%;
+
+    display: grid;
+    grid-template-columns: 1fr;
+
+    gap: 14px;
+  }
+
+  .study-material-card,
+  .material-card {
+    width: 100%;
+    min-width: 0;
+
+    box-sizing: border-box;
+  }
+
+
+  /* -------------------------------
+     ADD PROJECT / ADD QUERY /
+     ADD MATERIAL FORMS
+  -------------------------------- */
+
+  .add-project-form,
+  .add-query-form,
+  .add-material-form,
+  .project-form,
+  .query-form,
+  .material-form {
+    width: 100%;
+    max-width: 100%;
+
+    box-sizing: border-box;
+  }
+
+  .add-project-form input,
+  .add-project-form textarea,
+  .add-project-form select,
+  .add-query-form input,
+  .add-query-form textarea,
+  .add-material-form input,
+  .add-material-form textarea,
+  .add-material-form select,
+  .project-form input,
+  .project-form textarea,
+  .project-form select,
+  .query-form input,
+  .query-form textarea,
+  .material-form input,
+  .material-form textarea,
+  .material-form select {
+    width: 100%;
+    max-width: 100%;
+
+    box-sizing: border-box;
+
+    font-size: 14px;
+  }
+
+  textarea {
+    resize: vertical;
+  }
+
+
+  /* -------------------------------
+     PROFILE
+  -------------------------------- */
+
+  .profile-main-header {
+    width: 100%;
+    min-width: 0;
+
+    padding-left: 18px;
+    padding-right: 18px;
+
+    box-sizing: border-box;
+  }
+
+  .profile-main-header h1,
+  .profile-main-header h2 {
+    max-width: 100%;
+
+    font-size: 24px;
+    line-height: 1.25;
+
+    overflow-wrap: anywhere;
+  }
+
+  .profile-main-header p {
+    font-size: 12px;
+  }
+
+  .profile-logout-section {
+    width: 100%;
+
+    padding-left: 16px;
+    padding-right: 16px;
+
+    box-sizing: border-box;
+  }
+
+  .logout-button {
+    width: 100%;
+    max-width: 260px;
+  }
+
+
+  /* -------------------------------
+     EDIT PROFILE
+  -------------------------------- */
+
+  .edit-profile-section {
+    width: 100%;
+    max-width: 100%;
+
+    padding-left: 18px;
+    padding-right: 18px;
+
+    box-sizing: border-box;
+  }
+
+  .edit-profile-form {
+    width: 100%;
+
+    grid-template-columns: 1fr;
+
+    gap: 14px;
+  }
+
+  .edit-profile-field {
+    width: 100%;
+    min-width: 0;
+  }
+
+  .edit-profile-field input,
+  .edit-profile-field select,
+  .edit-profile-field textarea {
+    width: 100%;
+    max-width: 100%;
+
+    box-sizing: border-box;
+  }
+
+  .edit-profile-actions {
+    width: 100%;
+
+    display: flex;
+    flex-direction: column;
+    gap: 10px;
+  }
+
+  .edit-profile-cancel,
+  .edit-profile-save {
+    width: 100%;
+    min-height: 44px;
+  }
+
+
+  /* -------------------------------
+     CHAT
+  -------------------------------- */
+
+  .chat-container,
+  .chat-page,
+  .chat-layout {
+    width: 100%;
+    max-width: 100%;
+    min-width: 0;
+
+    box-sizing: border-box;
+  }
+
+  .chat-sidebar {
+    width: 100%;
+    max-width: 100%;
+    min-width: 0;
+  }
+
+  .chat-messages {
+    width: 100%;
+    max-width: 100%;
+    min-width: 0;
+
+    overflow-x: hidden;
+  }
+
+  .chat-message {
+    max-width: 85%;
+    overflow-wrap: anywhere;
+    word-break: break-word;
+  }
+
+  .chat-input-area {
+    width: 100%;
+    max-width: 100%;
+
+    box-sizing: border-box;
+  }
+
+  .chat-input-area input,
+  .chat-input-area textarea {
+    min-width: 0;
+    width: 100%;
+    box-sizing: border-box;
+  }
+
+
+  /* -------------------------------
+     NOTIFICATIONS
+  -------------------------------- */
+
+  .notification-panel,
+  .notifications-panel,
+  .notification-dropdown {
+    width: min(360px, calc(100vw - 24px));
+
+    max-width: calc(100vw - 24px);
+
+    right: 12px !important;
+    left: auto !important;
+
+    box-sizing: border-box;
+  }
+
+
+  /* -------------------------------
+     MODALS / POPUPS
+  -------------------------------- */
+
+  .modal,
+  .popup,
+  .dialog,
+  .logout-confirm-overlay {
+    box-sizing: border-box;
+  }
+
+  .logout-confirm-overlay {
+    padding: 16px;
+  }
+
+  .logout-confirm-box {
+    width: min(420px, calc(100vw - 32px));
+
+    max-width: calc(100vw - 32px);
+
+    padding: 24px 20px;
+
+    box-sizing: border-box;
+  }
+
+  .logout-confirm-actions {
+    width: 100%;
+
+    display: flex;
+    gap: 10px;
+  }
+
+  .logout-cancel-btn,
+  .logout-confirm-btn {
+    min-height: 44px;
+  }
+
+
+  /* -------------------------------
+     TOAST
+  -------------------------------- */
+
+  .app-toast {
+    width: min(380px, calc(100vw - 24px));
+
+    max-width: calc(100vw - 24px);
+
+    left: 50%;
+    right: auto;
+
+    transform: translateX(-50%);
+
+    box-sizing: border-box;
+  }
+
+
+  /* -------------------------------
+     IMAGES
+  -------------------------------- */
+
+  img {
+    max-width: 100%;
+    height: auto;
+  }
+
+
+  /* -------------------------------
+     LONG TEXT / LINKS
+  -------------------------------- */
+
+  a,
+  p,
+  h1,
+  h2,
+  h3,
+  h4,
+  span {
+    overflow-wrap: anywhere;
+  }
+
+
+  /* -------------------------------
+     TABLES
+  -------------------------------- */
+
+  table {
+    width: 100%;
+    max-width: 100%;
+  }
+
+  .table-container {
+    width: 100%;
+    max-width: 100%;
+    overflow-x: auto;
+    -webkit-overflow-scrolling: touch;
+  }
+
+}
+
+
+/* =========================================================
+   SMALL MOBILE
+   ========================================================= */
+
+@media (max-width: 400px) {
+
+  .navbar {
+    padding: 9px 12px;
+  }
+
+  .brand-mark {
+    width: 33px;
+    height: 33px;
+    min-width: 33px;
+  }
+
+  .brand-name {
+    font-size: 14px;
+  }
+
+  .nav-login {
+    font-size: 11px;
+  }
+
+  .nav-register {
+    padding: 8px 10px;
+    font-size: 10px;
+  }
+
+  .hero {
+    padding-left: 16px;
+    padding-right: 16px;
+  }
+
+  .dashboard-container,
+  .dashboard-main,
+  .students-container,
+  .projects-container,
+  .queries-container,
+  .study-hub-container,
+  .profile-container {
+    padding-left: 12px;
+    padding-right: 12px;
+  }
+
+  .dashboard-feature-card {
+    padding: 17px;
+  }
+
+  .dashboard-feature-card h3 {
+    font-size: 17px;
+  }
+
+  .dashboard-feature-card p {
+    font-size: 12px;
+  }
+
+  .bottom-card-content {
+    padding: 20px 17px;
+  }
+
+  .bottom-card-content h2 {
+    font-size: 20px;
+  }
+
+  .logout-confirm-box {
+    padding: 22px 16px;
+  }
+
+  .logout-confirm-actions {
+    flex-direction: column;
+  }
+
+  .logout-cancel-btn,
+  .logout-confirm-btn {
+    width: 100%;
+  }
+
+}
+.chat-header {
+  position: relative;
+}
+
+.chat-header-menu {
+  position: relative;
+  margin-left: auto;
+}
+
+.chat-menu-button {
+  width: 42px;
+  height: 42px;
+  border: none;
+  background: transparent;
+  border-radius: 10px;
+  font-size: 28px;
+  line-height: 1;
+  cursor: pointer;
+  color: #1e293b;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+
+.chat-menu-button:hover {
+  background: #f1f5f9;
+}
+
+.chat-menu-dropdown {
+  position: absolute;
+  top: 48px;
+  right: 0;
+  min-width: 180px;
+  background: #ffffff;
+  border: 1px solid #e2e8f0;
+  border-radius: 12px;
+  padding: 6px;
+  box-shadow: 0 10px 30px rgba(15, 23, 42, 0.12);
+  z-index: 50;
+}
+
+.chat-menu-item {
+  width: 100%;
+  border: none;
+  background: transparent;
+  text-align: left;
+  padding: 11px 12px;
+  border-radius: 8px;
+  font-size: 14px;
+  cursor: pointer;
+}
+
+.chat-menu-item:hover {
+  background: #f8fafc;
+}
+
+.block-item {
+  color: #dc2626;
+}
+.chat-unblock-button {
+  width: 100%;
+  min-height: 48px;
+  border: none;
+  border-radius: 10px;
+  background: #1e293b;
+  color: #ffffff;
+  font-size: 15px;
+  font-weight: 600;
+  cursor: pointer;
+}
+
+.chat-unblock-button:hover {
+  opacity: 0.9;
+}
+
+.chat-unblock-button:disabled {
+  opacity: 0.6;
+  cursor: not-allowed;
+}

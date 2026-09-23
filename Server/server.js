@@ -20,6 +20,7 @@ const Answer = require("./models/Answer");
 const SavedAnswer = require("./models/SavedAnswer");
 const StudyMaterial = require("./models/StudyMaterial");
 const Connection = require("./models/Connection");
+const Block = require("./models/Block");
 const Notification = require("./models/Notification");
 
 const app = express();
@@ -180,15 +181,8 @@ app.post("/api/auth/register", async (req, res) => {
       year: year.trim(),
     });
 
-    const token = jwt.sign(
-      { userId: user._id },
-      process.env.JWT_SECRET,
-      { expiresIn: "7d" }
-    );
-
     res.status(201).json({
       message: "Registration successful.",
-      token,
 
       user: {
         id: user._id,
@@ -239,7 +233,8 @@ app.post("/api/auth/login", async (req, res) => {
 
     if (!user) {
       return res.status(401).json({
-        message: "Invalid email or password.",
+        message:
+          "Invalid email or password.",
       });
     }
 
@@ -251,7 +246,8 @@ app.post("/api/auth/login", async (req, res) => {
 
     if (!isPasswordCorrect) {
       return res.status(401).json({
-        message: "Invalid email or password.",
+        message:
+          "Invalid email or password.",
       });
     }
 
@@ -264,7 +260,6 @@ app.post("/api/auth/login", async (req, res) => {
     res.status(200).json({
       message: "Login successful.",
       token,
-
       user: {
         id: user._id,
         name: user.name,
@@ -516,6 +511,7 @@ app.post(
 
 // ======================================================
 // STUDENTS API
+// SAME DEGREE + SAME YEAR ONLY
 // ======================================================
 
 app.get(
@@ -523,29 +519,43 @@ app.get(
   authMiddleware,
   async (req, res) => {
     try {
-      const { degree, year } = req.query;
 
-      const filter = {};
+      // IMPORTANT:
+      // Degree + Year are taken from the
+      // authenticated user.
+      // We do NOT trust req.query.degree/year.
 
-      if (degree) {
-        filter.degree = degree;
-      }
+      const currentUser =
+        await User.findById(req.user._id)
+          .select("degree year");
 
-      if (year) {
-        filter.year = year;
-      }
-
-      const students = await User.find(filter)
-        .select(
-          "name level degree year college skills city state profilePhoto createdAt"
-        )
-        .sort({
-          createdAt: -1,
+      if (!currentUser) {
+        return res.status(404).json({
+          message: "User not found.",
         });
+      }
+
+      const students =
+        await User.find({
+          degree: currentUser.degree,
+          year: currentUser.year,
+
+          // Don't show the logged-in user
+          _id: {
+            $ne: currentUser._id,
+          },
+        })
+          .select(
+            "name level degree year college skills city state profilePhoto createdAt"
+          )
+          .sort({
+            createdAt: -1,
+          });
 
       res.status(200).json({
         students,
       });
+
     } catch (error) {
       console.error(
         "Students fetch error:",
@@ -571,9 +581,10 @@ app.get(
     try {
       const { id } = req.params;
 
-      const user = await User.findById(id).select(
-        "name level degree year college skills city state profilePhoto"
-      );
+      const user =
+        await User.findById(id).select(
+          "name level degree year college skills city state profilePhoto"
+        );
 
       if (!user) {
         return res.status(404).json({
@@ -584,15 +595,16 @@ app.get(
       res.status(200).json({
         user,
       });
+
     } catch (error) {
+
       console.error(
         "Public profile fetch error:",
         error.message
       );
 
       res.status(500).json({
-        message:
-          "Unable to load profile.",
+        message: "Unable to load profile.",
       });
     }
   }
@@ -609,6 +621,7 @@ app.put(
   authMiddleware,
   async (req, res) => {
     try {
+
       if (
         String(req.user._id) !==
         String(req.params.id)
@@ -633,6 +646,7 @@ app.put(
       const updatedUser =
         await User.findByIdAndUpdate(
           id,
+
           {
             name,
             college,
@@ -641,6 +655,7 @@ app.put(
             state,
             profilePhoto,
           },
+
           {
             new: true,
             runValidators: true,
@@ -659,7 +674,9 @@ app.put(
 
         user: updatedUser,
       });
+
     } catch (error) {
+
       console.error(
         "Profile update error:",
         error.message
@@ -672,40 +689,87 @@ app.put(
     }
   }
 );
+
+
 // ======================================================
 // PROJECTS
 // ======================================================
 
-// GET PROJECTS
 
-app.get("/api/projects", authMiddleware, async (req, res) => {
-  try {
-    const projects = await Project.find({})
-      .populate(
-        "owner",
-        "name level degree year college profilePhoto"
-      )
-      .sort({
-        createdAt: -1,
+// ======================================================
+// GET PROJECTS
+// SAME DEGREE + SAME YEAR ONLY
+// ======================================================
+
+app.get(
+  "/api/projects",
+  authMiddleware,
+  async (req, res) => {
+    try {
+
+      // Get logged-in user's Degree + Year
+      const currentUser =
+        await User.findById(req.user._id)
+          .select("degree year");
+
+      if (!currentUser) {
+        return res.status(404).json({
+          message: "User not found.",
+        });
+      }
+
+      // Find students who belong to
+      // the same Degree + Year
+      const matchingUsers =
+        await User.find({
+          degree: currentUser.degree,
+          year: currentUser.year,
+        }).select("_id");
+
+      const matchingUserIds =
+        matchingUsers.map(
+          (user) => user._id
+        );
+
+      // Only projects owned by those students
+      const projects =
+        await Project.find({
+          owner: {
+            $in: matchingUserIds,
+          },
+        })
+          .populate(
+            "owner",
+            "name level degree year college profilePhoto"
+          )
+          .sort({
+            createdAt: -1,
+          });
+
+      res.status(200).json({
+        projects,
       });
 
-    res.status(200).json({
-      projects,
-    });
-  } catch (error) {
-    console.error(
-      "Projects fetch error:",
-      error.message
-    );
+    } catch (error) {
 
-    res.status(500).json({
-      message: "Unable to fetch projects.",
-    });
+      console.error(
+        "Projects fetch error:",
+        error.message
+      );
+
+      res.status(500).json({
+        message:
+          "Unable to fetch projects.",
+      });
+    }
   }
-});
+);
 
 
+// ======================================================
 // ADD PROJECT
+// Project file: PDF, PPT, PPTX, DOC, DOCX or ZIP
+// ======================================================
 
 app.post(
   "/api/projects",
@@ -714,6 +778,7 @@ app.post(
 
   async (req, res) => {
     try {
+
       const {
         title,
         description,
@@ -722,9 +787,20 @@ app.post(
         projectLink,
       } = req.body;
 
+      // IMPORTANT:
+      // Owner comes ONLY from authenticated user
       const owner = req.user._id;
 
-      if (!title || !description) {
+
+      // -----------------------------------------------
+      // BASIC VALIDATION
+      // -----------------------------------------------
+
+      if (
+        !title ||
+        !description ||
+        !owner
+      ) {
         if (req.file) {
           fs.unlinkSync(req.file.path);
         }
@@ -736,16 +812,19 @@ app.post(
       }
 
       if (!title.trim()) {
+
         if (req.file) {
           fs.unlinkSync(req.file.path);
         }
 
         return res.status(400).json({
-          message: "Project title cannot be empty.",
+          message:
+            "Project title cannot be empty.",
         });
       }
 
       if (!description.trim()) {
+
         if (req.file) {
           fs.unlinkSync(req.file.path);
         }
@@ -756,9 +835,16 @@ app.post(
         });
       }
 
-      const user = await User.findById(owner);
+
+      // -----------------------------------------------
+      // FIND AUTHENTICATED USER
+      // -----------------------------------------------
+
+      const user =
+        await User.findById(owner);
 
       if (!user) {
+
         if (req.file) {
           fs.unlinkSync(req.file.path);
         }
@@ -768,30 +854,54 @@ app.post(
         });
       }
 
+
+      // -----------------------------------------------
+      // PARSE SKILLS
+      // -----------------------------------------------
+
       let projectSkills = [];
 
       if (skills) {
-        try {
-          const parsedSkills = JSON.parse(skills);
 
-          if (Array.isArray(parsedSkills)) {
-            projectSkills = parsedSkills
-              .map((skill) => String(skill).trim())
-              .filter(
-                (skill) => skill.length > 0
-              );
+        try {
+
+          const parsedSkills =
+            JSON.parse(skills);
+
+          if (
+            Array.isArray(parsedSkills)
+          ) {
+
+            projectSkills =
+              parsedSkills
+                .map((skill) =>
+                  String(skill).trim()
+                )
+                .filter(
+                  (skill) =>
+                    skill.length > 0
+                );
           }
+
         } catch {
-          projectSkills = skills
-            .split(",")
-            .map((skill) => skill.trim())
-            .filter(
-              (skill) => skill.length > 0
-            );
+
+          projectSkills =
+            skills
+              .split(",")
+              .map((skill) =>
+                skill.trim()
+              )
+              .filter(
+                (skill) =>
+                  skill.length > 0
+              );
         }
       }
 
-      if (projectSkills.length === 0) {
+      if (
+        projectSkills.length === 0
+      ) {
+
         if (req.file) {
           fs.unlinkSync(req.file.path);
         }
@@ -801,6 +911,7 @@ app.post(
             "At least one skill is required.",
         });
       }
+
 
       // -----------------------------------------------
       // ACADEMIC YEAR
@@ -818,16 +929,20 @@ app.post(
       let academicYear;
 
       if (currentMonth >= 6) {
+
         academicYear =
           `${currentYear}–${String(
             currentYear + 1
           ).slice(-2)}`;
+
       } else {
+
         academicYear =
           `${currentYear - 1}–${String(
             currentYear
           ).slice(-2)}`;
       }
+
 
       // -----------------------------------------------
       // PROJECT FILE
@@ -837,6 +952,7 @@ app.post(
       let projectFileName = "";
 
       if (req.file) {
+
         projectFileUrl =
           `/uploads/${req.file.filename}`;
 
@@ -844,26 +960,34 @@ app.post(
           req.file.originalname;
       }
 
+
       // -----------------------------------------------
       // CREATE PROJECT
+      // Degree comes from authenticated USER
       // -----------------------------------------------
 
       const newProject =
         await Project.create({
-          title: title.trim(),
+
+          title:
+            title.trim(),
 
           description:
             description.trim(),
 
-          skills: projectSkills,
+          skills:
+            projectSkills,
 
-          level: user.level,
+          level:
+            user.level,
 
-          degree: user.degree,
+          degree:
+            user.degree,
 
-          branch: branch
-            ? branch.trim()
-            : "",
+          branch:
+            branch
+              ? branch.trim()
+              : "",
 
           academicYear,
 
@@ -876,8 +1000,14 @@ app.post(
 
           projectFileName,
 
-          owner: user._id,
+          owner:
+            user._id,
         });
+
+
+      // -----------------------------------------------
+      // GET CREATED PROJECT
+      // -----------------------------------------------
 
       const project =
         await Project.findById(
@@ -887,26 +1017,42 @@ app.post(
           "name level degree year college profilePhoto"
         );
 
+
       // -----------------------------------------------
       // NOTIFY SAME DEGREE + YEAR STUDENTS
+      // Uploader excluded
       // -----------------------------------------------
 
       const matchingStudents =
         await User.find({
-          degree: user.degree,
-          year: user.year,
+
+          degree:
+            user.degree,
+
+          year:
+            user.year,
+
           _id: {
             $ne: user._id,
           },
+
         }).select("_id");
 
-      if (matchingStudents.length > 0) {
+
+      if (
+        matchingStudents.length > 0
+      ) {
+
         await Notification.insertMany(
+
           matchingStudents.map(
             (student) => ({
-              user: student._id,
 
-              type: "project",
+              user:
+                student._id,
+
+              type:
+                "project",
 
               message:
                 `💻 ${user.name} shared a new project`,
@@ -914,36 +1060,53 @@ app.post(
               relatedId:
                 newProject._id,
 
-              isRead: false,
+              isRead:
+                false,
+
             })
           )
         );
       }
 
+
+      // -----------------------------------------------
+      // SUCCESS
+      // -----------------------------------------------
+
       res.status(201).json({
+
         message:
           "Project added successfully.",
 
         project,
+
       });
 
     } catch (error) {
+
       console.error(
         "Project add error:",
         error.message
       );
 
+      // Delete uploaded file if
+      // database save fails
       if (req.file) {
+
         try {
+
           if (
             fs.existsSync(
               req.file.path
             )
           ) {
+
             fs.unlinkSync(
               req.file.path
             );
+
           }
+
         } catch {}
       }
 
@@ -956,36 +1119,55 @@ app.post(
 );
 
 
+// ======================================================
 // DELETE PROJECT
+// ======================================================
 
 app.delete(
   "/api/projects/:id",
   authMiddleware,
   async (req, res) => {
     try {
+
       const { id } = req.params;
+
+      // IMPORTANT:
+      // Owner comes from token,
+      // not from req.body
       const owner = req.user._id;
+
 
       const project =
         await Project.findById(id);
 
       if (!project) {
         return res.status(404).json({
-          message: "Project not found.",
+          message:
+            "Project not found.",
         });
       }
+
 
       if (
         String(project.owner) !==
         String(owner)
       ) {
+
         return res.status(403).json({
           message:
             "You can only delete your own project.",
         });
       }
 
-      if (project.projectFileUrl) {
+
+      // -----------------------------------------------
+      // DELETE PROJECT FILE
+      // -----------------------------------------------
+
+      if (
+        project.projectFileUrl
+      ) {
+
         const filePath =
           path.join(
             __dirname,
@@ -998,11 +1180,18 @@ app.delete(
         if (
           fs.existsSync(filePath)
         ) {
-          fs.unlinkSync(filePath);
+
+          fs.unlinkSync(
+            filePath
+          );
         }
       }
 
-      await Project.findByIdAndDelete(id);
+
+      await Project.findByIdAndDelete(
+        id
+      );
+
 
       res.status(200).json({
         message:
@@ -1010,6 +1199,7 @@ app.delete(
       });
 
     } catch (error) {
+
       console.error(
         "Project delete error:",
         error.message
@@ -1022,21 +1212,50 @@ app.delete(
     }
   }
 );
-
-
 // ======================================================
 // QUERIES
 // ======================================================
 
-// GET ALL QUERIES
+// GET QUERIES
+// ONLY SAME DEGREE + SAME YEAR
 
 app.get(
   "/api/queries",
   authMiddleware,
   async (req, res) => {
     try {
+
+      // Get logged-in user's academic group
+      const currentUser =
+        await User.findById(req.user._id)
+          .select("degree year");
+
+      if (!currentUser) {
+        return res.status(404).json({
+          message: "User not found.",
+        });
+      }
+
+      // Find students from same Degree + Year
+      const matchingStudents =
+        await User.find({
+          degree: currentUser.degree,
+          year: currentUser.year,
+        }).select("_id");
+
+      const matchingStudentIds =
+        matchingStudents.map(
+          (student) => student._id
+        );
+
+      // Get only queries posted by
+      // students from same Degree + Year
       const queries =
-        await Query.find({})
+        await Query.find({
+          owner: {
+            $in: matchingStudentIds,
+          },
+        })
           .populate(
             "owner",
             "name level degree year profilePhoto"
@@ -1050,19 +1269,24 @@ app.get(
           (query) => query._id
         );
 
-      const answers =
-        await Answer.find({
-          query: {
-            $in: queryIds,
-          },
-        })
-          .populate(
-            "author",
-            "name degree"
-          )
-          .sort({
-            createdAt: -1,
-          });
+      let answers = [];
+
+      if (queryIds.length > 0) {
+
+        answers =
+          await Answer.find({
+            query: {
+              $in: queryIds,
+            },
+          })
+            .populate(
+              "author",
+              "name degree"
+            )
+            .sort({
+              createdAt: -1,
+            });
+      }
 
       const queriesWithAnswers =
         queries.map((query) => ({
@@ -1082,6 +1306,7 @@ app.get(
       });
 
     } catch (error) {
+
       console.error(
         "Queries fetch error:",
         error.message
@@ -1094,23 +1319,25 @@ app.get(
     }
   }
 );
-
-
+// ======================================================
 // ADD QUERY
+// ======================================================
 
 app.post(
   "/api/queries",
   authMiddleware,
   async (req, res) => {
     try {
+
       const { text } = req.body;
 
+      // Owner ALWAYS comes from login token
       const owner = req.user._id;
 
-      if (!text) {
+      if (!text || !owner) {
         return res.status(400).json({
           message:
-            "Query text is required.",
+            "Query text and owner are required.",
         });
       }
 
@@ -1131,6 +1358,7 @@ app.post(
         });
       }
 
+      // Create query
       const newQuery =
         await Query.create({
           text: text.trim(),
@@ -1145,17 +1373,38 @@ app.post(
           "name level degree year profilePhoto"
         );
 
-      const allStudents =
-        await User.find({})
-          .select("_id");
 
-      if (allStudents.length > 0) {
+      // ==================================================
+      // NOTIFY SAME DEGREE + SAME YEAR ONLY
+      // Uploader excluded
+      // ==================================================
+
+      const matchingStudents =
+        await User.find({
+          degree: user.degree,
+          year: user.year,
+
+          _id: {
+            $ne: user._id,
+          },
+
+        }).select("_id");
+
+
+      if (
+        matchingStudents.length > 0
+      ) {
+
         await Notification.insertMany(
-          allStudents.map(
-            (student) => ({
-              user: student._id,
 
-              type: "answer",
+          matchingStudents.map(
+            (student) => ({
+
+              user:
+                student._id,
+
+              type:
+                "answer",
 
               message:
                 `${user.name} posted a new query.`,
@@ -1163,20 +1412,26 @@ app.post(
               relatedId:
                 newQuery._id,
 
-              isRead: false,
+              isRead:
+                false,
+
             })
           )
         );
       }
 
+
       res.status(201).json({
+
         message:
           "Query added successfully.",
 
         query,
+
       });
 
     } catch (error) {
+
       console.error(
         "Query add error:",
         error.message
@@ -1189,576 +1444,59 @@ app.post(
     }
   }
 );
-
-
-// DELETE QUERY + ITS ANSWERS + SAVED ANSWERS
-
-app.delete(
-  "/api/queries/:id",
-  authMiddleware,
-  async (req, res) => {
-    try {
-      const { id } = req.params;
-
-      const owner = req.user._id;
-
-      const query =
-        await Query.findById(id);
-
-      if (!query) {
-        return res.status(404).json({
-          message:
-            "Query not found.",
-        });
-      }
-
-      if (
-        String(query.owner) !==
-        String(owner)
-      ) {
-        return res.status(403).json({
-          message:
-            "You can only delete your own query.",
-        });
-      }
-
-      const answers =
-        await Answer.find({
-          query: id,
-        }).select("_id");
-
-      const answerIds =
-        answers.map(
-          (answer) => answer._id
-        );
-
-      if (answerIds.length > 0) {
-        await SavedAnswer.deleteMany({
-          answer: {
-            $in: answerIds,
-          },
-        });
-
-        await Answer.deleteMany({
-          query: id,
-        });
-      }
-
-      await Query.findByIdAndDelete(id);
-
-      res.status(200).json({
-        message:
-          "Query and its answers deleted successfully.",
-      });
-
-    } catch (error) {
-      console.error(
-        "Query delete error:",
-        error.message
-      );
-
-      res.status(500).json({
-        message:
-          "Unable to delete query.",
-      });
-    }
-  }
-);
-
-
 // ======================================================
-// ANSWERS
-// ======================================================
-
-// GET ANSWERS
-
-app.get(
-  "/api/queries/:queryId/answers",
-  authMiddleware,
-  async (req, res) => {
-    try {
-      const { queryId } =
-        req.params;
-
-      const answers =
-        await Answer.find({
-          query: queryId,
-        })
-          .populate(
-            "author",
-            "name degree"
-          )
-          .sort({
-            createdAt: -1,
-          });
-
-      res.status(200).json({
-        answers,
-      });
-
-    } catch (error) {
-      console.error(
-        "Answers fetch error:",
-        error.message
-      );
-
-      res.status(500).json({
-        message:
-          "Unable to fetch answers.",
-      });
-    }
-  }
-);
-
-
-// ADD ANSWER
-
-app.post(
-  "/api/queries/:queryId/answers",
-  authMiddleware,
-  async (req, res) => {
-    try {
-      const { queryId } =
-        req.params;
-
-      const { answer } =
-        req.body;
-
-      const author =
-        req.user._id;
-
-      if (!answer || !author) {
-        return res.status(400).json({
-          message:
-            "Answer and author are required.",
-        });
-      }
-
-      if (!answer.trim()) {
-        return res.status(400).json({
-          message:
-            "Answer cannot be empty.",
-        });
-      }
-
-      const query =
-        await Query.findById(
-          queryId
-        );
-
-      if (!query) {
-        return res.status(404).json({
-          message:
-            "Query not found.",
-        });
-      }
-
-      const user =
-        await User.findById(author);
-
-      if (!user) {
-        return res.status(404).json({
-          message:
-            "User not found.",
-        });
-      }
-
-      const newAnswer =
-        await Answer.create({
-          answer: answer.trim(),
-          query: queryId,
-          author,
-        });
-
-      const allStudents =
-        await User.find({})
-          .select("_id");
-
-      if (allStudents.length > 0) {
-        await Notification.insertMany(
-          allStudents.map(
-            (student) => ({
-              user: student._id,
-
-              type: "answer",
-
-              message:
-                `${user.name} answered a query.`,
-
-              relatedId:
-                newAnswer._id,
-
-              isRead: false,
-            })
-          )
-        );
-      }
-
-      const createdAnswer =
-        await Answer.findById(
-          newAnswer._id
-        ).populate(
-          "author",
-          "name degree"
-        );
-
-      res.status(201).json({
-        message:
-          "Answer added successfully.",
-
-        answer:
-          createdAnswer,
-      });
-
-    } catch (error) {
-      console.error(
-        "Answer add error:",
-        error.message
-      );
-
-      res.status(500).json({
-        message:
-          "Unable to add answer.",
-      });
-    }
-  }
-);
-
-
-// DELETE ANSWER
-
-app.delete(
-  "/api/answers/:id",
-  authMiddleware,
-  async (req, res) => {
-    try {
-      const { id } =
-        req.params;
-
-      const author =
-        req.user._id;
-
-      const answer =
-        await Answer.findById(id);
-
-      if (!answer) {
-        return res.status(404).json({
-          message:
-            "Answer not found.",
-        });
-      }
-
-      if (
-        String(answer.author) !==
-        String(author)
-      ) {
-        return res.status(403).json({
-          message:
-            "You can only delete your own answer.",
-        });
-      }
-
-      await SavedAnswer.deleteMany({
-        answer: id,
-      });
-
-      await Answer.findByIdAndDelete(id);
-
-      res.status(200).json({
-        message:
-          "Answer deleted successfully.",
-      });
-
-    } catch (error) {
-      console.error(
-        "Answer delete error:",
-        error.message
-      );
-
-      res.status(500).json({
-        message:
-          "Unable to delete answer.",
-      });
-    }
-  }
-);
-
-
-// ======================================================
-// SAVED ANSWERS
-// ======================================================
-
-// GET SAVED ANSWERS FOR USER
-
-app.get(
-  "/api/saved-answers/:userId",
-  authMiddleware,
-  async (req, res) => {
-    try {
-      const { userId } =
-        req.params;
-
-      if (
-        String(req.user._id) !==
-        String(userId)
-      ) {
-        return res.status(403).json({
-          message:
-            "You can only view your own saved answers.",
-        });
-      }
-
-      const savedAnswers =
-        await SavedAnswer.find({
-          user: userId,
-        })
-          .populate({
-            path: "answer",
-
-            populate: [
-              {
-                path: "author",
-                select:
-                  "name degree",
-              },
-
-              {
-                path: "query",
-                select:
-                  "text owner",
-              },
-            ],
-          })
-          .sort({
-            createdAt: -1,
-          });
-
-      const validSavedAnswers =
-        savedAnswers.filter(
-          (item) => item.answer
-        );
-
-      res.status(200).json({
-        savedAnswers:
-          validSavedAnswers,
-      });
-
-    } catch (error) {
-      console.error(
-        "Saved answers fetch error:",
-        error.message
-      );
-
-      res.status(500).json({
-        message:
-          "Unable to fetch saved answers.",
-      });
-    }
-  }
-);
-
-
-// SAVE ANSWER
-
-app.post(
-  "/api/saved-answers",
-  authMiddleware,
-  async (req, res) => {
-    try {
-      const user =
-        req.user._id;
-
-      const { answer } =
-        req.body;
-
-      if (!user || !answer) {
-        return res.status(400).json({
-          message:
-            "User and answer are required.",
-        });
-      }
-
-      const existingSave =
-        await SavedAnswer.findOne({
-          user,
-          answer,
-        });
-
-      if (existingSave) {
-        return res.status(409).json({
-          message:
-            "Answer already saved.",
-
-          savedAnswer:
-            existingSave,
-        });
-      }
-
-      const answerExists =
-        await Answer.findById(
-          answer
-        );
-
-      if (!answerExists) {
-        return res.status(404).json({
-          message:
-            "Answer not found.",
-        });
-      }
-
-      const userExists =
-        await User.findById(user);
-
-      if (!userExists) {
-        return res.status(404).json({
-          message:
-            "User not found.",
-        });
-      }
-
-      const savedAnswer =
-        await SavedAnswer.create({
-          user,
-          answer,
-        });
-
-      if (
-        String(answerExists.author) !==
-        String(user)
-      ) {
-        const saver =
-          await User.findById(user);
-
-        await Notification.create({
-          user:
-            answerExists.author,
-
-          type:
-            "answer",
-
-          message:
-            `${saver?.name || "A student"} saved your answer.`,
-
-          relatedId:
-            answerExists._id,
-
-          isRead: false,
-        });
-      }
-
-      res.status(201).json({
-        message:
-          "Answer saved successfully.",
-
-        savedAnswer,
-      });
-
-    } catch (error) {
-      console.error(
-        "Save answer error:",
-        error.message
-      );
-
-      res.status(500).json({
-        message:
-          "Unable to save answer.",
-      });
-    }
-  }
-);
-
-
-// DELETE SAVED ANSWER
-
-app.delete(
-  "/api/saved-answers/:id",
-  authMiddleware,
-  async (req, res) => {
-    try {
-      const { id } =
-        req.params;
-
-      const user =
-        req.user._id;
-
-      const savedAnswer =
-        await SavedAnswer.findById(id);
-
-      if (!savedAnswer) {
-        return res.status(404).json({
-          message:
-            "Saved answer not found.",
-        });
-      }
-
-      if (
-        String(savedAnswer.user) !==
-        String(user)
-      ) {
-        return res.status(403).json({
-          message:
-            "You can only remove your own saved answer.",
-        });
-      }
-
-      await SavedAnswer.findByIdAndDelete(
-        id
-      );
-
-      res.status(200).json({
-        message:
-          "Saved answer removed.",
-      });
-
-    } catch (error) {
-      console.error(
-        "Saved answer delete error:",
-        error.message
-      );
-
-      res.status(500).json({
-        message:
-          "Unable to remove saved answer.",
-      });
-    }
-  }
-);
-
-
-// ======================================================
-// STUDY HUB
+// STUDY MATERIAL
 // ======================================================
 
 // GET STUDY MATERIAL
+// ONLY SAME DEGREE + SAME YEAR
 
 app.get(
   "/api/study-materials",
   authMiddleware,
   async (req, res) => {
     try {
-      const {
-        degree,
-        year,
-        category,
-      } = req.query;
 
-      const filter = {};
+      const { category } = req.query;
 
-      if (degree) {
-        filter.degree = degree;
+      // IMPORTANT:
+      // Degree + Year comes from authenticated user.
+      // Frontend query parameters are NOT trusted.
+
+      const currentUser =
+        await User.findById(req.user._id)
+          .select("degree year");
+
+      if (!currentUser) {
+        return res.status(404).json({
+          message:
+            "User not found.",
+        });
       }
 
-      if (year) {
-        filter.year = year;
-      }
 
+      // Base filter
+      const filter = {
+
+        degree:
+          currentUser.degree,
+
+        year:
+          currentUser.year,
+
+      };
+
+
+      // Optional category filter
       if (
         category &&
         category !== "All"
       ) {
+
         filter.category =
           category;
       }
+
 
       const materials =
         await StudyMaterial.find(
@@ -1772,11 +1510,13 @@ app.get(
             createdAt: -1,
           });
 
+
       res.status(200).json({
         materials,
       });
 
     } catch (error) {
+
       console.error(
         "Study material fetch error:",
         error.message
@@ -1789,9 +1529,9 @@ app.get(
     }
   }
 );
-
-
+// ======================================================
 // UPLOAD STUDY MATERIAL
+// ======================================================
 
 app.post(
   "/api/study-materials",
@@ -1800,28 +1540,28 @@ app.post(
 
   async (req, res) => {
     try {
+
       const {
         title,
         description,
         category,
       } = req.body;
 
+
+      // Owner comes ONLY from authenticated user
       const owner =
         req.user._id;
 
-      const degree =
-        req.user.degree;
 
-      const year =
-        req.user.year;
+      // -----------------------------------------------
+      // BASIC VALIDATION
+      // -----------------------------------------------
 
       if (
         !title ||
-        !category ||
-        !owner ||
-        !degree ||
-        !year
+        !category
       ) {
+
         if (req.file) {
           fs.unlinkSync(
             req.file.path
@@ -1834,17 +1574,44 @@ app.post(
         });
       }
 
+
+      if (!title.trim()) {
+
+        if (req.file) {
+          fs.unlinkSync(
+            req.file.path
+          );
+        }
+
+        return res.status(400).json({
+          message:
+            "Title cannot be empty.",
+        });
+      }
+
+
       if (!req.file) {
+
         return res.status(400).json({
           message:
             "Please select a file.",
         });
       }
 
+
+      // -----------------------------------------------
+      // FIND AUTHENTICATED USER
+      // -----------------------------------------------
+
       const user =
-        await User.findById(owner);
+        await User.findById(owner)
+          .select(
+            "name degree year"
+          );
+
 
       if (!user) {
+
         fs.unlinkSync(
           req.file.path
         );
@@ -1855,8 +1622,14 @@ app.post(
         });
       }
 
+
+      // -----------------------------------------------
+      // CREATE STUDY MATERIAL
+      // -----------------------------------------------
+
       const material =
         await StudyMaterial.create({
+
           title:
             title.trim(),
 
@@ -1873,14 +1646,24 @@ app.post(
           originalFileName:
             req.file.originalname,
 
-          owner,
+          // IMPORTANT
+          // These values come from
+          // authenticated user's profile
+
+          owner:
+            user._id,
 
           degree:
-            degree.trim(),
+            user.degree,
 
           year:
-            year.trim(),
+            user.year,
         });
+
+
+      // -----------------------------------------------
+      // GET CREATED MATERIAL
+      // -----------------------------------------------
 
       const createdMaterial =
         await StudyMaterial.findById(
@@ -1890,18 +1673,37 @@ app.post(
           "name degree year profilePhoto"
         );
 
+
+      // -----------------------------------------------
+      // NOTIFY SAME DEGREE + SAME YEAR
+      // Uploader excluded
+      // -----------------------------------------------
+
       const matchingStudents =
         await User.find({
-          degree: user.degree,
-          year: user.year,
+
+          degree:
+            user.degree,
+
+          year:
+            user.year,
+
+          _id: {
+            $ne: user._id,
+          },
+
         }).select("_id");
+
 
       if (
         matchingStudents.length > 0
       ) {
+
         await Notification.insertMany(
+
           matchingStudents.map(
             (student) => ({
+
               user:
                 student._id,
 
@@ -1914,33 +1716,55 @@ app.post(
               relatedId:
                 material._id,
 
-              isRead: false,
+              isRead:
+                false,
+
             })
           )
         );
       }
 
+
       res.status(201).json({
+
         message:
           "Study material uploaded successfully.",
 
         material:
           createdMaterial,
+
       });
 
     } catch (error) {
+
       console.error(
         "Study material upload error:",
         error.message
       );
 
+
+      // Delete uploaded file
+      // if database operation fails
+
       if (req.file) {
+
         try {
-          fs.unlinkSync(
-            req.file.path
-          );
+
+          if (
+            fs.existsSync(
+              req.file.path
+            )
+          ) {
+
+            fs.unlinkSync(
+              req.file.path
+            );
+
+          }
+
         } catch {}
       }
+
 
       res.status(500).json({
         message:
@@ -1949,158 +1773,185 @@ app.post(
     }
   }
 );
+// ======================================================
+// GET ANSWERS
+// ======================================================
 
-
-// DELETE STUDY MATERIAL
-
-app.delete(
-  "/api/study-materials/:id",
+app.get(
+  "/api/queries/:queryId/answers",
   authMiddleware,
   async (req, res) => {
     try {
-      const { id } =
+
+      const { queryId } =
         req.params;
 
-      const owner =
-        req.user._id;
 
-      const material =
-        await StudyMaterial.findById(
-          id
+      // Get query + owner academic group
+      const query =
+        await Query.findById(
+          queryId
+        ).populate(
+          "owner",
+          "degree year"
         );
 
-      if (!material) {
+
+      if (!query) {
         return res.status(404).json({
           message:
-            "Study material not found.",
+            "Query not found.",
         });
       }
+
+
+      // Get logged-in user's group
+      const currentUser =
+        await User.findById(
+          req.user._id
+        ).select(
+          "degree year"
+        );
+
+
+      if (!currentUser) {
+        return res.status(404).json({
+          message:
+            "User not found.",
+        });
+      }
+
+
+      // Only same Degree + Year
+      const sameDegree =
+        String(
+          query.owner.degree
+        )
+          .trim()
+          .toLowerCase() ===
+        String(
+          currentUser.degree
+        )
+          .trim()
+          .toLowerCase();
+
+
+      const sameYear =
+        String(
+          query.owner.year
+        )
+          .trim()
+          .toLowerCase() ===
+        String(
+          currentUser.year
+        )
+          .trim()
+          .toLowerCase();
+
 
       if (
-        String(material.owner) !==
-        String(owner)
+        !sameDegree ||
+        !sameYear
       ) {
+
         return res.status(403).json({
           message:
-            "You can only delete your own material.",
+            "You can only access queries from your same degree and year.",
         });
       }
 
-      if (material.fileUrl) {
-        const filePath =
-          path.join(
-            __dirname,
-            material.fileUrl.replace(
-              "/uploads/",
-              "uploads/"
-            )
-          );
 
-        if (
-          fs.existsSync(filePath)
-        ) {
-          fs.unlinkSync(filePath);
-        }
-      }
+      const answers =
+        await Answer.find({
+          query: queryId,
+        })
+          .populate(
+            "author",
+            "name degree"
+          )
+          .sort({
+            createdAt: -1,
+          });
 
-      await StudyMaterial.findByIdAndDelete(
-        id
-      );
 
       res.status(200).json({
-        message:
-          "Study material deleted successfully.",
+        answers,
       });
 
     } catch (error) {
+
       console.error(
-        "Study material delete error:",
+        "Answers fetch error:",
         error.message
       );
 
       res.status(500).json({
         message:
-          "Unable to delete study material.",
+          "Unable to fetch answers.",
       });
     }
   }
 );
 // ======================================================
-// CONNECTIONS
+// MONGODB CONNECTION
 // ======================================================
 
+const PORT = 5000;
+
+mongoose
+  .connect(process.env.MONGO_URI)
+  .then(() => {
+
+    console.log(
+      "MongoDB connected successfully"
+    );
+    // =========================
+// CONNECTIONS + BLOCKS + PRIVATE CHAT
+// =========================
+
+
+// =========================
 // SEND CONNECTION REQUEST
+// =========================
 
 app.post(
   "/api/connections",
   authMiddleware,
   async (req, res) => {
     try {
-      const { recipient } =
-        req.body;
+      const requester = req.user._id;
+      const { recipient } = req.body;
 
-      const requester =
-        req.user._id;
-
-      if (
-        !requester ||
-        !recipient
-      ) {
+      if (!recipient) {
         return res.status(400).json({
-          message:
-            "Requester and recipient are required.",
+          message: "Recipient is required",
         });
       }
 
-      if (
-        String(requester) ===
-        String(recipient)
-      ) {
+      if (String(requester) === String(recipient)) {
         return res.status(400).json({
-          message:
-            "You cannot connect with yourself.",
+          message: "You cannot connect with yourself",
         });
       }
 
-      const requesterUser =
-        await User.findById(
-          requester
-        );
+      // Check block in BOTH directions
+      const existingBlock = await Block.findOne({
+        $or: [
+          {
+            blocker: requester,
+            blocked: recipient,
+          },
+          {
+            blocker: recipient,
+            blocked: requester,
+          },
+        ],
+      });
 
-      const recipientUser =
-        await User.findById(
-          recipient
-        );
-
-      if (
-        !requesterUser ||
-        !recipientUser
-      ) {
-        return res.status(404).json({
-          message:
-            "Student not found.",
-        });
-      }
-
-      // Same Degree + Year only
-
-      if (
-        String(
-          requesterUser.degree
-        ).trim().toLowerCase() !==
-          String(
-            recipientUser.degree
-          ).trim().toLowerCase() ||
-        String(
-          requesterUser.year
-        ).trim().toLowerCase() !==
-          String(
-            recipientUser.year
-          ).trim().toLowerCase()
-      ) {
+      if (existingBlock) {
         return res.status(403).json({
           message:
-            "You can only connect with students from the same degree and year.",
+            "Connection request cannot be sent because one of the students has blocked the other.",
         });
       }
 
@@ -2119,12 +1970,8 @@ app.post(
         });
 
       if (existingConnection) {
-        return res.status(409).json({
-          message:
-            "Connection already exists or is pending.",
-
-          connection:
-            existingConnection,
+        return res.status(400).json({
+          message: "Connection already exists",
         });
       }
 
@@ -2132,127 +1979,101 @@ app.post(
         await Connection.create({
           requester,
           recipient,
+          status: "pending",
         });
 
-      // Notify recipient
-
-      await Notification.create({
-        user: recipient,
-
-        type:
-          "connection",
-
-        message:
-          `${requesterUser.name} sent you a connection request.`,
-
-        relatedId:
-          connection._id,
-
-        isRead: false,
-      });
-
       res.status(201).json({
-        message:
-          "Connection request sent.",
-
+        message: "Connection request sent",
         connection,
       });
 
     } catch (error) {
       console.error(
-        "Connection error:",
-        error.message
+        "Connection request error:",
+        error
       );
 
       res.status(500).json({
-        message:
-          "Unable to send connection request.",
+        message: "Server error",
       });
     }
   }
 );
 
 
-// GET CONNECTIONS
+// =========================
+// GET USER CONNECTIONS
+// =========================
 
 app.get(
   "/api/connections/:userId",
   authMiddleware,
   async (req, res) => {
     try {
-      const { userId } =
-        req.params;
+      const { userId } = req.params;
 
       if (
         String(req.user._id) !==
         String(userId)
       ) {
         return res.status(403).json({
-          message:
-            "You can only view your own connections.",
+          message: "Not authorized",
         });
       }
 
       const connections =
         await Connection.find({
           $or: [
-            {
-              requester: userId,
-            },
-            {
-              recipient: userId,
-            },
+            { requester: userId },
+            { recipient: userId },
           ],
         })
           .populate(
             "requester",
-            "name degree year profilePhoto"
+            "name email degree year level profilePhoto"
           )
           .populate(
             "recipient",
-            "name degree year profilePhoto"
+            "name email degree year level profilePhoto"
           )
-          .sort({
-            createdAt: -1,
-          });
+          .sort({ createdAt: -1 });
 
-      res.status(200).json({
-        connections,
-      });
+      res.json(connections);
 
     } catch (error) {
       console.error(
-        "Connections fetch error:",
-        error.message
+        "Fetch connections error:",
+        error
       );
 
       res.status(500).json({
-        message:
-          "Unable to fetch connections.",
+        message: "Server error",
       });
     }
   }
 );
 
 
-// ======================================================
-// ACCEPT CONNECTION REQUEST
-// ======================================================
+// =========================
+// ACCEPT CONNECTION
+// =========================
 
 app.put(
-  "/api/connections/:id/accept",
+  "/api/connections/:connectionId/accept",
   authMiddleware,
   async (req, res) => {
     try {
+      const { connectionId } =
+        req.params;
+
       const connection =
         await Connection.findById(
-          req.params.id
+          connectionId
         );
 
       if (!connection) {
         return res.status(404).json({
-          message:
-            "Connection request not found.",
+          message: "Connection not found",
         });
       }
 
@@ -2261,112 +2082,53 @@ app.put(
         String(req.user._id)
       ) {
         return res.status(403).json({
-          message:
-            "You can only accept your own connection requests.",
+          message: "Not authorized",
         });
       }
 
-      const requesterUser =
-        await User.findById(
-          connection.requester
-        );
-
-      const recipientUser =
-        await User.findById(
-          connection.recipient
-        );
-
-      if (
-        !requesterUser ||
-        !recipientUser
-      ) {
-        return res.status(404).json({
-          message:
-            "Student not found.",
-        });
-      }
-
-      connection.status =
-        "accepted";
+      connection.status = "accepted";
 
       await connection.save();
 
-      // Notify requester
-
-      await Notification.create({
-        user:
-          connection.requester,
-
-        type:
-          "connection-accepted",
-
-        message:
-          `${recipientUser.name} accepted your connection request.`,
-
-        relatedId:
-          connection._id,
-
-        isRead: false,
-      });
-
-      // Notify recipient
-
-      await Notification.create({
-        user:
-          connection.recipient,
-
-        type:
-          "connection-accepted",
-
-        message:
-          `You are now connected with ${requesterUser.name}.`,
-
-        relatedId:
-          connection._id,
-
-        isRead: false,
-      });
-
-      res.status(200).json({
-        message:
-          "Connection accepted.",
-
+      res.json({
+        message: "Connection accepted",
         connection,
       });
 
     } catch (error) {
       console.error(
         "Accept connection error:",
-        error.message
+        error
       );
 
       res.status(500).json({
-        message:
-          "Unable to accept connection.",
+        message: "Server error",
       });
     }
   }
 );
 
 
-// ======================================================
-// REJECT CONNECTION REQUEST
-// ======================================================
+// =========================
+// REJECT CONNECTION
+// =========================
 
 app.put(
-  "/api/connections/:id/reject",
+  "/api/connections/:connectionId/reject",
   authMiddleware,
   async (req, res) => {
     try {
+      const { connectionId } =
+        req.params;
+
       const connection =
         await Connection.findById(
-          req.params.id
+          connectionId
         );
 
       if (!connection) {
         return res.status(404).json({
-          message:
-            "Connection request not found.",
+          message: "Connection not found",
         });
       }
 
@@ -2375,251 +2137,195 @@ app.put(
         String(req.user._id)
       ) {
         return res.status(403).json({
-          message:
-            "You can only reject your own connection requests.",
+          message: "Not authorized",
         });
       }
 
-      const recipientUser =
-        await User.findById(
-          connection.recipient
-        );
-
-      if (!recipientUser) {
-        return res.status(404).json({
-          message:
-            "Student not found.",
-        });
-      }
-
-      connection.status =
-        "rejected";
+      connection.status = "rejected";
 
       await connection.save();
 
-      // Notify requester only
-
-      await Notification.create({
-        user:
-          connection.requester,
-
-        type:
-          "connection-rejected",
-
-        message:
-          `${recipientUser.name} rejected your connection request.`,
-
-        relatedId:
-          connection._id,
-
-        isRead: false,
-      });
-
-      res.status(200).json({
-        message:
-          "Connection request rejected.",
-
+      res.json({
+        message: "Connection rejected",
         connection,
       });
 
     } catch (error) {
       console.error(
         "Reject connection error:",
-        error.message
+        error
       );
 
       res.status(500).json({
-        message:
-          "Unable to reject connection.",
+        message: "Server error",
       });
     }
   }
 );
 
 
-// ======================================================
-// MULTER ERROR HANDLER
-// ======================================================
+// =====================================================
+// BLOCK STUDENT
+// =====================================================
 
-app.use(
-  (error, req, res, next) => {
-    if (
-      error instanceof
-      multer.MulterError
-    ) {
-      if (
-        error.code ===
-        "LIMIT_FILE_SIZE"
-      ) {
+app.post(
+  "/api/blocks",
+  authMiddleware,
+  async (req, res) => {
+    try {
+      const blocker = req.user._id;
+      const { blocked } = req.body;
+
+      if (!blocked) {
         return res.status(400).json({
-          message:
-            "File size cannot exceed 10 MB.",
+          message: "Student ID is required",
         });
       }
 
-      return res.status(400).json({
-        message:
-          "File upload failed.",
+      if (
+        String(blocker) ===
+        String(blocked)
+      ) {
+        return res.status(400).json({
+          message:
+            "You cannot block yourself",
+        });
+      }
+
+      const student =
+        await User.findById(blocked);
+
+      if (!student) {
+        return res.status(404).json({
+          message: "Student not found",
+        });
+      }
+
+      const existingBlock =
+        await Block.findOne({
+          blocker,
+          blocked,
+        });
+
+      if (existingBlock) {
+        return res.status(400).json({
+          message: "Student is already blocked",
+        });
+      }
+
+      await Block.create({
+        blocker,
+        blocked,
+      });
+
+      res.status(201).json({
+        message: "Student blocked successfully",
+      });
+
+    } catch (error) {
+      console.error(
+        "Block student error:",
+        error
+      );
+
+      res.status(500).json({
+        message: "Server error",
       });
     }
-
-    if (
-      error &&
-      error.message
-    ) {
-      return res.status(400).json({
-        message:
-          error.message,
-      });
-    }
-
-    next();
   }
 );
 
 
-// ======================================================
-// EDUCATION-ONLY CHAT FILTER
-// ======================================================
+// =====================================================
+// CHECK BLOCK STATUS
+// =====================================================
 
-const isEducationRelatedMessage = (
-  text
-) => {
-  const message =
-    text.toLowerCase().trim();
+app.get(
+  "/api/blocks/:studentId",
+  authMiddleware,
+  async (req, res) => {
+    try {
+      const blocker = req.user._id;
+      const { studentId } =
+        req.params;
 
-  const personalPatterns = [
-    /\b(instagram|insta)\b/,
-    /\b(snapchat)\b/,
-    /\b(whatsapp number|phone number|mobile number)\b/,
-    /\b(your number|give me your number)\b/,
-    /\b(where do you live|where are you from)\b/,
-    /\b(let'?s meet|meet me|can we meet)\b/,
-    /\b(date me|go on a date)\b/,
-    /\b(girlfriend|boyfriend)\b/,
-    /\b(crush)\b/,
-    /\b(love me|i love you)\b/,
-    /\b(send me your photo|send your photo)\b/,
-  ];
+      const block =
+        await Block.findOne({
+          blocker,
+          blocked: studentId,
+        });
 
-  if (
-    personalPatterns.some(
-      (pattern) =>
-        pattern.test(message)
-    )
-  ) {
-    return false;
+      res.json({
+        isBlocked: !!block,
+      });
+
+    } catch (error) {
+      console.error(
+        "Check block status error:",
+        error
+      );
+
+      res.status(500).json({
+        message: "Server error",
+      });
+    }
   }
+);
 
-  const educationKeywords = [
-    "study",
-    "studies",
-    "education",
-    "college",
-    "university",
-    "subject",
-    "exam",
-    "exams",
-    "semester",
-    "assignment",
-    "homework",
-    "notes",
-    "question",
-    "doubt",
-    "syllabus",
-    "lecture",
-    "class",
-    "project",
-    "coding",
-    "code",
-    "programming",
-    "software",
-    "technology",
-    "technical",
-    "research",
-    "internship",
-    "career",
-    "job",
-    "skill",
-    "skills",
-    "learning",
-    "learn",
-    "developer",
-    "development",
-    "database",
-    "dbms",
-    "python",
-    "java",
-    "javascript",
-    "react",
-    "c++",
-    "c",
-    "html",
-    "css",
-    "engineering",
-    "degree",
-    "branch",
-    "practical",
-    "viva",
-    "paper",
-    "previous year",
-    "question bank",
-    "resource",
-    "material",
-    "pdf",
-  ];
 
-  const greetingPatterns = [
-    /^hi$/,
-    /^hii$/,
-    /^hiii$/,
-    /^hello$/,
-    /^hey$/,
-    /^heyy$/,
-    /^good morning$/,
-    /^good afternoon$/,
-    /^good evening$/,
-  ];
+// =====================================================
+// UNBLOCK STUDENT
+// =====================================================
 
-  if (
-    greetingPatterns.some(
-      (pattern) =>
-        pattern.test(message)
-    )
-  ) {
-    return true;
+app.delete(
+  "/api/blocks/:studentId",
+  authMiddleware,
+  async (req, res) => {
+    try {
+      const blocker = req.user._id;
+      const { studentId } =
+        req.params;
+
+      await Block.findOneAndDelete({
+        blocker,
+        blocked: studentId,
+      });
+
+      res.json({
+        message:
+          "Student unblocked successfully",
+      });
+
+    } catch (error) {
+      console.error(
+        "Unblock student error:",
+        error
+      );
+
+      res.status(500).json({
+        message: "Server error",
+      });
+    }
   }
-
-  return educationKeywords.some(
-    (keyword) =>
-      message.includes(keyword)
-  );
-};
+);
 
 
-// ======================================================
-// PRIVATE CHAT
-// ======================================================
-
-// GET MESSAGES
+// =====================================================
+// LOAD PRIVATE CHAT
+// =====================================================
 
 app.get(
   "/api/messages",
   authMiddleware,
   async (req, res) => {
     try {
-      const {
-        user1,
-        user2,
-      } = req.query;
+      const { user1, user2 } =
+        req.query;
 
-      if (
-        !user1 ||
-        !user2
-      ) {
+      if (!user1 || !user2) {
         return res.status(400).json({
           message:
-            "Both users are required.",
+            "user1 and user2 are required",
         });
       }
 
@@ -2630,32 +2336,7 @@ app.get(
           String(user2)
       ) {
         return res.status(403).json({
-          message:
-            "You can only view your own conversations.",
-        });
-      }
-
-      const connection =
-        await Connection.findOne({
-          $or: [
-            {
-              requester: user1,
-              recipient: user2,
-            },
-            {
-              requester: user2,
-              recipient: user1,
-            },
-          ],
-
-          status:
-            "accepted",
-        });
-
-      if (!connection) {
-        return res.status(403).json({
-          message:
-            "Chat is available only after connection is accepted.",
+          message: "Not authorized",
         });
       }
 
@@ -2672,6 +2353,7 @@ app.get(
             },
           ],
         })
+          .sort({ createdAt: 1 })
           .populate(
             "sender",
             "name"
@@ -2679,65 +2361,89 @@ app.get(
           .populate(
             "receiver",
             "name"
-          )
-          .sort({
-            createdAt: 1,
-          });
+          );
 
-      res.status(200).json({
+      res.json({
         messages,
       });
 
     } catch (error) {
       console.error(
-        "Get messages error:",
-        error.message
+        "Fetch messages error:",
+        error
       );
 
       res.status(500).json({
-        message:
-          "Unable to load messages.",
+        message: "Server error",
       });
     }
   }
 );
 
 
-// SEND MESSAGE
+// =====================================================
+// SEND PRIVATE CHAT MESSAGE
+// =====================================================
 
 app.post(
   "/api/messages",
   authMiddleware,
   async (req, res) => {
     try {
-      const {
-        receiver,
-        text,
-      } = req.body;
-
-      const sender =
-        req.user._id;
+      const { receiver, text } =
+        req.body;
 
       if (
         !receiver ||
-        !text?.trim()
+        !text ||
+        !text.trim()
       ) {
         return res.status(400).json({
           message:
-            "Sender, receiver and message are required.",
+            "Receiver and message are required",
         });
       }
 
+      const sender = req.user._id;
+
       if (
-        !isEducationRelatedMessage(
-          text
-        )
+        String(sender) ===
+        String(receiver)
       ) {
         return res.status(400).json({
           message:
-            "⚠️ Please keep your chat related to studies, education, projects, skills, internships or career.",
+            "You cannot message yourself",
         });
       }
+
+      // ==========================================
+      // CHECK BLOCK
+      // ==========================================
+
+      const existingBlock =
+        await Block.findOne({
+          $or: [
+            {
+              blocker: sender,
+              blocked: receiver,
+            },
+            {
+              blocker: receiver,
+              blocked: sender,
+            },
+          ],
+        });
+
+      if (existingBlock) {
+        return res.status(403).json({
+          message:
+            "Message cannot be sent because one of the students has blocked the other.",
+        });
+      }
+
+      // ==========================================
+      // ONLY ACCEPTED CONNECTION CAN CHAT
+      // ==========================================
 
       const connection =
         await Connection.findOne({
@@ -2745,21 +2451,20 @@ app.post(
             {
               requester: sender,
               recipient: receiver,
+              status: "accepted",
             },
             {
               requester: receiver,
               recipient: sender,
+              status: "accepted",
             },
           ],
-
-          status:
-            "accepted",
         });
 
       if (!connection) {
         return res.status(403).json({
           message:
-            "You can chat only with an accepted connection.",
+            "You can only chat with an accepted connection",
         });
       }
 
@@ -2784,229 +2489,39 @@ app.post(
           );
 
       res.status(201).json({
-        message:
-          populatedMessage,
+        message: populatedMessage,
       });
 
     } catch (error) {
       console.error(
         "Send message error:",
-        error.message
-      );
-
-      res.status(500).json({
-        message:
-          "Unable to send message.",
-      });
-    }
-  }
-);
-
-
-// ======================================================
-// NOTIFICATIONS
-// ======================================================
-
-// GET NOTIFICATIONS
-
-app.get(
-  "/api/notifications",
-  authMiddleware,
-  async (req, res) => {
-    try {
-      const user =
-        req.user._id;
-
-      const notifications =
-        await Notification.find({
-          user,
-        })
-          .sort({
-            createdAt: -1,
-          })
-          .limit(50);
-
-      res.json({
-        notifications,
-      });
-
-    } catch (error) {
-      console.error(
-        "Get notifications error:",
         error
       );
 
       res.status(500).json({
-        message:
-          "Failed to fetch notifications",
+        message: "Server error",
       });
     }
   }
 );
-
-
-// UNREAD COUNT
-
-app.get(
-  "/api/notifications/unread-count",
-  authMiddleware,
-  async (req, res) => {
-    try {
-      const user =
-        req.user._id;
-
-      const count =
-        await Notification.countDocuments({
-          user,
-          isRead: false,
-        });
-
-      res.json({
-        count,
-      });
-
-    } catch (error) {
-      console.error(
-        "Unread notification count error:",
-        error
-      );
-
-      res.status(500).json({
-        message:
-          "Failed to get unread notification count",
-      });
-    }
-  }
-);
-
-
-// MARK ONE AS READ
-
-app.put(
-  "/api/notifications/:id/read",
-  authMiddleware,
-  async (req, res) => {
-    try {
-      const notification =
-        await Notification.findById(
-          req.params.id
-        );
-
-      if (!notification) {
-        return res.status(404).json({
-          message:
-            "Notification not found",
-        });
-      }
-
-      if (
-        String(notification.user) !==
-        String(req.user._id)
-      ) {
-        return res.status(403).json({
-          message:
-            "You can only update your own notifications.",
-        });
-      }
-
-      notification.isRead =
-        true;
-
-      await notification.save();
-
-      res.json({
-        message:
-          "Notification marked as read",
-
-        notification,
-      });
-
-    } catch (error) {
-      console.error(
-        "Mark notification read error:",
-        error
-      );
-
-      res.status(500).json({
-        message:
-          "Failed to update notification",
-      });
-    }
-  }
-);
-
-
-// MARK ALL AS READ
-
-app.put(
-  "/api/notifications/read-all",
-  authMiddleware,
-  async (req, res) => {
-    try {
-      const user =
-        req.user._id;
-
-      await Notification.updateMany(
-        {
-          user,
-          isRead: false,
-        },
-        {
-          $set: {
-            isRead: true,
-          },
-        }
-      );
-
-      res.json({
-        message:
-          "All notifications marked as read",
-      });
-
-    } catch (error) {
-      console.error(
-        "Mark all notifications read error:",
-        error
-      );
-
-      res.status(500).json({
-        message:
-          "Failed to update notifications",
-      });
-    }
-  }
-);
-
-
-// ======================================================
-// MONGODB CONNECTION
-// ======================================================
-
-const PORT =
-  process.env.PORT || 5000;
-
-mongoose
-  .connect(
-    process.env.MONGO_URI
-  )
-  .then(() => {
-    console.log(
-      "MongoDB connected successfully"
-    );
 
     app.listen(
       PORT,
-      "0.0.0.0",
       () => {
+
         console.log(
           `Server running on http://localhost:${PORT}`
         );
+
       }
     );
+
   })
   .catch((error) => {
+
     console.error(
       "MongoDB connection failed:",
       error.message
     );
+
   });

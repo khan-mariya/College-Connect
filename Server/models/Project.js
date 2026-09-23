@@ -33,6 +33,11 @@ const projectSchema = new mongoose.Schema(
       required: true,
       trim: true,
     },
+    year: {
+  type: String,
+  required: true,
+  trim: true,
+ },
 
     branch: {
       type: String,

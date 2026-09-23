@@ -7,7 +7,17 @@ const querySchema = new mongoose.Schema(
       required: true,
       trim: true,
     },
+    degree: {
+  type: String,
+  required: true,
+  trim: true,
+},
 
+year: {
+  type: String,
+  required: true,
+  trim: true,
+},
     owner: {
       type: mongoose.Schema.Types.ObjectId,
       ref: "User",

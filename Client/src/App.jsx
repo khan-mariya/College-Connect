@@ -1,5 +1,5 @@
 import './App.css'
-import { useEffect, useState } from 'react'
+import { useEffect, useState, useRef } from 'react'
 import collegeConnectLogo from "./assets/college-connect-logo.png";
 const API_URL = import.meta.env.VITE_API_URL || "http://localhost:5000";
 
@@ -7,15 +7,66 @@ function App() {
 
   // ================= MAIN STATES =================
 
-  const [showIntro, setShowIntro] = useState(true)
-  const [page, setPage] = useState("landing")
-  const [currentUser, setCurrentUser] = useState(null)
+ const savedToken = localStorage.getItem("collegeConnectToken")
+const savedUser = localStorage.getItem("collegeConnectUser")
+
+const [showIntro, setShowIntro] = useState(!savedToken)
+const [page, setPage] = useState(savedToken ? "dashboard" : "landing")
+const [currentUser, setCurrentUser] = useState(() => {
+  try {
+    return savedUser ? JSON.parse(savedUser) : null
+  } catch {
+    return null
+  }
+})
+  const [toast, setToast] = useState({
+  show: false,
+  message: "",
+  type: "success",
+})
+const showToast = (message, type = "success") => {
+  setToast({
+    show: true,
+    message,
+    type,
+  })
+
+  setTimeout(() => {
+    setToast({
+      show: false,
+      message: "",
+      type: "success",
+    })
+  }, 3000)
+}
+
+const renderToast = () => {
+  if (!toast.show) return null
+
+  return (
+    <div className={`app-toast ${toast.type}`}>
+      <span className="app-toast-icon">
+        {toast.type === "success"
+          ? "✓"
+          : toast.type === "warning"
+          ? "!"
+          : toast.type === "info"
+          ? "i"
+          : "×"}
+      </span>
+
+      <span>{toast.message}</span>
+    </div>
+  )
+}
+
   // ================= NOTIFICATIONS =================
 const [notifications, setNotifications] = useState([])
 const [unreadNotificationCount, setUnreadNotificationCount] = useState(0)
 const [showNotifications, setShowNotifications] = useState(false)
 const [notificationsLoading, setNotificationsLoading] = useState(false)
 const [connections, setConnections] = useState([])
+const [showLogoutConfirm, setShowLogoutConfirm] = useState(false)
 
 
   
@@ -110,6 +161,9 @@ const [chatMessages, setChatMessages] = useState([])
 const [chatText, setChatText] = useState("")
 const [chatLoading, setChatLoading] = useState(false)
 const [chatSending, setChatSending] = useState(false)
+const [isStudentBlocked, setIsStudentBlocked] = useState(false)
+const [chatMenuOpen, setChatMenuOpen] = useState(false)
+const [blockLoading, setBlockLoading] = useState(false)
  // ================= PROFILE =================
 
 const [isEditingProfile, setIsEditingProfile] = useState(false)
@@ -117,7 +171,22 @@ const [profileSaving, setProfileSaving] = useState(false)
 
 const [viewingProfile, setViewingProfile] = useState(null)
 const [, setViewingProfileLoading] = useState(false)
+const [profilePhotoFile, setProfilePhotoFile] = useState(null)
+const [showPhotoCropper, setShowPhotoCropper] = useState(false)
+const [photoPreview, setPhotoPreview] = useState("")
+const [photoZoom, setPhotoZoom] = useState(1)
+const [photoPosition, setPhotoPosition] = useState({
+  x: 0,
+  y: 0,
+})
 
+const photoDragRef = useRef({
+  dragging: false,
+  startX: 0,
+  startY: 0,
+  initialX: 0,
+  initialY: 0,
+})
 const [profileForm, setProfileForm] = useState({
   name: "",
   degree: "",
@@ -234,8 +303,22 @@ const [profileForm, setProfileForm] = useState({
   const currentUserId =
     currentUser?._id || currentUser?.id || ""
 
+const handleLogout = () => {
+  setShowLogoutConfirm(true)
+}
 
+const confirmLogout = () => {
+  localStorage.removeItem("collegeConnectToken")
+  localStorage.removeItem("collegeConnectUser")
 
+  setCurrentUser(null)
+  setViewingProfile(null)
+  setIsEditingProfile(false)
+  setPage("landing")
+  setShowIntro(false)
+
+  setShowLogoutConfirm(false)
+}
   // =========================================================
   // SAVE PROFILE
   // =========================================================
@@ -243,7 +326,7 @@ const [profileForm, setProfileForm] = useState({
   const handleSaveProfile = async () => {
 
     if (!currentUser) {
-      alert("User information not found.")
+      showToast("User information not found.", "error")
       return
     }
 
@@ -251,7 +334,7 @@ const [profileForm, setProfileForm] = useState({
       currentUser._id || currentUser.id
 
     if (!userId) {
-      alert("User ID not found. Please login again.")
+      showToast("User ID not found. Please login again.", "error")
       return
     }
 
@@ -293,10 +376,11 @@ const [profileForm, setProfileForm] = useState({
 
       if (!response.ok) {
 
-        alert(
-          data.message ||
-          "Unable to update profile."
-        )
+       showToast(
+  data.message ||
+  "Unable to update profile.",
+  "error"
+)
 
         return
       }
@@ -305,7 +389,7 @@ const [profileForm, setProfileForm] = useState({
 
       setIsEditingProfile(false)
 
-      alert("Profile updated successfully!")
+     showToast("Profile updated successfully!", "success")
 
     } catch (error) {
 
@@ -314,9 +398,10 @@ const [profileForm, setProfileForm] = useState({
         error
       )
 
-      alert(
-        "Unable to connect to server. Make sure your Server is running."
-      )
+      showToast(
+  "Unable to connect to server. Make sure your Server is running.",
+  "error"
+)
 
     } finally {
 
@@ -332,7 +417,7 @@ const [profileForm, setProfileForm] = useState({
   const handleViewProfile = async (userId) => {
 
     if (!userId) {
-      alert("Student profile not found.")
+     showToast("Student profile not found.", "error")
       return
     }
 
@@ -347,10 +432,11 @@ const [profileForm, setProfileForm] = useState({
       const data = await response.json()
 
       if (!response.ok) {
-        alert(
-          data.message ||
-          "Unable to load profile."
-        )
+       showToast(
+  data.message ||
+  "Unable to load profile.",
+  "error"
+)
         return
       }
 
@@ -363,10 +449,10 @@ const [profileForm, setProfileForm] = useState({
         error
       )
 
-      alert(
-        "Unable to connect to server. Make sure your Server is running."
-      )
-
+      showToast(
+  "Unable to connect to server. Make sure your Server is running.",
+  "error"
+)
     } finally {
 
       setViewingProfileLoading(false)
@@ -385,17 +471,19 @@ const [profileForm, setProfileForm] = useState({
   const userId = currentUser?._id || currentUser?.id
 
   if (!userId) {
-    alert("Please login first.")
+      showToast("Please login first.", "error")
+
     return
   }
 
   if (!projectForm.title.trim()) {
-    alert("Please enter project title.")
-    return
+ showToast("Please enter project title.", "error")    
+ return
   }
 
   if (!projectForm.description.trim()) {
-    alert("Please enter project description.")
+      showToast("Please enter project description.", "error")
+
     return
   }
 
@@ -405,7 +493,7 @@ const [profileForm, setProfileForm] = useState({
     .filter((skill) => skill.length > 0)
 
   if (skills.length === 0) {
-    alert("Please enter at least one skill.")
+    showToast("Please enter at least one skill.", "warning")
     return
   }
 
@@ -462,17 +550,17 @@ const [profileForm, setProfileForm] = useState({
     const data = await response.json()
 
     if (!response.ok) {
-      alert(
+      showToast(
         data.message ||
         "Unable to add project."
-      )
+      , "error")
       return
     }
 
-    alert(
+    showToast(
       data.message ||
       "Project added successfully."
-    )
+    , "success")
 
   
     // Reset form
@@ -494,9 +582,9 @@ const [profileForm, setProfileForm] = useState({
       error
     )
 
-    alert(
+    showToast(
       "Unable to add project. Please try again."
-    )
+    , "error")
   }
 }
 
@@ -508,7 +596,7 @@ const [profileForm, setProfileForm] = useState({
     const queryText = (queryForm.text || "").trim()
 
     if (!queryText) {
-      alert("Please enter your query.")
+      showToast("Please enter your query.", "warning")
       return
     }
 
@@ -516,7 +604,7 @@ const [profileForm, setProfileForm] = useState({
       currentUser?._id || currentUser?.id
 
     if (!userId) {
-      alert("Please login again.")
+      showToast("Please login again.", "warning")
       return
     }
 
@@ -540,7 +628,7 @@ const [profileForm, setProfileForm] = useState({
       const data = await response.json()
 
       if (!response.ok) {
-        alert(data.message || "Unable to add query.")
+        showToast(data.message || "Unable to add query.", "error")
         return
       }
 
@@ -555,11 +643,11 @@ const [profileForm, setProfileForm] = useState({
 
       setShowAskQuery(false)
 
-      alert("Query posted successfully!")
+      showToast("Query posted successfully!", "success")
       await fetchUnreadNotificationCount()
     } catch (error) {
       console.error("Query add error:", error)
-      alert("Unable to connect to server. Make sure your Server is running.")
+      showToast("Unable to connect to server. Make sure your Server is running.", "error")
     } finally {
       setQuerySaving(false)
     }
@@ -594,11 +682,11 @@ const [profileForm, setProfileForm] = useState({
           [queryId]: data.answers || [],
         }))
       } else {
-        alert(data.message || "Unable to fetch answers.")
+        showToast(data.message || "Unable to fetch answers.", "error")
       }
     } catch (error) {
       console.error("Answers fetch error:", error)
-      alert("Unable to connect to server.")
+      showToast("Unable to connect to server.", "error")
     } finally {
       setAnswersLoading((previous) => ({
         ...previous,
@@ -624,14 +712,14 @@ const [profileForm, setProfileForm] = useState({
     const answerText = (answerForms[queryId] || "").trim()
 
     if (!answerText) {
-      alert("Please enter an answer.")
+      showToast("Please enter an answer.", "warning")
       return
     }
 
     const userId = currentUser?._id || currentUser?.id
 
     if (!userId) {
-      alert("Please login again.")
+      showToast("Please login again.", "warning")
       return
     }
 
@@ -658,7 +746,7 @@ const [profileForm, setProfileForm] = useState({
       const data = await response.json()
 
       if (!response.ok) {
-        alert(data.message || "Unable to add answer.")
+        showToast(data.message || "Unable to add answer.", "error")
         return
       }
 
@@ -678,7 +766,7 @@ const [profileForm, setProfileForm] = useState({
       await fetchUnreadNotificationCount()
     } catch (error) {
       console.error("Answer add error:", error)
-      alert("Unable to connect to server. Make sure your Server is running.")
+      showToast("Unable to connect to server. Make sure your Server is running.", "error")
     } finally {
       setAnswerSaving((previous) => ({
         ...previous,
@@ -691,7 +779,7 @@ const [profileForm, setProfileForm] = useState({
     const userId = currentUser?._id || currentUser?.id
 
     if (!userId) {
-      alert("Please login again.")
+      showToast("Please login again.", "warning")
       return
     }
 
@@ -716,7 +804,7 @@ const [profileForm, setProfileForm] = useState({
       const data = await response.json()
 
       if (!response.ok) {
-        alert(data.message || "Unable to delete answer.")
+        showToast(data.message || "Unable to delete answer.", "error")
         return
       }
 
@@ -735,7 +823,7 @@ const [profileForm, setProfileForm] = useState({
       )
     } catch (error) {
       console.error("Answer delete error:", error)
-      alert("Unable to connect to server.")
+      showToast("Unable to connect to server.", "error")
     }
   }
 
@@ -743,7 +831,7 @@ const [profileForm, setProfileForm] = useState({
     const userId = currentUser?._id || currentUser?.id
 
     if (!userId) {
-      alert("Please login again.")
+      showToast("Please login again.", "warning")
       return
     }
 
@@ -770,7 +858,7 @@ const [profileForm, setProfileForm] = useState({
       const data = await response.json()
 
       if (!response.ok) {
-        alert(data.message || "Unable to save answer.")
+        showToast(data.message || "Unable to save answer.", "error")
         return
       }
 
@@ -786,7 +874,7 @@ const [profileForm, setProfileForm] = useState({
       await fetchUnreadNotificationCount()
     } catch (error) {
       console.error("Save answer error:", error)
-      alert("Unable to connect to server.")
+      showToast("Unable to connect to server.", "error")
     } finally {
       setAnswerSavingState((previous) => ({
         ...previous,
@@ -799,7 +887,7 @@ const [profileForm, setProfileForm] = useState({
     const userId = currentUser?._id || currentUser?.id
 
     if (!userId) {
-      alert("Please login again.")
+      showToast("Please login again.", "warning")
       return
     }
 
@@ -823,7 +911,7 @@ const [profileForm, setProfileForm] = useState({
       const data = await response.json()
 
       if (!response.ok) {
-        alert(data.message || "Unable to remove saved answer.")
+        showToast(data.message || "Unable to remove saved answer.", "error")
         return
       }
 
@@ -834,7 +922,7 @@ const [profileForm, setProfileForm] = useState({
       )
     } catch (error) {
       console.error("Unsave answer error:", error)
-      alert("Unable to connect to server.")
+      showToast("Unable to connect to server.", "error")
     } finally {
       setAnswerSavingState((previous) => ({
         ...previous,
@@ -879,14 +967,14 @@ const [profileForm, setProfileForm] = useState({
 
   const handleDeleteSelectedQuery = async () => {
     if (!selectedDeleteQuery) {
-      alert("Please select a query to delete.")
+      showToast("Please select a query to delete.", "warning")
       return
     }
 
     const userId = currentUser?._id || currentUser?.id
 
     if (!userId) {
-      alert("Please login again.")
+      showToast("Please login again.", "warning")
       return
     }
 
@@ -895,7 +983,7 @@ const [profileForm, setProfileForm] = useState({
     )
 
     if (!selectedQuery) {
-      alert("Selected query not found.")
+      showToast("Selected query not found.", "warning")
       return
     }
 
@@ -922,7 +1010,7 @@ const [profileForm, setProfileForm] = useState({
       const data = await response.json()
 
       if (!response.ok) {
-        alert(data.message || "Unable to delete query.")
+        showToast(data.message || "Unable to delete query.", "error")
         return
       }
 
@@ -949,10 +1037,10 @@ const [profileForm, setProfileForm] = useState({
 
       await fetchSavedAnswers()
 
-      alert("Query deleted successfully!")
+      showToast("Query deleted successfully!", "success")
     } catch (error) {
       console.error("Delete query error:", error)
-      alert("Unable to connect to server.")
+      showToast("Unable to connect to server.", "error")
     } finally {
       setQueryDeleting(false)
     }
@@ -1175,17 +1263,17 @@ useEffect(() => {
     const userId = currentUser?._id || currentUser?.id
 
     if (!userId) {
-      alert("Please login again.")
+      showToast("Please login again.", "warning")
       return
     }
 
     if (!materialForm.title.trim()) {
-      alert("Please enter a material title.")
+      showToast("Please enter a material title.", "warning")
       return
     }
 
     if (!materialForm.file) {
-      alert("Please select a study material file.")
+      showToast("Please select a study material file.", "warning")
       return
     }
 
@@ -1215,7 +1303,7 @@ useEffect(() => {
       const data = await response.json()
 
       if (!response.ok) {
-        alert(data.message || "Unable to upload material.")
+        showToast(data.message || "Unable to upload material.", "error")
         return
       }
 
@@ -1237,10 +1325,10 @@ useEffect(() => {
       )
       if (fileInput) fileInput.value = ""
 
-      alert("Study material shared successfully!")
+      showToast("Study material shared successfully!", "success")
     } catch (error) {
       console.error("Study material upload error:", error)
-      alert("Unable to connect to server.")
+      showToast("Unable to connect to server.", "error")
     } finally {
       setMaterialUploading(false)
     }
@@ -1250,7 +1338,7 @@ useEffect(() => {
     const userId = currentUser?._id || currentUser?.id
 
     if (!userId) {
-      alert("Please login again.")
+      showToast("Please login again.", "warning")
       return
     }
 
@@ -1280,7 +1368,7 @@ useEffect(() => {
       const data = await response.json()
 
       if (!response.ok) {
-        alert(data.message || "Unable to delete material.")
+        showToast(data.message || "Unable to delete material.", "error")
         return
       }
 
@@ -1292,7 +1380,7 @@ useEffect(() => {
       )
     } catch (error) {
       console.error("Delete material error:", error)
-      alert("Unable to connect to server.")
+      showToast("Unable to connect to server.", "error")
     } finally {
       setMaterialDeleting((previous) => ({
         ...previous,
@@ -1309,7 +1397,7 @@ useEffect(() => {
     const userId = currentUser?._id || currentUser?.id
 
     if (!userId) {
-      alert("Please login again.")
+      showToast("Please login again.", "warning")
       return
     }
 
@@ -1338,14 +1426,14 @@ useEffect(() => {
       const data = await response.json()
 
       if (!response.ok) {
-        alert(data.message || "Unable to send connection request.")
+        showToast(data.message || "Unable to send connection request.", "error")
         return
       }
 
-      alert(data.message || "Connection request sent.")
+      showToast(data.message || "Connection request sent.", "success")
     } catch (error) {
       console.error("Connection error:", error)
-      alert("Unable to connect to server.")
+      showToast("Unable to connect to server.", "error")
     } finally {
       setConnectionSaving((previous) => ({
         ...previous,
@@ -1392,7 +1480,7 @@ useEffect(() => {
 
 const handleAcceptConnection = async (connectionId) => {
   if (!connectionId) {
-    alert("Connection request not found.")
+    showToast("Connection request not found.", "warning")
     return
   }
 
@@ -1410,11 +1498,11 @@ const handleAcceptConnection = async (connectionId) => {
     const data = await response.json()
 
     if (!response.ok) {
-      alert(data.message || "Unable to accept connection.")
+      showToast(data.message || "Unable to accept connection.", "error")
       return
     }
 
-    alert("Connection accepted.")
+    showToast("Connection accepted.", "success")
 // Refresh connections
 await fetchConnections()
 
@@ -1451,7 +1539,7 @@ await fetchConnections()
       error
     )
 
-    alert("Unable to connect to server.")
+    showToast("Unable to connect to server.", "error")
   }
 }
 
@@ -1462,7 +1550,7 @@ await fetchConnections()
 
 const handleRejectConnection = async (connectionId) => {
   if (!connectionId) {
-    alert("Connection request not found.")
+    showToast("Connection request not found.", "warning")
     return
   }
 
@@ -1480,11 +1568,11 @@ const handleRejectConnection = async (connectionId) => {
     const data = await response.json()
 
     if (!response.ok) {
-      alert(data.message || "Unable to reject connection.")
+      showToast(data.message || "Unable to reject connection.", "error")
       return
     }
 
-    alert("Connection request rejected.")
+    showToast("Connection request rejected.", "success")
     // Refresh connections
 await fetchConnections()
 
@@ -1521,7 +1609,7 @@ await fetchConnections()
       error
     )
 
-    alert("Unable to connect to server.")
+    showToast("Unable to connect to server.", "error")
   }
 }
 // ======================================================
@@ -1548,25 +1636,176 @@ const fetchChatMessages = async (user1, user2) => {
     const data = await response.json()
 
     if (!response.ok) {
-      alert(data.message || "Unable to load chat.")
+      showToast(data.message || "Unable to load chat.", "error")
       return
     }
 
     setChatMessages(data.messages || [])
   } catch (error) {
     console.error("Load chat error:", error)
-    alert("Unable to connect to server.")
+    showToast("Unable to connect to server.", "error")
   } finally {
     setChatLoading(false)
   }
 }
 
+// ======================================================
+// CHECK BLOCK STATUS
+// ======================================================
 
+const fetchBlockStatus = async () => {
+  const studentId =
+    activeChatConnection?.otherUser?._id ||
+    activeChatConnection?.otherUser?.id
+
+  if (!studentId) {
+    return
+  }
+
+  try {
+    const response = await fetch(
+      `${API_URL}/api/blocks/${studentId}`,
+      {
+        headers: {
+          Authorization: `Bearer ${localStorage.getItem(
+            "collegeConnectToken"
+          )}`,
+        },
+      }
+    )
+
+    const data = await response.json()
+
+    if (!response.ok) {
+      return
+    }
+
+    setIsStudentBlocked(Boolean(data.blocked))
+  } catch (error) {
+    console.error("Check block status error:", error)
+  }
+}
+
+
+// ======================================================
+// BLOCK STUDENT
+// ======================================================
+
+const handleBlockStudent = async () => {
+  const studentId =
+    activeChatConnection?.otherUser?._id ||
+    activeChatConnection?.otherUser?.id
+
+  if (!studentId) {
+    return
+  }
+
+  try {
+    setBlockLoading(true)
+
+    const response = await fetch(
+      `${API_URL}/api/blocks`,
+      {
+        method: "POST",
+        headers: {
+          "Content-Type": "application/json",
+          Authorization: `Bearer ${localStorage.getItem(
+            "collegeConnectToken"
+          )}`,
+        },
+        body: JSON.stringify({
+          blocked: studentId,
+        }),
+      }
+    )
+
+    const data = await response.json()
+
+    if (!response.ok) {
+      showToast(
+        data.message || "Unable to block student.",
+        "error"
+      )
+      return
+    }
+
+    setIsStudentBlocked(true)
+    setChatMenuOpen(false)
+
+    showToast("Student blocked.", "success")
+  } catch (error) {
+    console.error("Block student error:", error)
+
+    showToast(
+      "Unable to connect to server.",
+      "error"
+    )
+  } finally {
+    setBlockLoading(false)
+  }
+}
+
+
+// ======================================================
+// UNBLOCK STUDENT
+// ======================================================
+
+const handleUnblockStudent = async () => {
+  const studentId =
+    activeChatConnection?.otherUser?._id ||
+    activeChatConnection?.otherUser?.id
+
+  if (!studentId) {
+    return
+  }
+
+  try {
+    setBlockLoading(true)
+
+    const response = await fetch(
+      `${API_URL}/api/blocks/${studentId}`,
+      {
+        method: "DELETE",
+        headers: {
+          Authorization: `Bearer ${localStorage.getItem(
+            "collegeConnectToken"
+          )}`,
+        },
+      }
+    )
+
+    const data = await response.json()
+
+    if (!response.ok) {
+      showToast(
+        data.message || "Unable to unblock student.",
+        "error"
+      )
+      return
+    }
+
+    setIsStudentBlocked(false)
+
+    showToast("Student unblocked.", "success")
+  } catch (error) {
+    console.error("Unblock student error:", error)
+
+    showToast(
+      "Unable to connect to server.",
+      "error"
+    )
+  } finally {
+    setBlockLoading(false)
+  }
+}
 // ======================================================
 // SEND PRIVATE CHAT MESSAGE
 // ======================================================
 
 const handleSendMessage = async () => {
+  if (isStudentBlocked) {
+  return
+}
   const sender =
     currentUser?._id ||
     currentUser?.id
@@ -1576,7 +1815,7 @@ const handleSendMessage = async () => {
     activeChatConnection?.otherUser?.id
 
   if (!sender || !receiver) {
-    alert("Chat connection not found.")
+    showToast("Chat connection not found.", "warning")
     return
   }
 
@@ -1605,7 +1844,7 @@ const handleSendMessage = async () => {
     const data = await response.json()
 
     if (!response.ok) {
-      alert(data.message || "Unable to send message.")
+      showToast(data.message || "Unable to send message.", "error")
       return
     }
 
@@ -1617,7 +1856,7 @@ const handleSendMessage = async () => {
     setChatText("")
   } catch (error) {
     console.error("Send message error:", error)
-    alert("Unable to connect to server.")
+    showToast("Unable to connect to server.", "error")
   } finally {
     setChatSending(false)
   }
@@ -1641,10 +1880,11 @@ useEffect(() => {
 
   const timeoutId = setTimeout(() => {
     fetchChatMessages(user1, user2)
+    fetchBlockStatus()
   }, 0)
 
   return () => clearTimeout(timeoutId)
-
+// eslint-disable-next-line react-hooks/exhaustive-deps
 }, [activeChatConnection, currentUser])
 const renderNotifications = () => (
   <>
@@ -1767,7 +2007,7 @@ const isAcceptedConnection =
           : connection.requester
 
       if (!otherUser) {
-        alert("Student information not found.")
+        showToast("Student information not found.", "warning")
         return
       }
 
@@ -2059,7 +2299,7 @@ useEffect(() => {
       const data = await response.json()
 
       if (response.ok) {
-        alert("Account created successfully!")
+        showToast("Account created successfully!", "success")
 
         setRegisterName("")
         setRegisterEmail("")
@@ -2070,9 +2310,14 @@ useEffect(() => {
         setRegisterMessage("")
 
         localStorage.setItem("collegeConnectToken", data.token)
-        localStorage.setItem("collegeConnectToken", data.token)
-        setCurrentUser(data.user)
-        setPage("dashboard")
+localStorage.setItem(
+  "collegeConnectUser",
+  JSON.stringify(data.user)
+)
+
+setCurrentUser(data.user)
+setPage("dashboard")
+setShowIntro(false)
       } else {
         setRegisterMessage(
           data.message || "Unable to create account."
@@ -2141,10 +2386,10 @@ useEffect(() => {
 
       if (response.ok) {
 
-        alert(
-          "Login successful!"
-        )
-
+      showToast(
+  "Login successful!",
+  "success"
+)
         setLoginEmail("")
         setLoginPassword("")
         setLoginMessage("")
@@ -2263,6 +2508,7 @@ useEffect(() => {
     return (
 
       <div className="auth-page">
+        {renderToast()}
 
         <div className="auth-card">
 
@@ -2433,6 +2679,7 @@ useEffect(() => {
     return (
 
       <div className="auth-page">
+        {renderToast()}
 
         <div className="auth-card">
 
@@ -2568,6 +2815,7 @@ if (page === "forgot") {
   return (
 
     <div className="auth-page">
+        {renderToast()}
 
       <div className="auth-card">
 
@@ -2744,6 +2992,7 @@ if (page === "forgot") {
     return (
 
       <div className="dashboard-page">
+        {renderToast()}
 
         <header className="dashboard-header">
 
@@ -2850,9 +3099,9 @@ if (page === "forgot") {
                 COLLEGE NETWORK
               </span>
 
-              <h1>
-                Discover Students
-              </h1>
+             <h1>
+  Welcome, {currentUser?.name || "Student"} 👋
+</h1>
 
               <p>
                 Find students, explore their skills
@@ -2977,6 +3226,7 @@ if (page === "student-profile" && viewingProfile) {
   return (
 
     <div className="dashboard-page">
+        {renderToast()}
 
       <header className="dashboard-header">
 
@@ -3187,11 +3437,8 @@ if (page === "student-profile" && viewingProfile) {
               </div>
 
             </div>
-
-          </div>
-
-
-          {/* SKILLS */}
+            </div>
+             {/* SKILLS */}
 
           <div className="profile-info-section profile-skills-section">
 
@@ -3230,6 +3477,8 @@ if (page === "student-profile" && viewingProfile) {
           </div>
 
 
+
+
        {/* BACK */}
 
           <div className="profile-connect-section">
@@ -3265,6 +3514,7 @@ if (page === "student-profile" && viewingProfile) {
     return (
 
       <div className="dashboard-page">
+        {renderToast()}
 
         <header className="dashboard-header">
 
@@ -3356,17 +3606,26 @@ if (page === "student-profile" && viewingProfile) {
           <section className="profile-page-card">
 
             {/* PROFILE HEADER */}
+            {!isEditingProfile && (
 
             <div className="profile-main-header">
 
-              <div className="profile-large-avatar">
+             <div className="profile-large-avatar">
 
-                {currentUser?.name
-                  ?.charAt(0)
-                  .toUpperCase()}
+  {currentUser?.profilePhoto ? (
+    <img
+      src={currentUser.profilePhoto}
+      alt={currentUser?.name || "Profile"}
+      className="profile-avatar-image"
+    />
+  ) : (
+    currentUser?.name
+      ?.charAt(0)
+      .toUpperCase()
+  )}
 
-              </div>
-
+</div>
+              
               <div className="profile-header-info">
 
                 <h2>
@@ -3426,7 +3685,7 @@ if (page === "student-profile" && viewingProfile) {
 
             </div>
 
-
+)}
             {/* EDIT PROFILE */}
 
             {isEditingProfile && (
@@ -3457,6 +3716,247 @@ if (page === "student-profile" && viewingProfile) {
                   </button>
 
                 </div>
+                <div className="edit-profile-photo">
+
+ <div className="profile-large-avatar">
+  {typeof profileForm.profilePhoto === "string" &&
+  profileForm.profilePhoto.trim() !== "" ? (
+    <img
+      src={profileForm.profilePhoto}
+      alt="Profile"
+      className="profile-avatar-image"
+    />
+  ) : (
+    currentUser?.name
+      ?.charAt(0)
+      .toUpperCase()
+  )}
+</div>
+
+  <div className="profile-photo-picker">
+
+  <button
+    type="button"
+    className="profile-photo-add-button"
+    onClick={() => {
+      const isMobile =
+        /Android|iPhone|iPad|iPod/i.test(navigator.userAgent)
+
+      if (isMobile) {
+        const choice = window.prompt(
+          "Choose an option:\n\n1. Add from Gallery\n2. Take Photo"
+        )
+
+        if (choice === "1") {
+          document
+            .getElementById("gallery-photo-input")
+            ?.click()
+        }
+
+        if (choice === "2") {
+          document
+            .getElementById("camera-photo-input")
+            ?.click()
+        }
+      } else {
+        document
+          .getElementById("upload-photo-input")
+          ?.click()
+      }
+    }}
+  >
+    +
+  </button>
+ {typeof profileForm.profilePhoto === "string" &&
+  profileForm.profilePhoto.trim() !== "" && (
+    <button
+      type="button"
+      className="profile-photo-remove-button"
+      onClick={() => {
+        setProfileForm({
+          ...profileForm,
+          profilePhoto: "",
+        })
+      }}
+    >
+      ✕ Remove Photo
+    </button>
+  )}
+
+  {/* Gallery / PC Upload */}
+  <input
+    id="gallery-photo-input"
+    type="file"
+    accept="image/*"
+    hidden
+    onChange={(e) => {
+      const file = e.target.files?.[0]
+
+      if (!file) return
+
+      setProfilePhotoFile(file)
+
+const previewUrl = URL.createObjectURL(file)
+
+setPhotoPreview(previewUrl)
+setPhotoZoom(1)
+setPhotoPosition({
+  x: 0,
+  y: 0,
+})
+setShowPhotoCropper(true)
+    }}
+  />
+
+  {/* Mobile Camera */}
+  <input
+    id="camera-photo-input"
+    type="file"
+    accept="image/*"
+    capture="user"
+    hidden
+    onChange={(e) => {
+      const file = e.target.files?.[0]
+
+      if (!file) return
+
+      setProfilePhotoFile(file)
+
+const previewUrl = URL.createObjectURL(file)
+
+setPhotoPreview(previewUrl)
+setPhotoZoom(1)
+setPhotoPosition({
+  x: 0,
+  y: 0,
+})
+setShowPhotoCropper(true)
+    }}
+  />
+
+  {/* PC Upload */}
+  <input
+    id="upload-photo-input"
+    type="file"
+    accept="image/*"
+    hidden
+    onChange={(e) => {
+      const file = e.target.files?.[0]
+
+      if (!file) return
+
+     setProfilePhotoFile(file)
+
+const previewUrl = URL.createObjectURL(file)
+
+setPhotoPreview(previewUrl)
+setPhotoZoom(1)
+setPhotoPosition({
+  x: 0,
+  y: 0,
+})
+setShowPhotoCropper(true)
+    }}
+  />
+{showPhotoCropper && (
+  <div className="photo-cropper-overlay">
+    <div className="photo-cropper-box">
+
+      <h3>Adjust Profile Photo</h3>
+
+      <div
+  className="photo-cropper-preview"
+  onPointerDown={(e) => {
+    e.currentTarget.setPointerCapture(e.pointerId)
+
+    photoDragRef.current = {
+      dragging: true,
+      startX: e.clientX,
+      startY: e.clientY,
+      initialX: photoPosition.x,
+      initialY: photoPosition.y,
+    }
+  }}
+  onPointerMove={(e) => {
+    if (!photoDragRef.current.dragging) return
+
+    const moveX =
+      e.clientX - photoDragRef.current.startX
+
+    const moveY =
+      e.clientY - photoDragRef.current.startY
+
+    setPhotoPosition({
+      x: photoDragRef.current.initialX + moveX,
+      y: photoDragRef.current.initialY + moveY,
+    })
+  }}
+  onPointerUp={() => {
+    photoDragRef.current.dragging = false
+  }}
+  onPointerCancel={() => {
+    photoDragRef.current.dragging = false
+  }}
+>
+  <img
+    src={photoPreview}
+    alt="Adjust profile"
+    draggable="false"
+    style={{
+      transform: `
+        translate(
+          ${photoPosition.x}px,
+          ${photoPosition.y}px
+        )
+        scale(${photoZoom})
+      `,
+    }}
+  />
+</div>
+
+      <div className="photo-cropper-controls">
+        <label>Zoom</label>
+
+        <input
+          type="range"
+          min="1"
+          max="3"
+          step="0.1"
+          value={photoZoom}
+          onChange={(e) =>
+            setPhotoZoom(Number(e.target.value))
+          }
+        />
+      </div>
+
+      <div className="photo-cropper-actions">
+        <button
+          type="button"
+          onClick={() => setShowPhotoCropper(false)}
+        >
+          Cancel
+        </button>
+
+        <button
+          type="button"
+          onClick={() => {
+            setProfileForm({
+              ...profileForm,
+              profilePhoto: photoPreview,
+            })
+            setShowPhotoCropper(false)
+          }}
+        >
+          Use Photo
+        </button>
+      </div>
+
+    </div>
+  </div>
+)}
+</div>
+
+</div>
 
 
                 <div className="edit-profile-form">
@@ -3582,91 +4082,6 @@ if (page === "student-profile" && viewingProfile) {
 
     
 </div>
-<div className="edit-profile-field">
-
-  <label>
-    Branch / Specialization
-  </label>
-
-  <select
-    value={projectForm.branch}
-    onChange={(e) =>
-      setProjectForm({
-        ...projectForm,
-        branch: e.target.value,
-      })
-    }
-
-  >
-    <option value="">Select Branch / Specialization</option>
-
-    <option value="Computer Science">Computer Science</option>
-    <option value="Information Technology">Information Technology</option>
-    <option value="Artificial Intelligence">Artificial Intelligence</option>
-    <option value="Data Science">Data Science</option>
-    <option value="Electronics">Electronics</option>
-    <option value="Electrical Engineering">
-      Electrical Engineering
-    </option>
-    <option value="Mechanical Engineering">
-      Mechanical Engineering
-    </option>
-    <option value="Civil Engineering">
-      Civil Engineering
-    </option>
-    <option value="Chemical Engineering">
-      Chemical Engineering
-    </option>
-    <option value="Biotechnology">Biotechnology</option>
-
-    <option value="Commerce">Commerce</option>
-    <option value="Management">Management</option>
-    <option value="Economics">Economics</option>
-    <option value="Finance">Finance</option>
-    <option value="Marketing">Marketing</option>
-
-    <option value="Psychology">Psychology</option>
-    <option value="Sociology">Sociology</option>
-    <option value="English">English</option>
-    <option value="Political Science">Political Science</option>
-    <option value="History">History</option>
-
-    <option value="Physics">Physics</option>
-    <option value="Chemistry">Chemistry</option>
-    <option value="Mathematics">Mathematics</option>
-
-    <option value="Other">Other</option>
-  </select>
-
-</div>
-<div className="edit-profile-field">
-
-  <label>
-    Academic Year
-  </label>
-
-  <input
-    type="text"
-    value={getAcademicYear()}
-    readOnly
-  />
-
-</div>
-<div className="edit-profile-field">
-
-  <label>
-    Academic Year
-  </label>
-
-  <input
-    type="text"
-    value={getAcademicYear()}
-    readOnly
-  />
-
-  
-
-</div>
 
 
   <div className="edit-profile-field">
@@ -3725,14 +4140,12 @@ if (page === "student-profile" && viewingProfile) {
                   </button>
 
                   <button
-                    className="add-project-submit"
-                    onClick={handleSaveProfile}
-                    disabled={profileSaving}
-                  >
-                    {profileSaving
-                      ? "Saving..."
-                      : "Save Changes"}
-                  </button>
+  className="save-profile-button"
+  onClick={handleSaveProfile}
+  disabled={profileSaving}
+>
+  {profileSaving ? "Saving..." : "Save Changes"}
+</button>
 
                 </div>
 
@@ -3856,6 +4269,7 @@ if (page === "student-profile" && viewingProfile) {
             
 
     )}
+    
             {/* SKILLS */}
 
             <div className="profile-info-section profile-skills-section">
@@ -3890,9 +4304,58 @@ if (page === "student-profile" && viewingProfile) {
                 )}
 
               </div>
+    </div>
+{/* LOGOUT */}
 
-            </div>
-            
+{!isEditingProfile && (
+  <div className="profile-logout-section">
+    <button
+      type="button"
+      className="logout-button"
+      onClick={handleLogout}
+    >
+      Logout
+    </button>
+  </div>
+)}
+{showLogoutConfirm && (
+  <div className="logout-confirm-overlay">
+    <div className="logout-confirm-box">
+
+      <div className="logout-confirm-icon">
+        ↪
+      </div>
+
+      <h3>Logout</h3>
+
+      <p>
+        Are you sure you want to logout?
+      </p>
+
+      <div className="logout-confirm-actions">
+
+        <button
+          type="button"
+          className="logout-cancel-btn"
+          onClick={() => setShowLogoutConfirm(false)}
+        >
+          Cancel
+        </button>
+
+        <button
+          type="button"
+          className="logout-confirm-btn"
+          onClick={confirmLogout}
+        >
+          Logout
+        </button>
+
+      </div>
+
+    </div>
+  </div>
+)}
+        
 
           </section>
           
@@ -3917,6 +4380,7 @@ if (page === "chat") {
 
   return (
     <div className="dashboard-page">
+        {renderToast()}
 
       <header className="dashboard-header">
 
@@ -4069,7 +4533,36 @@ if (page === "chat") {
               </div>
 
             </div>
+<div className="chat-header-menu">
 
+  <button
+    type="button"
+    className="chat-menu-button"
+    onClick={() =>
+      setChatMenuOpen((previous) => !previous)
+    }
+  >
+    ⋮
+  </button>
+
+  {chatMenuOpen && (
+    <div className="chat-menu-dropdown">
+
+      {!isStudentBlocked && (
+        <button
+          type="button"
+          className="chat-menu-item block-item"
+          onClick={handleBlockStudent}
+          disabled={blockLoading}
+        >
+          🚫 {blockLoading ? "Blocking..." : "Block Student"}
+        </button>
+      )}
+
+    </div>
+  )}
+
+</div>
           </div>
 
 
@@ -4150,40 +4643,58 @@ if (page === "chat") {
 
           <div className="chat-input-area">
 
-            <textarea
-              value={chatText}
-              onChange={(e) =>
-                setChatText(e.target.value)
-              }
-              placeholder="Write a study-related message..."
-              rows={2}
-              onKeyDown={(e) => {
-                if (
-                  e.key === "Enter" &&
-                  !e.shiftKey
-                ) {
-                  e.preventDefault()
-                  handleSendMessage()
-                }
-              }}
-            />
+  {isStudentBlocked ? (
 
-            <button
-              type="button"
-              className="chat-send-button"
-              onClick={handleSendMessage}
-              disabled={
-                chatSending ||
-                !chatText.trim()
-              }
-            >
-              {chatSending
-                ? "Sending..."
-                : "Send"}
-            </button>
+    <button
+      type="button"
+      className="chat-unblock-button"
+      onClick={handleUnblockStudent}
+      disabled={blockLoading}
+    >
+      {blockLoading
+        ? "Unblocking..."
+        : "Unblock Student"}
+    </button>
 
-          </div>
+  ) : (
 
+    <>
+      <textarea
+        value={chatText}
+        onChange={(e) =>
+          setChatText(e.target.value)
+        }
+        placeholder="Write a study-related message..."
+        rows={2}
+        onKeyDown={(e) => {
+          if (
+            e.key === "Enter" &&
+            !e.shiftKey
+          ) {
+            e.preventDefault()
+            handleSendMessage()
+          }
+        }}
+      />
+
+      <button
+        type="button"
+        className="chat-send-button"
+        onClick={handleSendMessage}
+        disabled={
+          chatSending ||
+          !chatText.trim()
+        }
+      >
+        {chatSending
+          ? "Sending..."
+          : "Send"}
+      </button>
+    </>
+
+  )}
+
+</div>
         </section>
 
       </main>
@@ -4207,6 +4718,7 @@ if (page === "chat") {
     return (
 
       <div className="dashboard-page">
+        {renderToast()}
 
         <header className="dashboard-header">
 
@@ -4894,6 +5406,7 @@ if (page === "chat") {
     return (
 
       <div className="dashboard-page">
+        {renderToast()}
 
         <header className="dashboard-header">
 
@@ -5370,6 +5883,7 @@ if (page === "chat") {
 
     return (
       <div className="dashboard-page">
+        {renderToast()}
         <header className="dashboard-header">
           <div className="dashboard-brand">
 
@@ -5798,6 +6312,7 @@ if (page === "chat") {
     return (
 
       <div className="dashboard-page">
+        {renderToast()}
 
         <header className="dashboard-header">
 
@@ -6486,6 +7001,7 @@ if (page === "chat") {
     return (
 
       <div className="dashboard-page">
+        {renderToast()}
 
         <header className="dashboard-header">
 
@@ -7008,10 +7524,9 @@ if (page === "chat") {
 
       </main>
 
+
     </div>
-
-  )
-
+  ) 
 }
 
 export default App
