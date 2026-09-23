@@ -164,6 +164,7 @@ const [chatSending, setChatSending] = useState(false)
 const [isStudentBlocked, setIsStudentBlocked] = useState(false)
 const [chatMenuOpen, setChatMenuOpen] = useState(false)
 const [blockLoading, setBlockLoading] = useState(false)
+const [blockedStudentIds, setBlockedStudentIds] = useState([])
  // ================= PROFILE =================
 
 const [isEditingProfile, setIsEditingProfile] = useState(false)
@@ -1474,6 +1475,75 @@ useEffect(() => {
     setConnectionsLoading(false)
   }
 }
+const getStudentConnectionStatus = (studentId) => {
+  const connection = connections.find((item) => {
+    const requesterId =
+      item.requester?._id || item.requester
+
+    const recipientId =
+      item.recipient?._id || item.recipient
+
+    return (
+      String(requesterId) === String(studentId) ||
+      String(recipientId) === String(studentId)
+    )
+  })
+
+  if (!connection) {
+    return "none"
+  }
+
+  if (connection.status === "accepted") {
+    return "accepted"
+  }
+
+  if (connection.status === "pending") {
+    return "pending"
+  }
+
+  return "none"
+}
+const fetchBlockedStudents = async (studentList = students) => {
+  if (!studentList || studentList.length === 0) {
+    setBlockedStudentIds([])
+    return
+  }
+
+  try {
+    const token = localStorage.getItem(
+      "collegeConnectToken"
+    )
+
+    const blockedIds = []
+
+    for (const student of studentList) {
+      const studentId =
+        student._id || student.id
+
+      const response = await fetch(
+        `${API_URL}/api/blocks/${studentId}`,
+        {
+          headers: {
+            Authorization: `Bearer ${token}`,
+          },
+        }
+      )
+
+      const data = await response.json()
+
+      if (response.ok && data.isBlocked) {
+        blockedIds.push(String(studentId))
+      }
+    }
+
+    setBlockedStudentIds(blockedIds)
+  } catch (error) {
+    console.error(
+      "Blocked students fetch error:",
+      error
+    )
+  }
+}
 // ======================================================
 // ACCEPT CONNECTION REQUEST
 // ======================================================
@@ -1680,7 +1750,7 @@ const fetchBlockStatus = async () => {
       return
     }
 
-    setIsStudentBlocked(Boolean(data.blocked))
+    setIsStudentBlocked(Boolean(data.isBlocked))
   } catch (error) {
     console.error("Check block status error:", error)
   }
@@ -2064,10 +2134,10 @@ const response = await fetch(
 )
 
         const data = await response.json()
-
-        if (response.ok) {
-          setStudents(data.students)
-        }
+if (response.ok) {
+  setStudents(data.students)
+  await fetchBlockedStudents(data.students)
+}
 
       } catch (error) {
 
@@ -3188,18 +3258,48 @@ if (page === "forgot") {
 
                     </div>
 
-                    <button
-                      className="student-connect-button"
-                      type="button"
-                      onClick={() =>
-                        handleConnectStudent(student._id)
-                      }
-                      disabled={connectionSaving[student._id]}
-                    >
-                      {connectionSaving[student._id]
-                        ? "Connecting..."
-                        : "Connect"}
-                    </button>
+                    {(() => {
+  const connectionStatus =
+    getStudentConnectionStatus(student._id)
+    const isBlocked =
+  blockedStudentIds.includes(
+    String(student._id)
+  )
+
+  if (connectionStatus === "accepted" && !isBlocked) {
+    return (
+      <button
+        className="student-connect-button"
+        type="button"
+        onClick={() => {
+          setActiveChatConnection({
+            otherUser: student,
+          })
+          setChatMessages([])
+          setChatText("")
+          setPage("chat")
+        }}
+      >
+        💬 Chat
+      </button>
+    )
+  }
+
+  return (
+    <button
+      className="student-connect-button"
+      type="button"
+      onClick={() =>
+        handleConnectStudent(student._id)
+      }
+      disabled={connectionSaving[student._id]}
+    >
+      {connectionSaving[student._id]
+        ? "Connecting..."
+        : "Connect"}
+    </button>
+  )
+})()}
 
                   </div>
 

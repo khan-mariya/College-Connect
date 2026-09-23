@@ -1899,7 +1899,7 @@ app.get(
 const PORT = 5000;
 
 mongoose
-  .connect(process.env.MONGODB_URI)
+  .connect(process.env.MONGO_URI)
   .then(() => {
 
     console.log(
@@ -2390,15 +2390,21 @@ app.get(
   authMiddleware,
   async (req, res) => {
     try {
-      const blocker = req.user._id;
-      const { studentId } =
-        req.params;
+      const currentUser = req.user._id;
+      const { studentId } = req.params;
 
-      const block =
-        await Block.findOne({
-          blocker,
-          blocked: studentId,
-        });
+      const block = await Block.findOne({
+        $or: [
+          {
+            blocker: currentUser,
+            blocked: studentId,
+          },
+          {
+            blocker: studentId,
+            blocked: currentUser,
+          },
+        ],
+      });
 
       res.json({
         isBlocked: !!block,
@@ -2416,7 +2422,6 @@ app.get(
     }
   }
 );
-
 
 // =====================================================
 // UNBLOCK STUDENT
