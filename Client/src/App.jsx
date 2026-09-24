@@ -2013,14 +2013,22 @@ const isAcceptedConnection =
             }}
           >
             <div className="notification-item-icon">
-              {notification.type === "connection"
-                ? "👥"
-                : notification.type === "project"
-                ? "💻"
-                : notification.type === "study-material"
-                ? "📚"
-                : "💬"}
-            </div>
+  {notification.type === "connection"
+    ? "👥"
+    : notification.type === "connection-accepted"
+    ? "✅"
+    : notification.type === "connection-rejected"
+    ? "❌"
+    : notification.type === "project"
+    ? "💻"
+    : notification.type === "study-material"
+    ? "📚"
+    : notification.type === "query"
+    ? "❓"
+    : notification.type === "chat"
+    ? "💬"
+    : "🔔"}
+</div>
 
             <div className="notification-item-content">
               <p>{notification.message}</p>
