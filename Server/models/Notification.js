@@ -13,7 +13,9 @@ const notificationSchema = new mongoose.Schema(
       enum: [
         "answer",
         "connection",
+        "connection-accepted",
         "project",
+        "query",
         "study-material",
       ],
       required: true,
