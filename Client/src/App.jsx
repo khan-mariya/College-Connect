@@ -1098,15 +1098,7 @@ const fetchNotifications = async () => {
     const data = await response.json()
 
     if (response.ok) {
-      const notificationList = data.notifications || []
-
-      setNotifications(notificationList)
-
-      setUnreadNotificationCount(
-        notificationList.filter(
-          (notification) => !notification.isRead
-        ).length
-      )
+      setNotifications(data.notifications || [])
     }
   } catch (error) {
     console.error("Notifications fetch error:", error)
@@ -1335,7 +1327,6 @@ useEffect(() => {
       if (fileInput) fileInput.value = ""
 
       showToast("Study material shared successfully!", "success")
-      await fetchUnreadNotificationCount()
     } catch (error) {
       console.error("Study material upload error:", error)
       showToast("Unable to connect to server.", "error")
@@ -2024,12 +2015,8 @@ const isAcceptedConnection =
             <div className="notification-item-icon">
               {notification.type === "connection"
                 ? "👥"
-                : notification.type === "connection-accepted"
-                ? "✅"
                 : notification.type === "project"
                 ? "💻"
-                : notification.type === "query"
-                ? "❓"
                 : notification.type === "study-material"
                 ? "📚"
                 : "💬"}
