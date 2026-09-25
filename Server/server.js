@@ -2116,6 +2116,29 @@ app.post(
 
      if (existingConnection) {
   if (existingConnection.status === "pending") {
+    const existingNotification =
+      await Notification.findOne({
+        user: recipient,
+        type: "connection",
+        relatedId: existingConnection._id,
+        isRead: false,
+      });
+
+    if (!existingNotification) {
+      const requesterUser =
+        await User.findById(requester).select("name");
+
+      if (requesterUser) {
+        await Notification.create({
+          user: recipient,
+          type: "connection",
+          message: `${requesterUser.name} sent you a connection request.`,
+          relatedId: existingConnection._id,
+          isRead: false,
+        });
+      }
+    }
+
     return res.status(400).json({
       message: "Connection request already exists",
     });
