@@ -1404,7 +1404,7 @@ app.post(
                 student._id,
 
               type:
-                "answer",
+               "query",
 
               message:
                 `${user.name} posted a new query.`,
@@ -1708,7 +1708,7 @@ app.post(
                 student._id,
 
               type:
-                "answer",
+               "study-material",
 
               message:
                 `📚 ${user.name} shared new ${category}`,
@@ -2114,24 +2114,70 @@ app.post(
           ],
         });
 
-      if (existingConnection) {
-        return res.status(400).json({
-          message: "Connection already exists",
-        });
-      }
+     if (existingConnection) {
+  if (existingConnection.status === "pending") {
+    return res.status(400).json({
+      message: "Connection request already exists",
+    });
+  }
 
-      const connection =
-        await Connection.create({
-          requester,
-          recipient,
-          status: "pending",
-        });
+  if (existingConnection.status === "accepted") {
+    return res.status(400).json({
+      message: "Connection already exists",
+    });
+  }
 
-      res.status(201).json({
-        message: "Connection request sent",
-        connection,
+  if (existingConnection.status === "rejected") {
+    existingConnection.requester = requester;
+    existingConnection.recipient = recipient;
+    existingConnection.status = "pending";
+
+    await existingConnection.save();
+
+    const requesterUser =
+      await User.findById(requester).select("name");
+
+    if (requesterUser) {
+      await Notification.create({
+        user: recipient,
+        type: "connection",
+        message: `${requesterUser.name} sent you a connection request.`,
+        relatedId: existingConnection._id,
+        isRead: false,
       });
+    }
 
+    return res.status(200).json({
+      message: "Connection request sent",
+      connection: existingConnection,
+    });
+  }
+}
+     const connection =
+  await Connection.create({
+    requester,
+    recipient,
+    status: "pending",
+  });
+
+// Create notification for recipient
+const requesterUser =
+  await User.findById(requester).select("name");
+
+if (requesterUser) {
+  await Notification.create({
+    user: recipient,
+    type: "connection",
+    message: `${requesterUser.name} sent you a connection request.`,
+    relatedId: connection._id,
+    isRead: false,
+  });
+}
+
+res.status(201).json({
+  message: "Connection request sent",
+  connection,
+});
     } catch (error) {
       console.error(
         "Connection request error:",
@@ -2234,6 +2280,17 @@ app.put(
       connection.status = "accepted";
 
       await connection.save();
+      const recipientUser = await User.findById(connection.recipient).select("name");
+
+if (recipientUser) {
+  await Notification.create({
+    user: connection.requester,
+    type: "connection-accepted",
+    message: `${recipientUser.name} accepted your connection request.`,
+    relatedId: connection._id,
+    isRead: false,
+  });
+}
 
       res.json({
         message: "Connection accepted",
@@ -2289,6 +2346,17 @@ app.put(
       connection.status = "rejected";
 
       await connection.save();
+      const recipientUser = await User.findById(connection.recipient).select("name");
+
+if (recipientUser) {
+  await Notification.create({
+    user: connection.requester,
+    type: "connection-rejected",
+    message: `${recipientUser.name} rejected your connection request.`,
+    relatedId: connection._id,
+    isRead: false,
+  });
+}
 
       res.json({
         message: "Connection rejected",
@@ -2624,6 +2692,17 @@ app.post(
           receiver,
           text: text.trim(),
         });
+        const senderUser = await User.findById(sender).select("name");
+
+if (senderUser) {
+  await Notification.create({
+    user: receiver,
+    type: "chat",
+    message: `💬 ${senderUser.name} sent you a message.`,
+    relatedId: message._id,
+    isRead: false,
+  });
+}
 
       const populatedMessage =
         await Message.findById(

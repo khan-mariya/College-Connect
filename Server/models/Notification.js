@@ -11,11 +11,15 @@ const notificationSchema = new mongoose.Schema(
     type: {
       type: String,
       enum: [
-        "answer",
-        "connection",
-        "project",
-        "study-material",
-      ],
+  "answer",
+  "connection",
+  "connection-accepted",
+  "connection-rejected",
+  "project",
+  "query",
+  "study-material",
+  "chat",
+],
       required: true,
     },
 
