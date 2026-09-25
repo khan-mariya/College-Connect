@@ -1136,13 +1136,14 @@ const fetchUnreadNotificationCount = async () => {
 
 const handleNotificationClick = async () => {
   const willOpen = !showNotifications
-
   setShowNotifications(willOpen)
 
   if (willOpen) {
+    await fetchConnections()
     await fetchNotifications()
   }
 }
+
 
 
 const handleMarkNotificationRead = async (notificationId) => {
@@ -7638,5 +7639,4 @@ if (page === "chat") {
     </div>
   ) 
 }
-
 export default App
