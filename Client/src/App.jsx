@@ -1,5 +1,5 @@
 import './App.css'
-import { useEffect, useState, useRef } from 'react'
+import { useEffect, useState, useRef } from "react"
 import collegeConnectLogo from "./assets/college-connect-logo.png";
 const API_URL = import.meta.env.VITE_API_URL || "http://localhost:5000";
 
@@ -64,6 +64,7 @@ const renderToast = () => {
 const [notifications, setNotifications] = useState([])
 const [unreadNotificationCount, setUnreadNotificationCount] = useState(0)
 const [showNotifications, setShowNotifications] = useState(false)
+const notificationRef = useRef(null)
 const [notificationsLoading, setNotificationsLoading] = useState(false)
 const [connections, setConnections] = useState([])
 const [showLogoutConfirm, setShowLogoutConfirm] = useState(false)
@@ -1143,7 +1144,29 @@ const handleNotificationClick = async () => {
     await fetchNotifications()
   }
 }
+useEffect(() => {
+  const handleOutsideNotificationClick = (event) => {
+    if (
+      showNotifications &&
+      notificationRef.current &&
+      !notificationRef.current.contains(event.target)
+    ) {
+      setShowNotifications(false)
+    }
+  }
 
+  document.addEventListener(
+    "mousedown",
+    handleOutsideNotificationClick
+  )
+
+  return () => {
+    document.removeEventListener(
+      "mousedown",
+      handleOutsideNotificationClick
+    )
+  }
+}, [showNotifications])
 
 
 const handleMarkNotificationRead = async (notificationId) => {
@@ -1469,7 +1492,11 @@ useEffect(() => {
       return
     }
 
-    setConnections(data.connections || [])
+    setConnections(
+  Array.isArray(data)
+    ? data
+    : data.connections || []
+)
   } catch (error) {
     console.error("Connections fetch error:", error)
   } finally {
@@ -1971,141 +1998,154 @@ const renderNotifications = () => (
       </div>
     ) : (
       notifications.map((notification) => {
-        const connection =
-  notification.relatedId
+  const connection = notification.relatedId
     ? connections.find(
         (item) =>
-          String(item._id) ===
-          String(notification.relatedId)
+          String(item._id) === String(notification.relatedId)
       )
     : null
 
-const isIncomingPendingConnection =
-  notification.type === "connection" &&
-  connection?.status === "pending" &&
-  String(
-    connection.recipient?._id ||
-    connection.recipient
-  ) ===
+  const isIncomingPendingConnection =
+    notification.type === "connection" &&
+    connection &&
+    connection.status === "pending" &&
     String(
+      connection.recipient?._id ||
+      connection.recipient
+    ) === String(
       currentUser?._id ||
       currentUser?.id
     )
 
-const isAcceptedConnection =
-  connection?.status === "accepted" &&
-  (
-    notification.type === "connection" ||
-    notification.type === "connection-accepted"
-  )
+  const isAcceptedConnection =
+    connection?.status === "accepted" &&
+    (
+      notification.type === "connection" ||
+      notification.type === "connection-accepted"
+    )
 
-       
+  return (
+    <div
+      key={notification._id}
+      className={`notification-item ${
+        notification.isRead ? "read" : "unread"
+      }`}
+      onClick={() => {
+        if (!notification.isRead) {
+          handleMarkNotificationRead(notification._id)
+        }
+      }}
+    >
 
-        return (
-          <div
-            key={notification._id}
-            className={`notification-item ${
-              notification.isRead ? "read" : "unread"
-            }`}
+      <div className="notification-item-icon">
+        {notification.type === "connection"
+          ? "👥"
+          : notification.type === "connection-accepted"
+          ? "✅"
+          : notification.type === "connection-rejected"
+          ? "❌"
+          : notification.type === "project"
+          ? "💻"
+          : notification.type === "study-material"
+          ? "📚"
+          : notification.type === "query"
+          ? "❓"
+          : notification.type === "chat"
+          ? "💬"
+          : "🔔"}
+      </div>
+
+      <div className="notification-item-content">
+        <p>{notification.message}</p>
+
+        <span>
+          {formatAnswerTime(notification.createdAt)}
+        </span>
+      </div>
+
+      {!notification.isRead && (
+        <span className="notification-unread-dot"></span>
+      )}
+
+      {/* ACCEPT / REJECT */}
+      {isIncomingPendingConnection && (
+        <div
+          className="notification-connection-actions"
+          onClick={(e) => e.stopPropagation()}
+        >
+
+          <button
+            type="button"
+            className="notification-accept-button"
+            onClick={() =>
+              handleAcceptConnection(notification.relatedId)
+            }
+          >
+            Accept
+          </button>
+
+          <button
+            type="button"
+            className="notification-reject-button"
+            onClick={() =>
+              handleRejectConnection(notification.relatedId)
+            }
+          >
+            Reject
+          </button>
+
+        </div>
+      )}
+
+      {/* CHAT */}
+      {isAcceptedConnection && connection && (
+        <div
+          className="notification-connection-actions"
+          onClick={(e) => e.stopPropagation()}
+        >
+
+          <button
+            type="button"
+            className="notification-chat-button"
             onClick={() => {
-              if (!notification.isRead) {
-                handleMarkNotificationRead(notification._id)
+              const userId =
+                currentUser?._id ||
+                currentUser?.id
+
+              const otherUser =
+                String(
+                  connection.requester?._id ||
+                  connection.requester
+                ) === String(userId)
+                  ? connection.recipient
+                  : connection.requester
+
+              if (!otherUser) {
+                showToast(
+                  "Student information not found.",
+                  "warning"
+                )
+                return
               }
+
+              setActiveChatConnection({
+                ...connection,
+                otherUser,
+              })
+
+              setShowNotifications(false)
+              setPage("chat")
             }}
           >
-            <div className="notification-item-icon">
-  {notification.type === "connection"
-    ? "👥"
-    : notification.type === "connection-accepted"
-    ? "✅"
-    : notification.type === "connection-rejected"
-    ? "❌"
-    : notification.type === "project"
-    ? "💻"
-    : notification.type === "study-material"
-    ? "📚"
-    : notification.type === "query"
-    ? "❓"
-    : notification.type === "chat"
-    ? "💬"
-    : "🔔"}
-</div>
+            💬 Chat
+          </button>
 
-            <div className="notification-item-content">
-              <p>{notification.message}</p>
-              <span>
-                {formatAnswerTime(notification.createdAt)}
-              </span>
-            </div>
+        </div>
+      )}
 
-            {!notification.isRead && (
-              <span className="notification-unread-dot"></span>
-            )}
-
-            {isIncomingPendingConnection && (
-              <div className="notification-connection-actions">
-
-                <button
-                  type="button"
-                  className="notification-accept-button"
-                  onClick={() =>
-                    handleAcceptConnection(
-                      notification.relatedId
-                    )
-                  }
-                >
-                  Accept
-                </button>
-
-                <button
-                  type="button"
-                  className="notification-reject-button"
-                  onClick={() =>
-                    handleRejectConnection(
-                      notification.relatedId
-                    )
-                  }
-                >
-                  Reject
-                </button>
-{isAcceptedConnection && (
-  <button
-    type="button"
-    className="notification-chat-button"
-    onClick={() => {
-      const userId =
-        currentUser?._id ||
-        currentUser?.id
-
-      const otherUser =
-        String(
-          connection.requester?._id ||
-          connection.requester
-        ) === String(userId)
-          ? connection.recipient
-          : connection.requester
-
-      if (!otherUser) {
-        showToast("Student information not found.", "warning")
-        return
-      }
-
-      setActiveChatConnection({
-        ...connection,
-        otherUser,
-      })
-
-      setPage("chat")
-    }}
-  >
-    💬 Chat
-  </button>
-)}
-              </div>
-            )}
-          </div>
-        )
-      })
+    </div>
+  )
+})
     )}
   </>
 )
@@ -2298,7 +2338,7 @@ useEffect(() => {
   }
 
   // This fetch function updates connection state.
-  // eslint-disable-next-line react-hooks/set-state-in-effect
+
   fetchConnections()
   // eslint-disable-next-line react-hooks/exhaustive-deps
 }, [currentUser?._id, currentUser?.id])
@@ -7160,7 +7200,10 @@ if (page === "chat") {
 
           <div className="dashboard-header-right">
 
-            <div className="notification-wrapper">
+            <div
+  className="notification-wrapper"
+  ref={notificationRef}
+>
               <button
                 className="notification-button"
                 onClick={handleNotificationClick}

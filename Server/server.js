@@ -2252,7 +2252,9 @@ app.get(
           )
           .sort({ createdAt: -1 });
 
-      res.json(connections);
+      res.status(200).json({
+  connections,
+});
 
     } catch (error) {
       console.error(
