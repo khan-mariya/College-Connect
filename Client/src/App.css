@@ -8758,6 +8758,7 @@ html, body {
   font-size: 13px;
 }
 
+
 .chat-input-area {
   display: flex;
   gap: 10px;
@@ -10015,6 +10016,7 @@ html, body {
     overflow-wrap: anywhere;
     word-break: break-word;
   }
+  
 
   .chat-input-area {
     width: 100%;
