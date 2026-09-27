@@ -2941,10 +2941,65 @@ app.post(
           receiver,
           text: text.trim(),
         });
-        // =====================================================
+        
+      // ==========================================
+      // CHAT NOTIFICATION
+      // ==========================================
+
+      const senderUser =
+        await User.findById(sender)
+          .select("name");
+
+      if (senderUser) {
+        await Notification.create({
+          user: receiver,
+          type: "chat",
+          message: `💬 ${senderUser.name} sent you a message.`,
+          relatedId: message._id,
+          isRead: false,
+        });
+      }
+
+      // ==========================================
+      // POPULATE MESSAGE
+      // ==========================================
+
+      const populatedMessage =
+        await Message.findById(
+          message._id
+        )
+          .populate(
+            "sender",
+            "name"
+          )
+          .populate(
+            "receiver",
+            "name"
+          );
+
+      // ==========================================
+      // SUCCESS RESPONSE
+      // ==========================================
+
+      res.status(201).json({
+        message: populatedMessage,
+      });
+
+    } catch (error) {
+      console.error(
+        "Send message error:",
+        error
+      );
+
+      res.status(500).json({
+        message: "Server error",
+      });
+    }
+  }
+);
+// =====================================================
 // UNSEND PRIVATE CHAT MESSAGE
 // =====================================================
-
 app.delete(
   "/api/messages/:id",
   authMiddleware,
@@ -2999,62 +3054,6 @@ app.delete(
       res.status(500).json({
         message:
           "Unable to unsend message.",
-      });
-    }
-  }
-);
-
-      // ==========================================
-      // CHAT NOTIFICATION
-      // ==========================================
-
-      const senderUser =
-        await User.findById(sender)
-          .select("name");
-
-      if (senderUser) {
-        await Notification.create({
-          user: receiver,
-          type: "chat",
-          message: `💬 ${senderUser.name} sent you a message.`,
-          relatedId: message._id,
-          isRead: false,
-        });
-      }
-
-      // ==========================================
-      // POPULATE MESSAGE
-      // ==========================================
-
-      const populatedMessage =
-        await Message.findById(
-          message._id
-        )
-          .populate(
-            "sender",
-            "name"
-          )
-          .populate(
-            "receiver",
-            "name"
-          );
-
-      // ==========================================
-      // SUCCESS RESPONSE
-      // ==========================================
-
-      res.status(201).json({
-        message: populatedMessage,
-      });
-
-    } catch (error) {
-      console.error(
-        "Send message error:",
-        error
-      );
-
-      res.status(500).json({
-        message: "Server error",
       });
     }
   }
