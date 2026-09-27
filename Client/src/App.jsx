@@ -3228,52 +3228,7 @@ if (page === "forgot") {
           </nav>
 
           <div className="dashboard-header-right">
-
-            <div
-  className="notification-wrapper"
-  ref={notificationRef}
->
-              <button
-                className="notification-button"
-                onClick={handleNotificationClick}
-                type="button"
-              >
-                🔔
-                {unreadNotificationCount > 0 && (
-                  <span className="notification-dot">
-                    {unreadNotificationCount > 99 ? "99+" : unreadNotificationCount}
-                  </span>
-                )}
-              </button>
-
-              {showNotifications && (
-                <div className="notification-panel">
-                  <div className="notification-panel-header">
-                    <div>
-                      <strong>Notifications</strong>
-                      {unreadNotificationCount > 0 && (
-                        <span>{unreadNotificationCount} unread</span>
-                      )}
-                    </div>
-
-                    {unreadNotificationCount > 0 && (
-                      <button
-                        type="button"
-                        onClick={handleMarkAllNotificationsRead}
-                        className="mark-all-button"
-                      >
-                        Mark all read
-                      </button>
-                    )}
-                  </div>
-
-                  <div className="notification-list">
-  {renderNotifications()}
-</div>
-                </div>
-              )}
-            </div>
-
+          
           </div>
 
         </header>
@@ -3491,30 +3446,6 @@ if (page === "student-profile" && viewingProfile) {
         </nav>
 
         <div className="dashboard-header-right">
-
-         <div
-  className="notification-wrapper"
-  ref={notificationRef}
->
-
-            <button
-              className="notification-button"
-              onClick={handleNotificationClick}
-              type="button"
-            >
-              🔔
-
-              {unreadNotificationCount > 0 && (
-                <span className="notification-dot">
-                  {unreadNotificationCount > 99
-                    ? "99+"
-                    : unreadNotificationCount}
-                </span>
-              )}
-
-            </button>
-
-          </div>
 
         </div>
 
@@ -3776,51 +3707,6 @@ if (page === "student-profile" && viewingProfile) {
           </nav>
 
           <div className="dashboard-header-right">
-
-            <div
-  className="notification-wrapper"
-  ref={notificationRef}
->
-              <button
-                className="notification-button"
-                onClick={handleNotificationClick}
-                type="button"
-              >
-                🔔
-                {unreadNotificationCount > 0 && (
-                  <span className="notification-dot">
-                    {unreadNotificationCount > 99 ? "99+" : unreadNotificationCount}
-                  </span>
-                )}
-              </button>
-
-              {showNotifications && (
-                <div className="notification-panel">
-                  <div className="notification-panel-header">
-                    <div>
-                      <strong>Notifications</strong>
-                      {unreadNotificationCount > 0 && (
-                        <span>{unreadNotificationCount} unread</span>
-                      )}
-                    </div>
-
-                    {unreadNotificationCount > 0 && (
-                      <button
-                        type="button"
-                        onClick={handleMarkAllNotificationsRead}
-                        className="mark-all-button"
-                      >
-                        Mark all read
-                      </button>
-                    )}
-                  </div>
-
-                  <div className="notification-list">
-  {renderNotifications()}
-</div>
-                </div>
-              )}
-            </div>
 
           </div>
 
@@ -4652,66 +4538,6 @@ if (page === "chat") {
 
         <div className="dashboard-header-right">
 
-          <div
-  className="notification-wrapper"
-  ref={notificationRef}
->
-
-            <button
-              className="notification-button"
-              onClick={handleNotificationClick}
-              type="button"
-            >
-              🔔
-
-              {unreadNotificationCount > 0 && (
-                <span className="notification-dot">
-                  {unreadNotificationCount > 99
-                    ? "99+"
-                    : unreadNotificationCount}
-                </span>
-              )}
-            </button>
-
-            {showNotifications && (
-              <div className="notification-panel">
-
-                <div className="notification-panel-header">
-
-                  <div>
-                    <strong>
-                      Notifications
-                    </strong>
-
-                    {unreadNotificationCount > 0 && (
-                      <span>
-                        {unreadNotificationCount} unread
-                      </span>
-                    )}
-                  </div>
-
-                  {unreadNotificationCount > 0 && (
-                    <button
-                      type="button"
-                      onClick={
-                        handleMarkAllNotificationsRead
-                      }
-                      className="mark-all-button"
-                    >
-                      Mark all read
-                    </button>
-                  )}
-
-                </div>
-
-                <div className="notification-list">
-                  {renderNotifications()}
-                </div>
-
-              </div>
-            )}
-
-          </div>
 
         </div>
 
@@ -5084,52 +4910,7 @@ if (page === "chat") {
           </nav>
 
           <div className="dashboard-header-right">
-
-            <div
-  className="notification-wrapper"
-  ref={notificationRef}
->
-              <button
-                className="notification-button"
-                onClick={handleNotificationClick}
-                type="button"
-              >
-                🔔
-                {unreadNotificationCount > 0 && (
-                  <span className="notification-dot">
-                    {unreadNotificationCount > 99 ? "99+" : unreadNotificationCount}
-                  </span>
-                )}
-              </button>
-
-              {showNotifications && (
-                <div className="notification-panel">
-                  <div className="notification-panel-header">
-                    <div>
-                      <strong>Notifications</strong>
-                      {unreadNotificationCount > 0 && (
-                        <span>{unreadNotificationCount} unread</span>
-                      )}
-                    </div>
-
-                    {unreadNotificationCount > 0 && (
-                      <button
-                        type="button"
-                        onClick={handleMarkAllNotificationsRead}
-                        className="mark-all-button"
-                      >
-                        Mark all read
-                      </button>
-                    )}
-                  </div>
-
-                  <div className="notification-list">
-  {renderNotifications()}
-</div>
-                </div>
-              )}
-            </div>
-
+  
           </div>
 
         </header>
@@ -5776,51 +5557,7 @@ if (page === "chat") {
 
           <div className="dashboard-header-right">
 
-            <div
-  className="notification-wrapper"
-  ref={notificationRef}
->
-              <button
-                className="notification-button"
-                onClick={handleNotificationClick}
-                type="button"
-              >
-                🔔
-                {unreadNotificationCount > 0 && (
-                  <span className="notification-dot">
-                    {unreadNotificationCount > 99 ? "99+" : unreadNotificationCount}
-                  </span>
-                )}
-              </button>
-
-              {showNotifications && (
-                <div className="notification-panel">
-                  <div className="notification-panel-header">
-                    <div>
-                      <strong>Notifications</strong>
-                      {unreadNotificationCount > 0 && (
-                        <span>{unreadNotificationCount} unread</span>
-                      )}
-                    </div>
-
-                    {unreadNotificationCount > 0 && (
-                      <button
-                        type="button"
-                        onClick={handleMarkAllNotificationsRead}
-                        className="mark-all-button"
-                      >
-                        Mark all read
-                      </button>
-                    )}
-                  </div>
-
-                  <div className="notification-list">
-  {renderNotifications()}
-</div>
-                </div>
-              )}
-            </div>
-
+          
           </div>
 
         </header>
@@ -6245,50 +5982,7 @@ if (page === "chat") {
           </nav>
 
           <div className="dashboard-header-right">
-           <div
-  className="notification-wrapper"
-  ref={notificationRef}
->
-              <button
-                className="notification-button"
-                onClick={handleNotificationClick}
-                type="button"
-              >
-                🔔
-                {unreadNotificationCount > 0 && (
-                  <span className="notification-dot">
-                    {unreadNotificationCount > 99 ? "99+" : unreadNotificationCount}
-                  </span>
-                )}
-              </button>
-
-              {showNotifications && (
-                <div className="notification-panel">
-                  <div className="notification-panel-header">
-                    <div>
-                      <strong>Notifications</strong>
-                      {unreadNotificationCount > 0 && (
-                        <span>{unreadNotificationCount} unread</span>
-                      )}
-                    </div>
-
-                    {unreadNotificationCount > 0 && (
-                      <button
-                        type="button"
-                        onClick={handleMarkAllNotificationsRead}
-                        className="mark-all-button"
-                      >
-                        Mark all read
-                      </button>
-                    )}
-                  </div>
-
-                  <div className="notification-list">
-  {renderNotifications()}
-</div>
-                </div>
-              )}
-            </div>
+           
           </div>
         </header>
 
@@ -6683,54 +6377,8 @@ if (page === "chat") {
           </nav>
 
 
-          <div className="dashboard-header-right">
-
-            <div
-  className="notification-wrapper"
-  ref={notificationRef}
->
-              <button
-                className="notification-button"
-                onClick={handleNotificationClick}
-                type="button"
-              >
-                🔔
-                {unreadNotificationCount > 0 && (
-                  <span className="notification-dot">
-                    {unreadNotificationCount > 99 ? "99+" : unreadNotificationCount}
-                  </span>
-                )}
-              </button>
-
-              {showNotifications && (
-                <div className="notification-panel">
-                  <div className="notification-panel-header">
-                    <div>
-                      <strong>Notifications</strong>
-                      {unreadNotificationCount > 0 && (
-                        <span>{unreadNotificationCount} unread</span>
-                      )}
-                    </div>
-
-                    {unreadNotificationCount > 0 && (
-                      <button
-                        type="button"
-                        onClick={handleMarkAllNotificationsRead}
-                        className="mark-all-button"
-                      >
-                        Mark all read
-                      </button>
-                    )}
-                  </div>
-
-                  <div className="notification-list">
-  {renderNotifications()}
+         <div className="dashboard-header-right">
 </div>
-                </div>
-              )}
-            </div>
-
-          </div>
 
         </header>
 
