@@ -8676,15 +8676,45 @@ html, body {
 }
 
 .chat-message-row.mine .chat-message-bubble {
-  background: #dcfce7;
-  border-color: #bbf7d0;
+  background: linear-gradient(
+    135deg,
+    #DCFCE7 0%,
+    #E8F5E9 78%,
+    #FEF3C7 100%
+  );
+  border-color: #86EFAC;
+  border-bottom-right-radius: 5px;
+}
+
+.chat-message-row.mine .chat-message-bubble {
+  background: linear-gradient(
+    135deg,
+    #DCFCE7 0%,
+    #E9D5FF 100%
+  );
+  border-color: #BBF7D0;
+  border-bottom-right-radius: 5px;
+}
+
+.chat-message-row.mine .chat-message-bubble {
+  background: linear-gradient(
+    135deg,
+    #DCFCE7 0%,
+    #E9D5FF 100%
+  );
+  border-color: #BBF7D0;
   border-bottom-right-radius: 5px;
 }
 
 .chat-message-row.theirs .chat-message-bubble {
+  background: linear-gradient(
+    135deg,
+    #E0F2FE 0%,
+    #FEF3C7 100%
+  );
+  border-color: #BAE6FD;
   border-bottom-left-radius: 5px;
 }
-
 .chat-message-bubble p {
   margin: 0;
   color: #1e293b;
@@ -10274,6 +10304,41 @@ html, body {
 }
 
 .chat-unblock-button:disabled {
+  opacity: 0.6;
+  cursor: not-allowed;
+}
+/* =====================================================
+   CHAT UNSEND MENU
+   ===================================================== */
+
+.chat-unsend-menu {
+  position: fixed;
+  z-index: 1000;
+  transform: translate(-50%, -100%);
+  background: #ffffff;
+  border: 1px solid #e2e8f0;
+  border-radius: 10px;
+  padding: 5px;
+  box-shadow: 0 8px 24px rgba(15, 23, 42, 0.16);
+}
+
+.chat-unsend-menu button {
+  border: none;
+  background: transparent;
+  color: #dc2626;
+  font-size: 14px;
+  font-weight: 600;
+  padding: 9px 14px;
+  border-radius: 7px;
+  cursor: pointer;
+  white-space: nowrap;
+}
+
+.chat-unsend-menu button:hover {
+  background: #fef2f2;
+}
+
+.chat-unsend-menu button:disabled {
   opacity: 0.6;
   cursor: not-allowed;
 }

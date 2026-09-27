@@ -162,6 +162,13 @@ const [chatMessages, setChatMessages] = useState([])
 const [chatText, setChatText] = useState("")
 const [chatLoading, setChatLoading] = useState(false)
 const [chatSending, setChatSending] = useState(false)
+const [messageMenuId, setMessageMenuId] = useState(null)
+const [messageMenuPosition, setMessageMenuPosition] = useState({
+  x: 0,
+  y: 0,
+})
+const [unsendingMessageId, setUnsendingMessageId] = useState(null)
+const longPressTimerRef = useRef(null)
 const [isStudentBlocked, setIsStudentBlocked] = useState(false)
 const [chatMenuOpen, setChatMenuOpen] = useState(false)
 const [blockLoading, setBlockLoading] = useState(false)
@@ -2149,6 +2156,64 @@ const renderNotifications = () => (
     )}
   </>
 )
+const handleUnsendMessage = async (messageId) => {
+  if (!messageId) return
+
+  try {
+    setUnsendingMessageId(messageId)
+
+    const response = await fetch(
+      `${API_URL}/api/messages/${messageId}`,
+      {
+        method: "DELETE",
+        headers: {
+          Authorization: `Bearer ${localStorage.getItem(
+            "collegeConnectToken"
+          )}`,
+        },
+      }
+    )
+
+    const data = await response.json()
+
+    if (!response.ok) {
+      showToast(
+        data.message ||
+          "Unable to unsend message.",
+        "error"
+      )
+      return
+    }
+
+    // Remove immediately from current chat
+    setChatMessages((previousMessages) =>
+      previousMessages.filter(
+        (message) =>
+          String(message._id) !==
+          String(messageId)
+      )
+    )
+
+    setMessageMenuId(null)
+
+    showToast(
+      "Message unsent.",
+      "success"
+    )
+  } catch (error) {
+    console.error(
+      "Unsend message error:",
+      error
+    )
+
+    showToast(
+      "Unable to connect to server.",
+      "error"
+    )
+  } finally {
+    setUnsendingMessageId(null)
+  }
+}
 
   // =========================================================
   // FETCH STUDENTS
@@ -4748,44 +4813,136 @@ if (page === "chat") {
 
               chatMessages.map((message) => {
 
-                const currentUserId =
-                  currentUser?._id ||
-                  currentUser?.id
+  const currentUserId =
+    currentUser?._id ||
+    currentUser?.id
 
-                const isMine =
-                  String(
-                    message.sender?._id ||
-                    message.sender
-                  ) ===
-                  String(currentUserId)
+  const isMine =
+    String(
+      message.sender?._id ||
+      message.sender
+    ) ===
+    String(currentUserId)
 
-                return (
-                  <div
-                    key={message._id}
-                    className={`chat-message-row ${
-                      isMine
-                        ? "mine"
-                        : "theirs"
-                    }`}
-                  >
+  const startLongPress = (event) => {
+    if (!isMine) return
 
-                    <div className="chat-message-bubble">
+    if (longPressTimerRef.current) {
+      clearTimeout(
+        longPressTimerRef.current
+      )
+    }
 
-                      <p>
-                        {message.text}
-                      </p>
+    longPressTimerRef.current =
+      setTimeout(() => {
+        setMessageMenuId(message._id)
 
-                      <span>
-                        {formatAnswerTime(
-                          message.createdAt
-                        )}
-                      </span>
+        const touch =
+          event.touches?.[0]
 
-                    </div>
+        if (touch) {
+          setMessageMenuPosition({
+            x: touch.clientX,
+            y: touch.clientY,
+          })
+        }
+      }, 600)
+  }
 
-                  </div>
-                )
-              })
+  const cancelLongPress = () => {
+    if (longPressTimerRef.current) {
+      clearTimeout(
+        longPressTimerRef.current
+      )
+
+      longPressTimerRef.current = null
+    }
+  }
+
+  const handleMessageRightClick = (event) => {
+    if (!isMine) return
+
+    event.preventDefault()
+
+    setMessageMenuId(message._id)
+
+    setMessageMenuPosition({
+      x: event.clientX,
+      y: event.clientY,
+    })
+  }
+
+  return (
+    <div
+      key={message._id}
+      className={`chat-message-row ${
+        isMine
+          ? "mine"
+          : "theirs"
+      }`}
+    >
+
+      <div
+        className="chat-message-bubble"
+        onContextMenu={
+          handleMessageRightClick
+        }
+        onTouchStart={
+          startLongPress
+        }
+        onTouchEnd={
+          cancelLongPress
+        }
+        onTouchMove={
+          cancelLongPress
+        }
+        onTouchCancel={
+          cancelLongPress
+        }
+      >
+
+        <p>
+          {message.text}
+        </p>
+
+        <span>
+          {formatAnswerTime(
+            message.createdAt
+          )}
+        </span>
+
+      </div>
+      {messageMenuId && (
+  <div
+    className="chat-unsend-menu"
+    style={{
+      left: `${messageMenuPosition.x}px`,
+      top: `${messageMenuPosition.y}px`,
+    }}
+  >
+    <button
+      type="button"
+      onClick={() =>
+        handleUnsendMessage(
+          messageMenuId
+        )
+      }
+      disabled={
+        unsendingMessageId ===
+        messageMenuId
+      }
+    >
+      {unsendingMessageId ===
+      messageMenuId
+        ? "Unsending..."
+        : "Unsend"}
+    </button>
+  </div>
+)}
+
+    </div>
+  )
+})
 
             )}
 

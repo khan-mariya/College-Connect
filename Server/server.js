@@ -2624,7 +2624,7 @@ app.get(
 );
 
 
-// =====================================================
+/// =====================================================
 // SEND PRIVATE CHAT MESSAGE
 // =====================================================
 
@@ -2633,8 +2633,11 @@ app.post(
   authMiddleware,
   async (req, res) => {
     try {
-      const { receiver, text } =
-        req.body;
+      const { receiver, text } = req.body;
+
+      // ==========================================
+      // BASIC VALIDATION
+      // ==========================================
 
       if (
         !receiver ||
@@ -2649,6 +2652,10 @@ app.post(
 
       const sender = req.user._id;
 
+      // ==========================================
+      // PREVENT SELF MESSAGE
+      // ==========================================
+
       if (
         String(sender) ===
         String(receiver)
@@ -2656,6 +2663,219 @@ app.post(
         return res.status(400).json({
           message:
             "You cannot message yourself",
+        });
+      }
+
+      // ==========================================
+      // EDUCATION-ONLY CHAT KEYWORD CHECK
+      // ==========================================
+
+      const messageText = text
+        .trim()
+        .toLowerCase();
+
+      // Words/topics related to education,
+      // study, projects, technology and career.
+      const educationKeywords = [
+        // Study / academics
+        "study",
+        "studies",
+        "student",
+        "college",
+        "university",
+        "school",
+        "class",
+        "lecture",
+        "subject",
+        "semester",
+        "exam",
+        "exams",
+        "test",
+        "assignment",
+        "homework",
+        "question",
+        "doubt",
+        "syllabus",
+        "marks",
+        "grade",
+        "notes",
+        "paper",
+        "question paper",
+        "revision",
+        "learning",
+        "learn",
+        "education",
+        "academic",
+
+        // Projects
+        "project",
+        "projects",
+        "project idea",
+        "final year project",
+        "mini project",
+        "major project",
+        "presentation",
+        "ppt",
+        "documentation",
+        "report",
+
+        // Coding / Technology
+        "coding",
+        "code",
+        "programming",
+        "program",
+        "developer",
+        "development",
+        "software",
+        "website",
+        "web development",
+        "frontend",
+        "backend",
+        "javascript",
+        "typescript",
+        "react",
+        "node",
+        "nodejs",
+        "python",
+        "java",
+        "c++",
+        "c programming",
+        "html",
+        "css",
+        "sql",
+        "database",
+        "mongodb",
+        "mysql",
+        "api",
+        "debug",
+        "debugging",
+        "error",
+        "technology",
+        "tech",
+        "computer",
+        "computer science",
+        "artificial intelligence",
+        "ai",
+        "machine learning",
+        "ml",
+        "data science",
+
+        // Career / Internship
+        "internship",
+        "intern",
+        "career",
+        "job",
+        "placement",
+        "placements",
+        "resume",
+        "cv",
+        "interview",
+        "skills",
+        "skill",
+        "portfolio",
+        "linkedin",
+        "experience",
+
+        // Academic collaboration / resources
+        "resource",
+        "resources",
+        "study material",
+        "material",
+        "reference",
+        "book",
+        "books",
+        "research",
+        "research paper",
+        "article",
+        "seminar",
+        "workshop",
+        "team",
+        "teamwork",
+        "collaboration",
+        "academic",
+        "technical",
+        "technical work",
+
+        // UG / PG
+        "btech",
+        "b.tech",
+        "mtech",
+        "m.tech",
+        "be",
+        "b.e",
+        "me",
+        "m.e",
+        "ug",
+        "pg",
+        "engineering",
+        "degree",
+        "branch",
+        "department"
+      ];
+
+      // Personal / social topics that should not
+      // be allowed in College Connect chat.
+      const blockedKeywords = [
+        "instagram",
+        "insta",
+        "facebook",
+        "snapchat",
+        "telegram",
+        "whatsapp",
+        "whatsapp number",
+        "phone number",
+        "mobile number",
+        "contact number",
+        "dating",
+        "date",
+        "girlfriend",
+        "boyfriend",
+        "crush",
+        "flirt",
+        "flirting",
+        "love",
+        "romantic",
+        "romance",
+        "relationship",
+        "kiss",
+        "meet me",
+        "meetup",
+        "hangout",
+        "party",
+        "personal",
+        "home address",
+        "address",
+        "where do you live",
+        "where are you from",
+        "photo",
+        "selfie"
+      ];
+
+      const containsBlockedKeyword =
+        blockedKeywords.some((keyword) =>
+          messageText.includes(keyword)
+        );
+
+      // If message contains clearly personal/social
+      // content, reject it immediately.
+      if (containsBlockedKeyword) {
+        return res.status(400).json({
+          message:
+            "Please keep chat limited to education, study, projects, technology, internships, career, skills, learning, notes, resources and academic collaboration.",
+        });
+      }
+
+      const containsEducationKeyword =
+        educationKeywords.some((keyword) =>
+          messageText.includes(keyword)
+        );
+
+      // Messages without any educational context
+      // are not allowed.
+      if (!containsEducationKeyword) {
+        return res.status(400).json({
+          message:
+            "This chat is only for education, study, projects, technology, internships, career, skills, learning, notes, resources and academic collaboration.",
         });
       }
 
@@ -2711,23 +2931,100 @@ app.post(
         });
       }
 
+      // ==========================================
+      // SAVE MESSAGE
+      // ==========================================
+
       const message =
         await Message.create({
           sender,
           receiver,
           text: text.trim(),
         });
-        const senderUser = await User.findById(sender).select("name");
+        // =====================================================
+// UNSEND PRIVATE CHAT MESSAGE
+// =====================================================
 
-if (senderUser) {
-  await Notification.create({
-    user: receiver,
-    type: "chat",
-    message: `💬 ${senderUser.name} sent you a message.`,
-    relatedId: message._id,
-    isRead: false,
-  });
-}
+app.delete(
+  "/api/messages/:id",
+  authMiddleware,
+  async (req, res) => {
+    try {
+      const messageId = req.params.id;
+      const userId = req.user._id;
+
+      const message =
+        await Message.findById(messageId);
+
+      if (!message) {
+        return res.status(404).json({
+          message: "Message not found.",
+        });
+      }
+
+      // Only the person who sent the message
+      // can unsend it.
+      if (
+        String(message.sender) !==
+        String(userId)
+      ) {
+        return res.status(403).json({
+          message:
+            "You can only unsend your own messages.",
+        });
+      }
+
+      // Delete the message from database.
+      // This removes it for BOTH students.
+      await Message.findByIdAndDelete(
+        messageId
+      );
+
+      // Remove related chat notification too,
+      // if one exists.
+      await Notification.deleteMany({
+        relatedId: messageId,
+        type: "chat",
+      });
+
+      res.status(200).json({
+        message: "Message unsent successfully.",
+      });
+    } catch (error) {
+      console.error(
+        "Unsend message error:",
+        error
+      );
+
+      res.status(500).json({
+        message:
+          "Unable to unsend message.",
+      });
+    }
+  }
+);
+
+      // ==========================================
+      // CHAT NOTIFICATION
+      // ==========================================
+
+      const senderUser =
+        await User.findById(sender)
+          .select("name");
+
+      if (senderUser) {
+        await Notification.create({
+          user: receiver,
+          type: "chat",
+          message: `💬 ${senderUser.name} sent you a message.`,
+          relatedId: message._id,
+          isRead: false,
+        });
+      }
+
+      // ==========================================
+      // POPULATE MESSAGE
+      // ==========================================
 
       const populatedMessage =
         await Message.findById(
@@ -2741,6 +3038,10 @@ if (senderUser) {
             "receiver",
             "name"
           );
+
+      // ==========================================
+      // SUCCESS RESPONSE
+      // ==========================================
 
       res.status(201).json({
         message: populatedMessage,
