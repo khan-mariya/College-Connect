@@ -3229,7 +3229,10 @@ if (page === "forgot") {
 
           <div className="dashboard-header-right">
 
-            <div className="notification-wrapper">
+            <div
+  className="notification-wrapper"
+  ref={notificationRef}
+>
               <button
                 className="notification-button"
                 onClick={handleNotificationClick}
@@ -3489,7 +3492,10 @@ if (page === "student-profile" && viewingProfile) {
 
         <div className="dashboard-header-right">
 
-          <div className="notification-wrapper">
+         <div
+  className="notification-wrapper"
+  ref={notificationRef}
+>
 
             <button
               className="notification-button"
@@ -3771,7 +3777,10 @@ if (page === "student-profile" && viewingProfile) {
 
           <div className="dashboard-header-right">
 
-            <div className="notification-wrapper">
+            <div
+  className="notification-wrapper"
+  ref={notificationRef}
+>
               <button
                 className="notification-button"
                 onClick={handleNotificationClick}
@@ -4643,7 +4652,10 @@ if (page === "chat") {
 
         <div className="dashboard-header-right">
 
-          <div className="notification-wrapper">
+          <div
+  className="notification-wrapper"
+  ref={notificationRef}
+>
 
             <button
               className="notification-button"
@@ -5073,7 +5085,10 @@ if (page === "chat") {
 
           <div className="dashboard-header-right">
 
-            <div className="notification-wrapper">
+            <div
+  className="notification-wrapper"
+  ref={notificationRef}
+>
               <button
                 className="notification-button"
                 onClick={handleNotificationClick}
@@ -5761,7 +5776,10 @@ if (page === "chat") {
 
           <div className="dashboard-header-right">
 
-            <div className="notification-wrapper">
+            <div
+  className="notification-wrapper"
+  ref={notificationRef}
+>
               <button
                 className="notification-button"
                 onClick={handleNotificationClick}
@@ -6227,7 +6245,10 @@ if (page === "chat") {
           </nav>
 
           <div className="dashboard-header-right">
-            <div className="notification-wrapper">
+           <div
+  className="notification-wrapper"
+  ref={notificationRef}
+>
               <button
                 className="notification-button"
                 onClick={handleNotificationClick}
@@ -6664,7 +6685,10 @@ if (page === "chat") {
 
           <div className="dashboard-header-right">
 
-            <div className="notification-wrapper">
+            <div
+  className="notification-wrapper"
+  ref={notificationRef}
+>
               <button
                 className="notification-button"
                 onClick={handleNotificationClick}
