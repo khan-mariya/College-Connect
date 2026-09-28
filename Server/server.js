@@ -6,6 +6,7 @@ const jwt = require("jsonwebtoken");
 const crypto = require("crypto");
 const authMiddleware = require("./middleware/authMiddleware");
 const nodemailer = require("nodemailer");
+const webpush = require("web-push");
 const multer = require("multer");
 const path = require("path");
 const fs = require("fs");
@@ -22,11 +23,112 @@ const StudyMaterial = require("./models/StudyMaterial");
 const Connection = require("./models/Connection");
 const Block = require("./models/Block");
 const Notification = require("./models/Notification");
+const PushSubscription = require("./models/PushSubscription");
+const sendPushNotification = async (userId, payload) => {
+  try {
+    const subscriptions =
+      await PushSubscription.find({
+        user: userId,
+      })
+
+    for (const subscription of subscriptions) {
+      try {
+        await webpush.sendNotification(
+          {
+            endpoint: subscription.endpoint,
+            keys: subscription.keys,
+          },
+          JSON.stringify(payload)
+        )
+      } catch (error) {
+        if (
+          error.statusCode === 404 ||
+          error.statusCode === 410
+        ) {
+          await PushSubscription.findByIdAndDelete(
+            subscription._id
+          )
+        } else {
+          console.error(
+            "Push notification error:",
+            error
+          )
+        }
+      }
+    }
+  } catch (error) {
+    console.error(
+      "Send push notification error:",
+      error
+    )
+  }
+}
 
 const app = express();
+webpush.setVapidDetails(
+  process.env.VAPID_EMAIL,
+  process.env.VAPID_PUBLIC_KEY,
+  process.env.VAPID_PRIVATE_KEY
+);
 
 app.use(cors());
 app.use(express.json());
+
+app.post(
+  "/api/push/subscribe",
+  authMiddleware,
+  async (req, res) => {
+    try {
+      const subscription = req.body;
+
+      if (
+        !subscription ||
+        !subscription.endpoint ||
+        !subscription.keys ||
+        !subscription.keys.p256dh ||
+        !subscription.keys.auth
+      ) {
+        return res.status(400).json({
+          message: "Invalid push subscription.",
+        });
+      }
+
+      const userId = req.user._id;
+
+      await PushSubscription.findOneAndUpdate(
+        {
+          endpoint: subscription.endpoint,
+        },
+        {
+          user: userId,
+          endpoint: subscription.endpoint,
+          keys: {
+            p256dh: subscription.keys.p256dh,
+            auth: subscription.keys.auth,
+          },
+        },
+        {
+          upsert: true,
+          new: true,
+          setDefaultsOnInsert: true,
+        }
+      );
+
+      res.status(201).json({
+        message: "Push notifications enabled successfully.",
+      });
+    } catch (error) {
+      console.error(
+        "Push subscription error:",
+        error
+      );
+
+      res.status(500).json({
+        message: "Unable to save push subscription.",
+      });
+    }
+  }
+);
 
 
 // ======================================================
@@ -1067,6 +1169,23 @@ app.post(
           )
         );
       }
+            // Browser push notification
+      if (
+        matchingStudents.length > 0
+      ) {
+        for (
+          const student of matchingStudents
+        ) {
+          await sendPushNotification(
+            student._id,
+            {
+              title: "College Connect",
+              body: `💻 ${user.name} shared a new project`,
+              url: "/",
+            }
+          );
+        }
+      }
 
 
       // -----------------------------------------------
@@ -1419,6 +1538,23 @@ app.post(
           )
         );
       }
+            // Browser push notification
+      if (
+        matchingStudents.length > 0
+      ) {
+        for (
+          const student of matchingStudents
+        ) {
+          await sendPushNotification(
+            student._id,
+            {
+              title: "College Connect",
+              body: `${user.name} posted a new query.`,
+              url: "/",
+            }
+          );
+        }
+      }
 
 
       res.status(201).json({
@@ -1722,6 +1858,23 @@ app.post(
             })
           )
         );
+      }
+            if (
+        matchingStudents.length > 0
+      ) {
+
+        for (
+          const student of matchingStudents
+        ) {
+          await sendPushNotification(
+            student._id,
+            {
+              title: "College Connect",
+              body: `📚 ${user.name} shared new ${category}`,
+              url: "/",
+            }
+          );
+        }
       }
 
 
@@ -2136,6 +2289,15 @@ app.post(
           relatedId: existingConnection._id,
           isRead: false,
         });
+        await sendPushNotification(
+  recipient,
+  {
+    title: "College Connect",
+    body: `${requesterUser.name} sent you a connection request.`,
+    url: "/",
+  }
+);
+
       }
     }
 
@@ -2168,6 +2330,14 @@ app.post(
         relatedId: existingConnection._id,
         isRead: false,
       });
+      await sendPushNotification(
+  recipient,
+  {
+    title: "College Connect",
+    body: `${requesterUser.name} sent you a connection request.`,
+    url: "/",
+  }
+);
     }
 
     return res.status(200).json({
@@ -2195,6 +2365,14 @@ if (requesterUser) {
     relatedId: connection._id,
     isRead: false,
   });
+  await sendPushNotification(
+  recipient,
+  {
+    title: "College Connect",
+    body: `${requesterUser.name} sent you a connection request.`,
+    url: "/",
+  }
+);
 }
 
 res.status(201).json({
@@ -2315,7 +2493,16 @@ if (recipientUser) {
     relatedId: connection._id,
     isRead: false,
   });
+  await sendPushNotification(
+  connection.requester,
+  {
+    title: "College Connect",
+    body: `${recipientUser.name} accepted your connection request.`,
+    url: "/",
+  }
+);
 }
+
 
       res.json({
         message: "Connection accepted",
@@ -2381,6 +2568,14 @@ if (recipientUser) {
     relatedId: connection._id,
     isRead: false,
   });
+  await sendPushNotification(
+  connection.requester,
+  {
+    title: "College Connect",
+    body: `${recipientUser.name} rejected your connection request.`,
+    url: "/",
+  }
+);
 }
 
       res.json({
@@ -2958,6 +3153,14 @@ app.post(
           relatedId: message._id,
           isRead: false,
         });
+        await sendPushNotification(
+  receiver,
+  {
+    title: "College Connect",
+    body: `💬 ${senderUser.name} sent you a message.`,
+    url: "/",
+  }
+);
       }
 
       // ==========================================
