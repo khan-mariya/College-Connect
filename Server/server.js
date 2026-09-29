@@ -23,6 +23,45 @@ const StudyMaterial = require("./models/StudyMaterial");
 const Connection = require("./models/Connection");
 const Block = require("./models/Block");
 const Notification = require("./models/Notification");
+const NotificationSetting = require("./models/NotificationSetting");
+const canSendNotification = async (
+  userId,
+  settingName = null
+) => {
+  try {
+    const settings =
+      await NotificationSetting.findOne({
+        user: userId,
+      }).lean();
+
+    // Settings record nahi hai to default notifications ON hain
+    if (!settings) {
+      return true;
+    }
+
+    // Mute All sab notifications ko stop karega
+    if (settings.muteAll) {
+      return false;
+    }
+
+    // Agar specific setting nahi di gayi
+    // to sirf Mute All check hoga
+    if (!settingName) {
+      return true;
+    }
+
+    // Sirf explicitly false hone par notification stop hoga
+    return settings[settingName] !== false;
+  } catch (error) {
+    console.error(
+      "Notification setting check error:",
+      error
+    );
+
+    // Error ki situation mein notification ko completely break nahi karna
+    return true;
+  }
+};
 const PushSubscription = require("./models/PushSubscription");
 const sendPushNotification = async (userId, payload) => {
   try {
@@ -712,6 +751,306 @@ app.get(
   }
 );
 
+// ======================================================
+// CHANGE EMAIL
+// ======================================================
+
+app.put(
+  "/api/settings/email",
+  authMiddleware,
+  async (req, res) => {
+    try {
+      const userId = req.user._id;
+
+      const {
+        currentPassword,
+        newEmail,
+      } = req.body;
+
+      if (!currentPassword || !newEmail) {
+        return res.status(400).json({
+          message:
+            "Current password and new email are required.",
+        });
+      }
+
+      const cleanEmail =
+        newEmail.toLowerCase().trim();
+
+      if (!cleanEmail) {
+        return res.status(400).json({
+          message: "Please enter a valid email.",
+        });
+      }
+
+      const user =
+        await User.findById(userId);
+
+      if (!user) {
+        return res.status(404).json({
+          message: "User not found.",
+        });
+      }
+
+      const isPasswordCorrect =
+        await bcrypt.compare(
+          currentPassword,
+          user.password
+        );
+
+      if (!isPasswordCorrect) {
+        return res.status(401).json({
+          message:
+            "Current password is incorrect.",
+        });
+      }
+
+      const existingUser =
+        await User.findOne({
+          email: cleanEmail,
+          _id: { $ne: userId },
+        });
+
+      if (existingUser) {
+        return res.status(409).json({
+          message:
+            "This email is already registered.",
+        });
+      }
+
+      user.email = cleanEmail;
+
+      await user.save();
+
+      res.status(200).json({
+        message:
+          "Email changed successfully.",
+
+        user: {
+          id: user._id,
+          name: user.name,
+          email: user.email,
+          level: user.level,
+          degree: user.degree,
+          year: user.year,
+          college: user.college,
+          skills: user.skills,
+          city: user.city,
+          state: user.state,
+          profilePhoto: user.profilePhoto,
+        },
+      });
+    } catch (error) {
+      console.error(
+        "Change email error:",
+        error.message
+      );
+
+      res.status(500).json({
+        message:
+          "Unable to change email.",
+      });
+    }
+  }
+);
+
+
+// ======================================================
+// CHANGE PASSWORD
+// ======================================================
+
+app.put(
+  "/api/settings/password",
+  authMiddleware,
+  async (req, res) => {
+    try {
+      const userId = req.user._id;
+
+      const {
+        currentPassword,
+        newPassword,
+      } = req.body;
+
+      if (!currentPassword || !newPassword) {
+        return res.status(400).json({
+          message:
+            "Current password and new password are required.",
+        });
+      }
+
+      if (newPassword.length < 6) {
+        return res.status(400).json({
+          message:
+            "New password must be at least 6 characters.",
+        });
+      }
+
+      const user =
+        await User.findById(userId);
+
+      if (!user) {
+        return res.status(404).json({
+          message: "User not found.",
+        });
+      }
+
+      const isPasswordCorrect =
+        await bcrypt.compare(
+          currentPassword,
+          user.password
+        );
+
+      if (!isPasswordCorrect) {
+        return res.status(401).json({
+          message:
+            "Current password is incorrect.",
+        });
+      }
+
+      const isSamePassword =
+        await bcrypt.compare(
+          newPassword,
+          user.password
+        );
+
+      if (isSamePassword) {
+        return res.status(400).json({
+          message:
+            "New password must be different from your current password.",
+        });
+      }
+
+      user.password =
+        await bcrypt.hash(
+          newPassword,
+          10
+        );
+
+      await user.save();
+
+      res.status(200).json({
+        message:
+          "Password changed successfully.",
+      });
+    } catch (error) {
+      console.error(
+        "Change password error:",
+        error.message
+      );
+
+      res.status(500).json({
+        message:
+          "Unable to change password.",
+      });
+    }
+  }
+);
+
+// ======================================================
+// NOTIFICATION SETTINGS
+// ======================================================
+
+app.get(
+  "/api/settings/notifications",
+  authMiddleware,
+  async (req, res) => {
+    try {
+      const settings =
+        await NotificationSetting.findOne({
+          user: req.user._id,
+        });
+
+      if (!settings) {
+        const newSettings =
+          await NotificationSetting.create({
+            user: req.user._id,
+          });
+
+        return res.status(200).json({
+          settings: newSettings,
+        });
+      }
+
+      res.status(200).json({
+        settings,
+      });
+    } catch (error) {
+      console.error(
+        "Get notification settings error:",
+        error
+      );
+
+      res.status(500).json({
+        message:
+          "Unable to load notification settings.",
+      });
+    }
+  }
+);
+
+
+app.put(
+  "/api/settings/notifications",
+  authMiddleware,
+  async (req, res) => {
+    try {
+      const allowedFields = [
+  "connectRequests",
+  "requestAccepted",
+  "studyMaterial",
+  "chatMessages",
+  "queries",
+  "projectUpdates",
+  "importantWebsiteUpdates",
+  "muteAll",
+];
+
+      const updateData = {};
+
+      allowedFields.forEach((field) => {
+        if (
+          typeof req.body[field] ===
+          "boolean"
+        ) {
+          updateData[field] =
+            req.body[field];
+        }
+      });
+
+      const settings =
+        await NotificationSetting.findOneAndUpdate(
+          {
+            user: req.user._id,
+          },
+          {
+            $set: updateData,
+          },
+          {
+            new: true,
+            upsert: true,
+            setDefaultsOnInsert: true,
+          }
+        );
+
+      res.status(200).json({
+        message:
+          "Notification settings updated successfully.",
+        settings,
+      });
+    } catch (error) {
+      console.error(
+        "Update notification settings error:",
+        error
+      );
+
+      res.status(500).json({
+        message:
+          "Unable to update notification settings.",
+      });
+    }
+  }
+);
+
 
 // ======================================================
 // UPDATE PROFILE
@@ -1126,66 +1465,49 @@ app.post(
       // -----------------------------------------------
 
       const matchingStudents =
-        await User.find({
+  await User.find({
+    degree: user.degree,
+    year: user.year,
+    _id: { $ne: user._id },
+  }).select("_id");
 
-          degree:
-            user.degree,
+// 🔔 WEBSITE NOTIFICATION — ALWAYS
+if (matchingStudents.length > 0) {
+  await Notification.insertMany(
+    matchingStudents.map(
+      (student) => ({
+        user: student._id,
+        type: "project",
+        message: `💻 ${user.name} shared a new project`,
+        relatedId: newProject._id,
+        isRead: false,
+      })
+    )
+  );
+}
 
-          year:
-            user.year,
+// 🖥️ BROWSER PUSH — SETTINGS KE ACCORDING
+if (matchingStudents.length > 0) {
+  for (const student of matchingStudents) {
 
-          _id: {
-            $ne: user._id,
-          },
+    const canSendBrowserPush =
+      await canSendNotification(
+        student._id,
+        "projectUpdates"
+      );
 
-        }).select("_id");
-
-
-      if (
-        matchingStudents.length > 0
-      ) {
-
-        await Notification.insertMany(
-
-          matchingStudents.map(
-            (student) => ({
-
-              user:
-                student._id,
-
-              type:
-                "project",
-
-              message:
-                `💻 ${user.name} shared a new project`,
-
-              relatedId:
-                newProject._id,
-
-              isRead:
-                false,
-
-            })
-          )
-        );
-      }
-            // Browser push notification
-      if (
-        matchingStudents.length > 0
-      ) {
-        for (
-          const student of matchingStudents
-        ) {
-          await sendPushNotification(
-            student._id,
-            {
-              title: "College Connect",
-              body: `💻 ${user.name} shared a new project`,
-              url: "/",
-            }
-          );
+    if (canSendBrowserPush) {
+      await sendPushNotification(
+        student._id,
+        {
+          title: "College Connect",
+          body: `💻 ${user.name} shared a new project`,
+          url: "/",
         }
-      }
+      );
+    }
+  }
+}
 
 
       // -----------------------------------------------
@@ -1499,62 +1821,49 @@ app.post(
       // ==================================================
 
       const matchingStudents =
-        await User.find({
-          degree: user.degree,
-          year: user.year,
+  await User.find({
+    degree: user.degree,
+    year: user.year,
+    _id: { $ne: user._id },
+  }).select("_id");
 
-          _id: {
-            $ne: user._id,
-          },
+// 🔔 WEBSITE NOTIFICATION — ALWAYS
+if (matchingStudents.length > 0) {
+  await Notification.insertMany(
+    matchingStudents.map(
+      (student) => ({
+        user: student._id,
+        type: "query",
+        message: `${user.name} posted a new query.`,
+        relatedId: newQuery._id,
+        isRead: false,
+      })
+    )
+  );
+}
 
-        }).select("_id");
+// 🖥️ BROWSER PUSH — SETTINGS KE ACCORDING
+if (matchingStudents.length > 0) {
+  for (const student of matchingStudents) {
 
+    const canSendBrowserPush =
+      await canSendNotification(
+        student._id,
+        "queries"
+      );
 
-      if (
-        matchingStudents.length > 0
-      ) {
-
-        await Notification.insertMany(
-
-          matchingStudents.map(
-            (student) => ({
-
-              user:
-                student._id,
-
-              type:
-               "query",
-
-              message:
-                `${user.name} posted a new query.`,
-
-              relatedId:
-                newQuery._id,
-
-              isRead:
-                false,
-
-            })
-          )
-        );
-      }
-            // Browser push notification
-      if (
-        matchingStudents.length > 0
-      ) {
-        for (
-          const student of matchingStudents
-        ) {
-          await sendPushNotification(
-            student._id,
-            {
-              title: "College Connect",
-              body: `${user.name} posted a new query.`,
-              url: "/",
-            }
-          );
+    if (canSendBrowserPush) {
+      await sendPushNotification(
+        student._id,
+        {
+          title: "College Connect",
+          body: `${user.name} posted a new query.`,
+          url: "/",
         }
-      }
+      );
+    }
+  }
+}
 
 
       res.status(201).json({
@@ -1816,67 +2125,49 @@ app.post(
       // -----------------------------------------------
 
       const matchingStudents =
-        await User.find({
+  await User.find({
+    degree: user.degree,
+    year: user.year,
+    _id: { $ne: user._id },
+  }).select("_id");
 
-          degree:
-            user.degree,
+// 🔔 WEBSITE NOTIFICATION — ALWAYS
+if (matchingStudents.length > 0) {
+  await Notification.insertMany(
+    matchingStudents.map(
+      (student) => ({
+        user: student._id,
+        type: "study-material",
+        message: `📚 ${user.name} shared new ${category}`,
+        relatedId: material._id,
+        isRead: false,
+      })
+    )
+  );
+}
 
-          year:
-            user.year,
+// 🖥️ BROWSER PUSH — SETTINGS KE ACCORDING
+if (matchingStudents.length > 0) {
+  for (const student of matchingStudents) {
 
-          _id: {
-            $ne: user._id,
-          },
+    const canSendBrowserPush =
+      await canSendNotification(
+        student._id,
+        "studyMaterial"
+      );
 
-        }).select("_id");
-
-
-      if (
-        matchingStudents.length > 0
-      ) {
-
-        await Notification.insertMany(
-
-          matchingStudents.map(
-            (student) => ({
-
-              user:
-                student._id,
-
-              type:
-               "study-material",
-
-              message:
-                `📚 ${user.name} shared new ${category}`,
-
-              relatedId:
-                material._id,
-
-              isRead:
-                false,
-
-            })
-          )
-        );
-      }
-            if (
-        matchingStudents.length > 0
-      ) {
-
-        for (
-          const student of matchingStudents
-        ) {
-          await sendPushNotification(
-            student._id,
-            {
-              title: "College Connect",
-              body: `📚 ${user.name} shared new ${category}`,
-              url: "/",
-            }
-          );
+    if (canSendBrowserPush) {
+      await sendPushNotification(
+        student._id,
+        {
+          title: "College Connect",
+          body: `📚 ${user.name} shared new ${category}`,
+          url: "/",
         }
-      }
-
+      );
+    }
+  }
+}
 
       res.status(201).json({
 
@@ -2278,28 +2569,39 @@ app.post(
       });
 
     if (!existingNotification) {
-      const requesterUser =
-        await User.findById(requester).select("name");
+  const requesterUser =
+    await User.findById(requester).select("name");
 
-      if (requesterUser) {
-        await Notification.create({
-          user: recipient,
-          type: "connection",
-          message: `${requesterUser.name} sent you a connection request.`,
-          relatedId: existingConnection._id,
-          isRead: false,
-        });
-        await sendPushNotification(
-  recipient,
-  {
-    title: "College Connect",
-    body: `${requesterUser.name} sent you a connection request.`,
-    url: "/",
-  }
-);
+  if (requesterUser) {
 
-      }
+    // 🔔 WEBSITE NOTIFICATION — ALWAYS
+    await Notification.create({
+      user: recipient,
+      type: "connection",
+      message: `${requesterUser.name} sent you a connection request.`,
+      relatedId: existingConnection._id,
+      isRead: false,
+    });
+
+    // 🖥️ BROWSER PUSH — SETTINGS KE ACCORDING
+    const canSendBrowserPush =
+      await canSendNotification(
+        recipient,
+        "connectRequests"
+      );
+
+    if (canSendBrowserPush) {
+      await sendPushNotification(
+        recipient,
+        {
+          title: "College Connect",
+          body: `${requesterUser.name} sent you a connection request.`,
+          url: "/",
+        }
+      );
     }
+  }
+}
 
     return res.status(400).json({
       message: "Connection request already exists",
@@ -2322,23 +2624,35 @@ app.post(
     const requesterUser =
       await User.findById(requester).select("name");
 
-    if (requesterUser) {
-      await Notification.create({
-        user: recipient,
-        type: "connection",
-        message: `${requesterUser.name} sent you a connection request.`,
-        relatedId: existingConnection._id,
-        isRead: false,
-      });
-      await sendPushNotification(
-  recipient,
-  {
-    title: "College Connect",
-    body: `${requesterUser.name} sent you a connection request.`,
-    url: "/",
+   if (requesterUser) {
+
+  // 🔔 WEBSITE NOTIFICATION — ALWAYS
+  await Notification.create({
+    user: recipient,
+    type: "connection",
+    message: `${requesterUser.name} sent you a connection request.`,
+    relatedId: existingConnection._id,
+    isRead: false,
+  });
+
+  // 🖥️ BROWSER PUSH — SETTINGS KE ACCORDING
+  const canSendBrowserPush =
+    await canSendNotification(
+      recipient,
+      "connectRequests"
+    );
+
+  if (canSendBrowserPush) {
+    await sendPushNotification(
+      recipient,
+      {
+        title: "College Connect",
+        body: `${requesterUser.name} sent you a connection request.`,
+        url: "/",
+      }
+    );
   }
-);
-    }
+}
 
     return res.status(200).json({
       message: "Connection request sent",
@@ -2358,6 +2672,8 @@ const requesterUser =
   await User.findById(requester).select("name");
 
 if (requesterUser) {
+
+  // 🔔 WEBSITE NOTIFICATION — ALWAYS
   await Notification.create({
     user: recipient,
     type: "connection",
@@ -2365,14 +2681,24 @@ if (requesterUser) {
     relatedId: connection._id,
     isRead: false,
   });
-  await sendPushNotification(
-  recipient,
-  {
-    title: "College Connect",
-    body: `${requesterUser.name} sent you a connection request.`,
-    url: "/",
+
+  // 🖥️ BROWSER PUSH — SETTINGS KE ACCORDING
+  const canSendBrowserPush =
+    await canSendNotification(
+      recipient,
+      "connectRequests"
+    );
+
+  if (canSendBrowserPush) {
+    await sendPushNotification(
+      recipient,
+      {
+        title: "College Connect",
+        body: `${requesterUser.name} sent you a connection request.`,
+        url: "/",
+      }
+    );
   }
-);
 }
 
 res.status(201).json({
@@ -2486,6 +2812,8 @@ app.put(
       const recipientUser = await User.findById(connection.recipient).select("name");
 
 if (recipientUser) {
+
+  // 🔔 WEBSITE NOTIFICATION — ALWAYS
   await Notification.create({
     user: connection.requester,
     type: "connection-accepted",
@@ -2493,14 +2821,24 @@ if (recipientUser) {
     relatedId: connection._id,
     isRead: false,
   });
-  await sendPushNotification(
-  connection.requester,
-  {
-    title: "College Connect",
-    body: `${recipientUser.name} accepted your connection request.`,
-    url: "/",
+
+  // 🖥️ BROWSER PUSH — REQUEST ACCEPTED SETTING KE ACCORDING
+  const canSendBrowserPush =
+    await canSendNotification(
+      connection.requester,
+      "requestAccepted"
+    );
+
+  if (canSendBrowserPush) {
+    await sendPushNotification(
+      connection.requester,
+      {
+        title: "College Connect",
+        body: `${recipientUser.name} accepted your connection request.`,
+        url: "/",
+      }
+    );
   }
-);
 }
 
 
@@ -2561,6 +2899,8 @@ app.put(
       const recipientUser = await User.findById(connection.recipient).select("name");
 
 if (recipientUser) {
+
+  // 🔔 WEBSITE NOTIFICATION — ALWAYS
   await Notification.create({
     user: connection.requester,
     type: "connection-rejected",
@@ -2568,16 +2908,25 @@ if (recipientUser) {
     relatedId: connection._id,
     isRead: false,
   });
-  await sendPushNotification(
-  connection.requester,
-  {
-    title: "College Connect",
-    body: `${recipientUser.name} rejected your connection request.`,
-    url: "/",
-  }
-);
-}
 
+  // 🖥️ BROWSER PUSH — REQUEST ACCEPTED SETTING KE ACCORDING
+  const canSendBrowserPush =
+    await canSendNotification(
+      connection.requester,
+      "requestAccepted"
+    );
+
+  if (canSendBrowserPush) {
+    await sendPushNotification(
+      connection.requester,
+      {
+        title: "College Connect",
+        body: `${recipientUser.name} rejected your connection request.`,
+        url: "/",
+      }
+    );
+  }
+}
       res.json({
         message: "Connection rejected",
         connection,
@@ -3145,23 +3494,35 @@ app.post(
         await User.findById(sender)
           .select("name");
 
-      if (senderUser) {
-        await Notification.create({
-          user: receiver,
-          type: "chat",
-          message: `💬 ${senderUser.name} sent you a message.`,
-          relatedId: message._id,
-          isRead: false,
-        });
-        await sendPushNotification(
-  receiver,
-  {
-    title: "College Connect",
-    body: `💬 ${senderUser.name} sent you a message.`,
-    url: "/",
-  }
-);
+     if (senderUser) {
+
+  // 🔔 WEBSITE NOTIFICATION — ALWAYS
+  await Notification.create({
+    user: receiver,
+    type: "chat",
+    message: `💬 ${senderUser.name} sent you a message.`,
+    relatedId: message._id,
+    isRead: false,
+  });
+
+  // 🖥️ BROWSER PUSH — CHAT SETTING KE ACCORDING
+  const canSendBrowserPush =
+    await canSendNotification(
+      receiver,
+      "chatMessages"
+    );
+
+  if (canSendBrowserPush) {
+    await sendPushNotification(
+      receiver,
+      {
+        title: "College Connect",
+        body: `💬 ${senderUser.name} sent you a message.`,
+        url: "/",
       }
+    );
+  }
+}
 
       // ==========================================
       // POPULATE MESSAGE

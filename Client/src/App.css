@@ -10386,3 +10386,784 @@ html, body {
 .notification-chat-button:active {
   transform: scale(0.97);
 }
+/* PROFILE SETTINGS BUTTON */
+
+.profile-settings-button {
+  width: 46px;
+  height: 46px;
+
+  border: 1px solid #bae6fd;
+  border-radius: 13px;
+
+  background: linear-gradient(
+    135deg,
+    #ffffff 0%,
+    #f0fdf4 100%
+  );
+
+  color: #1e293b;
+
+  display: flex;
+  align-items: center;
+  justify-content: center;
+
+  font-size: 22px;
+  font-weight: 600;
+
+  cursor: pointer;
+
+  box-shadow:
+    0 4px 12px rgba(15, 23, 42, 0.08),
+    0 0 0 3px rgba(125, 211, 252, 0.08);
+
+  transition:
+    transform 0.2s ease,
+    box-shadow 0.2s ease,
+    border-color 0.2s ease,
+    background 0.2s ease;
+}
+
+.profile-settings-button:hover {
+  background: linear-gradient(
+    135deg,
+    #e0f2fe 0%,
+    #dcfce7 100%
+  );
+
+  border-color: #86efac;
+
+  transform: translateY(-2px);
+
+  box-shadow:
+    0 7px 18px rgba(15, 23, 42, 0.12),
+    0 0 0 4px rgba(134, 239, 172, 0.10);
+}
+
+.profile-settings-button:active {
+  transform: scale(0.94);
+  box-shadow:
+    0 3px 8px rgba(15, 23, 42, 0.10);
+}
+.settings-gear {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+
+  background: transparent;
+  border: none;
+
+  color: #1E293B;
+  font-size: 22px;
+  cursor: pointer;
+
+  transition: all 0.3s ease;
+}
+
+.settings-gear:hover {
+  color: #0EA5E9;
+  transform: rotate(45deg) scale(1.12);
+}
+
+.settings-gear:active {
+  transform: rotate(45deg) scale(0.95);
+}
+/* =========================================================
+   SETTINGS PAGE
+   ========================================================= */
+
+.settings-page-card {
+  width: min(100%, 850px);
+  margin: 0 auto;
+  background: #ffffff;
+  border: 1px solid #e0f2fe;
+  border-radius: 20px;
+  padding: 28px;
+  box-shadow: 0 8px 30px rgba(15, 23, 42, 0.07);
+}
+
+.settings-page-header {
+  display: flex;
+  align-items: center;
+  gap: 14px;
+  margin-bottom: 28px;
+}
+
+.settings-page-header h1 {
+  margin: 0;
+  color: #1e293b;
+  font-size: 28px;
+  font-weight: 700;
+}
+
+.settings-back-button {
+  width: 40px;
+  height: 40px;
+  border: 1px solid #bae6fd;
+  border-radius: 10px;
+  background: #f0fdf4;
+  color: #1e293b;
+  font-size: 22px;
+  cursor: pointer;
+
+  display: flex;
+  align-items: center;
+  justify-content: center;
+
+  transition: all 0.2s ease;
+}
+
+.settings-back-button:hover {
+  background: #e0f2fe;
+  transform: translateX(-2px);
+}
+
+
+/* =========================================================
+   SETTINGS CATEGORY CARDS
+   ========================================================= */
+
+.settings-category-list {
+  display: flex;
+  flex-direction: column;
+  gap: 14px;
+}
+
+.settings-category-card {
+  width: 100%;
+  min-height: 70px;
+
+  border: 1px solid #e0f2fe;
+  border-radius: 14px;
+
+  background: linear-gradient(
+    135deg,
+    #ffffff 0%,
+    #f0fdf4 100%
+  );
+
+  color: #1e293b;
+
+  padding: 16px 18px;
+
+  display: flex;
+  align-items: center;
+  gap: 14px;
+
+  text-align: left;
+
+  cursor: pointer;
+
+  transition:
+    transform 0.2s ease,
+    box-shadow 0.2s ease,
+    border-color 0.2s ease;
+}
+
+.settings-category-card:hover {
+  transform: translateY(-2px);
+  border-color: #86efac;
+  box-shadow:
+    0 8px 20px rgba(15, 23, 42, 0.08);
+}
+
+.settings-category-icon {
+  width: 42px;
+  height: 42px;
+
+  border-radius: 11px;
+
+  background: #e0f2fe;
+
+  display: flex;
+  align-items: center;
+  justify-content: center;
+
+  font-size: 21px;
+}
+
+.settings-category-name {
+  font-size: 16px;
+  font-weight: 650;
+  color: #1e293b;
+}
+
+
+/* =========================================================
+   SETTINGS SUBPAGES
+   ========================================================= */
+
+.settings-subpage {
+  margin-top: 24px;
+}
+
+.settings-subpage-header {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+
+  margin-bottom: 20px;
+  padding-bottom: 16px;
+
+  border-bottom: 1px solid #e2e8f0;
+}
+
+.settings-subpage-header h2 {
+  margin: 0;
+
+  color: #1e293b;
+
+  font-size: 21px;
+  font-weight: 700;
+}
+
+.settings-subpage-back {
+  width: 38px;
+  height: 38px;
+
+  border: 1px solid #bae6fd;
+  border-radius: 10px;
+
+  background: #ffffff;
+  color: #1e293b;
+
+  font-size: 20px;
+
+  cursor: pointer;
+
+  display: flex;
+  align-items: center;
+  justify-content: center;
+
+  transition: all 0.2s ease;
+}
+
+.settings-subpage-back:hover {
+  background: #f0fdf4;
+  transform: translateX(-2px);
+}
+
+
+/* =========================================================
+   ACCOUNT SETTINGS OPTIONS
+   ========================================================= */
+
+.settings-option-card,
+.settings-action-card {
+  width: 100%;
+  min-height: 62px;
+
+  border: 1px solid #e2e8f0;
+  border-radius: 12px;
+
+  background: #ffffff;
+
+  padding: 14px 16px;
+
+  display: flex;
+  align-items: center;
+  gap: 13px;
+
+  text-align: left;
+
+  color: #1e293b;
+
+  cursor: pointer;
+
+  margin-bottom: 12px;
+
+  transition:
+    background 0.2s ease,
+    border-color 0.2s ease,
+    transform 0.2s ease;
+}
+
+.settings-option-card:hover {
+  background: #f0fdf4;
+  border-color: #86efac;
+  transform: translateY(-1px);
+}
+
+.settings-option-icon {
+  width: 38px;
+  height: 38px;
+
+  border-radius: 10px;
+
+  background: #e0f2fe;
+
+  display: flex;
+  align-items: center;
+  justify-content: center;
+
+  font-size: 19px;
+}
+
+.settings-option-name {
+  font-size: 15px;
+  font-weight: 600;
+}
+
+
+/* =========================================================
+   NOTIFICATION TOGGLES
+   ========================================================= */
+
+.settings-toggle-list {
+  display: flex;
+  flex-direction: column;
+
+  border: 1px solid #e2e8f0;
+  border-radius: 14px;
+
+  overflow: hidden;
+}
+
+/* =========================================================
+   NOTIFICATION SETTINGS - MODERN TOGGLES
+   ========================================================= */
+
+.settings-toggle-list {
+  display: flex;
+  flex-direction: column;
+
+  border: 1px solid #dbeafe;
+  border-radius: 16px;
+
+  overflow: hidden;
+
+  background: #ffffff;
+
+  box-shadow: 0 8px 24px rgba(15, 23, 42, 0.06);
+}
+
+.settings-toggle-row {
+  min-height: 68px;
+
+  padding: 14px 18px;
+
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+
+  gap: 20px;
+
+  background: #ffffff;
+
+  border-bottom: 1px solid #e2e8f0;
+
+  color: #1e293b;
+
+  font-size: 15px;
+  font-weight: 600;
+
+  transition: background 0.2s ease;
+}
+
+.settings-toggle-row:hover {
+  background: #f8fcfb;
+}
+
+.settings-toggle-row:last-child {
+  border-bottom: none;
+}
+
+
+/* =========================================================
+   CUSTOM TOGGLE SWITCH
+   ========================================================= */
+
+.settings-toggle-row input[type="checkbox"] {
+  appearance: none;
+  -webkit-appearance: none;
+
+  width: 48px;
+  height: 27px;
+
+  flex-shrink: 0;
+
+  border: none;
+  border-radius: 999px;
+
+  background: #cbd5e1;
+
+  position: relative;
+
+  cursor: pointer;
+
+  transition:
+    background 0.25s ease,
+    box-shadow 0.25s ease;
+}
+
+
+/* Toggle circle */
+
+.settings-toggle-row input[type="checkbox"]::before {
+  content: "";
+
+  position: absolute;
+
+  width: 21px;
+  height: 21px;
+
+  left: 3px;
+  top: 3px;
+
+  border-radius: 50%;
+
+  background: #ffffff;
+
+  box-shadow: 0 2px 5px rgba(15, 23, 42, 0.18);
+
+  transition:
+    transform 0.25s ease;
+}
+
+
+.settings-toggle-row input[type="checkbox"]:checked {
+  background: linear-gradient(
+    135deg,
+    #6ee7b7 0%,
+    #5eead4 100%
+  );
+
+  box-shadow:
+    0 3px 10px rgba(45, 212, 191, 0.20);
+}
+
+/* Move circle when ON */
+
+.settings-toggle-row input[type="checkbox"]:checked::before {
+  transform: translateX(21px);
+}
+
+
+/* Click effect */
+
+.settings-toggle-row input[type="checkbox"]:active::before {
+  width: 24px;
+}
+
+
+/* =========================================================
+   MUTE ALL
+   ========================================================= */
+
+.mute-all-row {
+  background: #f8fafc;
+}
+
+.mute-all-row span {
+  color: #334155;
+}
+
+
+/* =========================================================
+   DELETE ACCOUNT
+   ========================================================= */
+
+.delete-account-option {
+  color: #dc2626;
+  border-color: #fecaca;
+}
+
+.delete-account-option .settings-option-icon {
+  background: #fef2f2;
+}
+
+.delete-account-option:hover {
+  background: #fef2f2;
+  border-color: #fca5a5;
+}
+
+
+/* =========================================================
+   MOBILE
+   ========================================================= */
+
+@media (max-width: 600px) {
+
+  .settings-page-card {
+    padding: 20px 16px;
+    border-radius: 16px;
+  }
+
+  .settings-page-header h1 {
+    font-size: 24px;
+  }
+
+  .settings-category-card {
+    min-height: 64px;
+  }
+
+  .settings-subpage-header h2 {
+    font-size: 18px;
+  }
+
+  .settings-toggle-row {
+    font-size: 14px;
+    padding: 13px 14px;
+  }
+
+}
+.mute-all-row {
+  margin-top: 4px;
+  padding: 12px 14px;
+  background: #f8fafc;
+  transition: background 0.25s ease;
+}
+
+.mute-all-row:hover {
+  background: #f1f5f9;
+}
+
+.mute-all-row span {
+  font-weight: 600;
+  color: #1e293b;
+  font-size: 14px;
+}
+/* =========================================================
+   MUTE ALL - DARKER SOFT PINKISH YELLOW TOGGLE
+   ========================================================= */
+
+.mute-all-row input[type="checkbox"] {
+  background-color: #f5d6a6;
+
+  box-shadow:
+    inset 0 1px 3px rgba(120, 80, 20, 0.15);
+}
+
+.mute-all-row input[type="checkbox"]:checked {
+  background: linear-gradient(
+    135deg,
+    #f3a6c8 0%,
+    #f3cf70 100%
+  );
+
+  box-shadow:
+    0 3px 10px rgba(220, 170, 70, 0.28);
+}
+
+.mute-all-row input[type="checkbox"]:hover {
+  box-shadow:
+    0 0 0 4px rgba(243, 166, 200, 0.20);
+}
+
+.mute-all-row input[type="checkbox"]:checked:hover {
+  box-shadow:
+    0 0 0 4px rgba(243, 207, 112, 0.20),
+    0 3px 10px rgba(220, 170, 70, 0.28);
+}
+/* =========================================================
+   ACCOUNT SETTINGS MODALS
+   ========================================================= */
+
+.settings-modal-overlay {
+  position: fixed;
+  inset: 0;
+  z-index: 2000;
+
+  background: rgba(15, 23, 42, 0.38);
+
+  display: flex;
+  align-items: center;
+  justify-content: center;
+
+  padding: 20px;
+}
+
+.settings-modal {
+  width: min(100%, 460px);
+
+  background: #ffffff;
+
+  border: 1px solid #e0f2fe;
+  border-radius: 18px;
+
+  padding: 24px;
+
+  box-shadow:
+    0 20px 60px rgba(15, 23, 42, 0.18);
+}
+
+.settings-modal-header {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+
+  margin-bottom: 22px;
+}
+
+.settings-modal-header h3 {
+  margin: 0;
+
+  color: #1e293b;
+
+  font-size: 21px;
+  font-weight: 700;
+}
+
+.settings-modal-close {
+  width: 36px;
+  height: 36px;
+
+  border: none;
+  border-radius: 9px;
+
+  background: #f8fafc;
+  color: #475569;
+
+  font-size: 24px;
+  line-height: 1;
+
+  cursor: pointer;
+
+  display: flex;
+  align-items: center;
+  justify-content: center;
+
+  transition: all 0.2s ease;
+}
+
+.settings-modal-close:hover {
+  background: #e0f2fe;
+  color: #1e293b;
+}
+
+.settings-form {
+  display: flex;
+  flex-direction: column;
+  gap: 10px;
+}
+
+.settings-form label {
+  color: #1e293b;
+
+  font-size: 14px;
+  font-weight: 600;
+
+  margin-top: 5px;
+}
+
+.settings-form input {
+  width: 100%;
+  box-sizing: border-box;
+
+  min-height: 46px;
+
+  border: 1px solid #cbd5e1;
+  border-radius: 10px;
+
+  background: #ffffff;
+  color: #1e293b;
+
+  padding: 11px 13px;
+
+  font-size: 14px;
+
+  outline: none;
+
+  transition:
+    border-color 0.2s ease,
+    box-shadow 0.2s ease;
+}
+
+.settings-form input:focus {
+  border-color: #7dd3fc;
+
+  box-shadow:
+    0 0 0 3px rgba(125, 211, 252, 0.16);
+}
+
+.settings-form input:disabled {
+  background: #f8fafc;
+  cursor: not-allowed;
+}
+
+.settings-save-button {
+  width: 100%;
+
+  min-height: 46px;
+
+  margin-top: 12px;
+
+  border: none;
+  border-radius: 10px;
+
+  background: linear-gradient(
+    135deg,
+    #7dd3fc 0%,
+    #86efac 100%
+  );
+
+  color: #1e293b;
+
+  font-size: 14px;
+  font-weight: 700;
+
+  cursor: pointer;
+
+  transition:
+    transform 0.2s ease,
+    box-shadow 0.2s ease,
+    opacity 0.2s ease;
+}
+
+.settings-save-button:hover {
+  transform: translateY(-1px);
+
+  box-shadow:
+    0 6px 16px rgba(15, 23, 42, 0.12);
+}
+
+.settings-save-button:active {
+  transform: scale(0.98);
+}
+
+.settings-save-button:disabled {
+  opacity: 0.6;
+  cursor: not-allowed;
+  transform: none;
+}
+/* =========================================================
+   FORGOT PASSWORD BUTTON
+   SOFT YELLOW + SOFT BLUE
+   ========================================================= */
+
+.settings-forgot-password-button {
+  display: block;
+  width: fit-content;
+  margin: 4px auto 18px;
+
+  border: none;
+  background: transparent;
+
+  color: #2563a8;
+  font-size: 13px;
+  font-weight: 600;
+
+  cursor: pointer;
+  padding: 5px 10px;
+  border-radius: 8px;
+
+  transition:
+    background-color 0.2s ease,
+    color 0.2s ease,
+    transform 0.2s ease;
+}
+
+.settings-forgot-password-button:hover {
+  background: #fff7d6;
+  color: #b7791f;
+  transform: translateY(-1px);
+}
+
+.settings-forgot-password-button:active {
+  transform: scale(0.97);
+}
+
+.settings-forgot-password-button:disabled {
+  opacity: 0.5;
+  cursor: not-allowed;
+  transform: none;
+}

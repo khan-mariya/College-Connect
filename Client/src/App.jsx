@@ -158,6 +158,24 @@ const notificationRef = useRef(null)
 const [notificationsLoading, setNotificationsLoading] = useState(false)
 const [connections, setConnections] = useState([])
 const [showLogoutConfirm, setShowLogoutConfirm] = useState(false)
+// ================= SETTINGS - ACCOUNT =================
+
+const [showChangeEmail, setShowChangeEmail] = useState(false)
+const [showChangePassword, setShowChangePassword] = useState(false)
+
+const [changeEmailForm, setChangeEmailForm] = useState({
+  currentPassword: "",
+  newEmail: "",
+})
+
+const [changePasswordForm, setChangePasswordForm] = useState({
+  currentPassword: "",
+  newPassword: "",
+  confirmPassword: "",
+})
+
+const [accountSettingsSaving, setAccountSettingsSaving] =
+  useState(false)
 
 
   
@@ -248,12 +266,29 @@ const getAcademicYear = () => {
   const [connectionSaving, setConnectionSaving] = useState({})
   const [, setConnectionsLoading] = useState(false)
   const [activeChatConnection, setActiveChatConnection] = useState(null)
-const [chatMessages, setChatMessages] = useState([])
-const [chatText, setChatText] = useState("")
-const [chatLoading, setChatLoading] = useState(false)
-const [chatSending, setChatSending] = useState(false)
-const [messageMenuId, setMessageMenuId] = useState(null)
-const [messageMenuPosition, setMessageMenuPosition] = useState({
+  const [settingsSection, setSettingsSection] = useState(null)
+  const [notificationSettings, setNotificationSettings] =
+  useState({
+    connectRequests: true,
+    requestAccepted: true,
+    studyMaterial: true,
+    queries: true,
+    projectUpdates: true,
+    importantWebsiteUpdates: true,
+    muteAll: false,
+  })
+
+const [notificationSettingsLoading, setNotificationSettingsLoading] =
+  useState(false)
+
+const [notificationSettingsSaving, setNotificationSettingsSaving] =
+  useState(false)
+  const [chatMessages, setChatMessages] = useState([])
+  const [chatText, setChatText] = useState("")
+  const [chatLoading, setChatLoading] = useState(false)
+  const [chatSending, setChatSending] = useState(false)
+  const [messageMenuId, setMessageMenuId] = useState(null)
+  const [messageMenuPosition, setMessageMenuPosition] = useState({
   x: 0,
   y: 0,
 })
@@ -320,6 +355,8 @@ const [profileForm, setProfileForm] = useState({
 
   const [forgotEmail, setForgotEmail] = useState("")
   const [forgotMessage, setForgotMessage] = useState("")
+  const [forgotPasswordSource, setForgotPasswordSource] =
+  useState("login")
 
 
   // =========================================================
@@ -394,6 +431,216 @@ const [profileForm, setProfileForm] = useState({
     "Study PDFs/Resources",
     "Practical/Viva Material",
   ]
+
+  // ======================================================
+// CHANGE EMAIL
+// ======================================================
+
+const handleChangeEmail = async () => {
+  const currentPassword =
+    changeEmailForm.currentPassword.trim()
+
+  const newEmail =
+    changeEmailForm.newEmail.trim().toLowerCase()
+
+  if (!currentPassword) {
+    showToast(
+      "Please enter your current password.",
+      "warning"
+    )
+    return
+  }
+
+  if (!newEmail) {
+    showToast(
+      "Please enter your new email.",
+      "warning"
+    )
+    return
+  }
+
+  if (!newEmail.includes("@")) {
+    showToast(
+      "Please enter a valid email address.",
+      "warning"
+    )
+    return
+  }
+
+  try {
+    setAccountSettingsSaving(true)
+
+    const response = await fetch(
+      `${API_URL}/api/settings/email`,
+      {
+        method: "PUT",
+
+        headers: {
+          "Content-Type": "application/json",
+          Authorization: `Bearer ${localStorage.getItem(
+            "collegeConnectToken"
+          )}`,
+        },
+
+        body: JSON.stringify({
+          currentPassword,
+          newEmail,
+        }),
+      }
+    )
+
+    const data =
+      await response.json()
+
+    if (!response.ok) {
+      showToast(
+        data.message ||
+          "Unable to change email.",
+        "error"
+      )
+      return
+    }
+
+    setCurrentUser(data.user)
+
+    localStorage.setItem(
+      "collegeConnectUser",
+      JSON.stringify(data.user)
+    )
+
+    setChangeEmailForm({
+      currentPassword: "",
+      newEmail: "",
+    })
+
+    setShowChangeEmail(false)
+
+    showToast(
+      "Email changed successfully.",
+      "success"
+    )
+  } catch (error) {
+    console.error(
+      "Change email error:",
+      error
+    )
+
+    showToast(
+      "Unable to connect to server.",
+      "error"
+    )
+  } finally {
+    setAccountSettingsSaving(false)
+  }
+}
+
+
+// ======================================================
+// CHANGE PASSWORD
+// ======================================================
+
+const handleChangePassword = async () => {
+  const currentPassword =
+    changePasswordForm.currentPassword
+
+  const newPassword =
+    changePasswordForm.newPassword
+
+  const confirmPassword =
+    changePasswordForm.confirmPassword
+
+  if (!currentPassword) {
+    showToast(
+      "Please enter your current password.",
+      "warning"
+    )
+    return
+  }
+
+  if (!newPassword) {
+    showToast(
+      "Please enter your new password.",
+      "warning"
+    )
+    return
+  }
+
+  if (newPassword.length < 6) {
+    showToast(
+      "New password must be at least 6 characters.",
+      "warning"
+    )
+    return
+  }
+
+  if (newPassword !== confirmPassword) {
+    showToast(
+      "New password and confirm password do not match.",
+      "warning"
+    )
+    return
+  }
+
+  try {
+    setAccountSettingsSaving(true)
+
+    const response = await fetch(
+      `${API_URL}/api/settings/password`,
+      {
+        method: "PUT",
+
+        headers: {
+          "Content-Type": "application/json",
+          Authorization: `Bearer ${localStorage.getItem(
+            "collegeConnectToken"
+          )}`,
+        },
+
+        body: JSON.stringify({
+          currentPassword,
+          newPassword,
+        }),
+      }
+    )
+
+    const data =
+      await response.json()
+
+    if (!response.ok) {
+      showToast(
+        data.message ||
+          "Unable to change password.",
+        "error"
+      )
+      return
+    }
+
+    setChangePasswordForm({
+      currentPassword: "",
+      newPassword: "",
+      confirmPassword: "",
+    })
+
+    setShowChangePassword(false)
+
+    showToast(
+      "Password changed successfully.",
+      "success"
+    )
+  } catch (error) {
+    console.error(
+      "Change password error:",
+      error
+    )
+
+    showToast(
+      "Unable to connect to server.",
+      "error"
+    )
+  } finally {
+    setAccountSettingsSaving(false)
+  }
+}
 
   // =========================================================
   // CURRENT USER ID
@@ -1202,6 +1449,165 @@ const fetchNotifications = async () => {
     console.error("Notifications fetch error:", error)
   } finally {
     setNotificationsLoading(false)
+  }
+}
+const fetchNotificationSettings = async () => {
+  try {
+    setNotificationSettingsLoading(true)
+
+    const response = await fetch(
+      `${API_URL}/api/settings/notifications`,
+      {
+        headers: {
+          Authorization: `Bearer ${localStorage.getItem(
+            "collegeConnectToken"
+          )}`,
+        },
+      }
+    )
+
+    const data = await response.json()
+
+    if (!response.ok) {
+      showToast(
+        data.message ||
+          "Unable to load notification settings.",
+        "error"
+      )
+      return
+    }
+
+    if (data.settings) {
+      setNotificationSettings({
+        connectRequests:
+          data.settings.connectRequests ?? true,
+
+        requestAccepted:
+          data.settings.requestAccepted ?? true,
+
+        studyMaterial:
+          data.settings.studyMaterial ?? true,
+
+          chatMessages:
+        data.settings.chatMessages ?? true,
+
+        queries:
+          data.settings.queries ?? true,
+
+        projectUpdates:
+          data.settings.projectUpdates ?? true,
+
+        importantWebsiteUpdates:
+          data.settings.importantWebsiteUpdates ?? true,
+
+        muteAll:
+          data.settings.muteAll ?? false,
+      })
+    }
+  } catch (error) {
+    console.error(
+      "Notification settings fetch error:",
+      error
+    )
+  } finally {
+    setNotificationSettingsLoading(false)
+  }
+}
+const handleNotificationSettingChange = async (
+  settingName,
+  value
+) => {
+  const previousSettings =
+    notificationSettings
+
+  const updatedSettings = {
+    ...previousSettings,
+    [settingName]: value,
+  }
+
+  setNotificationSettings(
+    updatedSettings
+  )
+
+  try {
+    setNotificationSettingsSaving(true)
+
+    const response = await fetch(
+      `${API_URL}/api/settings/notifications`,
+      {
+        method: "PUT",
+        headers: {
+          "Content-Type": "application/json",
+          Authorization: `Bearer ${localStorage.getItem(
+            "collegeConnectToken"
+          )}`,
+        },
+        body: JSON.stringify({
+          [settingName]: value,
+        }),
+      }
+    )
+
+    const data = await response.json()
+
+    if (!response.ok) {
+      setNotificationSettings(
+        previousSettings
+      )
+
+      showToast(
+        data.message ||
+          "Unable to save notification setting.",
+        "error"
+      )
+
+      return
+    }
+
+    if (data.settings) {
+      setNotificationSettings({
+        connectRequests:
+          data.settings.connectRequests ?? true,
+
+        requestAccepted:
+          data.settings.requestAccepted ?? true,
+
+        studyMaterial:
+          data.settings.studyMaterial ?? true,
+
+          chatMessages:
+       data.settings.chatMessages ?? true,
+
+        queries:
+          data.settings.queries ?? true,
+
+        projectUpdates:
+          data.settings.projectUpdates ?? true,
+
+        importantWebsiteUpdates:
+          data.settings
+            .importantWebsiteUpdates ?? true,
+
+        muteAll:
+          data.settings.muteAll ?? false,
+      })
+    }
+  } catch (error) {
+    console.error(
+      "Notification setting update error:",
+      error
+    )
+
+    setNotificationSettings(
+      previousSettings
+    )
+
+    showToast(
+      "Unable to connect to server.",
+      "error"
+    )
+  } finally {
+    setNotificationSettingsSaving(false)
   }
 }
 
@@ -2497,6 +2903,21 @@ useEffect(() => {
   fetchConnections()
   // eslint-disable-next-line react-hooks/exhaustive-deps
 }, [currentUser?._id, currentUser?.id])
+useEffect(() => {
+  if (
+    page === "settings" &&
+    settingsSection === "notifications" &&
+    currentUser
+  ) {
+    fetchNotificationSettings()
+  }
+
+  // eslint-disable-next-line react-hooks/exhaustive-deps
+}, [
+  page,
+  settingsSection,
+  currentUser,
+])
   // =========================================================
   // FETCH STUDY MATERIALS
   // =========================================================
@@ -3038,6 +3459,7 @@ setShowIntro(false)
             onClick={() => {
 
               setLoginMessage("")
+              setForgotPasswordSource("login")
               setForgotMessage("")
               setPage("forgot")
 
@@ -3234,18 +3656,25 @@ if (page === "forgot") {
         )}
 
         <button
-          className="back-button"
-          onClick={() => {
+  className="back-button"
+  onClick={() => {
 
-            setForgotMessage("")
-            setResendCountdown(0)
-            setPage("login")
+    setForgotMessage("")
+    setResendCountdown(0)
 
-          }}
-        >
-          ← Back to Login
-        </button>
+    if (forgotPasswordSource === "settings") {
+      setPage("settings")
+      setSettingsSection("account")
+    } else {
+      setPage("login")
+    }
 
+  }}
+>
+  {forgotPasswordSource === "settings"
+    ? "← Back to Account Settings"
+    : "← Back to Login"}
+</button>
       </div>
 
     </div>
@@ -3798,7 +4227,16 @@ if (page === "student-profile" && viewingProfile) {
 
           <div className="dashboard-header-right">
 
-          </div>
+  <button
+    type="button"
+    className="profile-settings-button"
+    onClick={() => setPage("settings")}
+    title="Settings"
+  >
+    <span className="settings-gear" title="Settings">⚙️</span>
+  </button>
+
+</div>
 
         </header>
 
@@ -4506,19 +4944,7 @@ setShowPhotoCropper(true)
 
               </div>
     </div>
-{/* LOGOUT */}
 
-{!isEditingProfile && (
-  <div className="profile-logout-section">
-    <button
-      type="button"
-      className="logout-button"
-      onClick={handleLogout}
-    >
-      Logout
-    </button>
-  </div>
-)}
 {showLogoutConfirm && (
   <div className="logout-confirm-overlay">
     <div className="logout-confirm-box">
@@ -4570,8 +4996,962 @@ setShowPhotoCropper(true)
     )
 
   }
+  
+  // =========================================================
+// SETTINGS PAGE
+// =========================================================
+
+if (page === "settings") {
+
+  // =======================================================
+  // MAIN SETTINGS PAGE
+  // =======================================================
+
+  if (settingsSection === null) {
+
+    return (
+      <div className="dashboard-page">
+
+        {renderToast()}
+
+        <header className="dashboard-header">
+
+          <div className="dashboard-brand">
+
+            <img
+              src={collegeConnectLogo}
+              alt="College Connect"
+              className="dashboard-logo-image"
+            />
+
+          </div>
 
 
+          <nav className="dashboard-nav">
+
+            <button
+              className="dashboard-nav-link"
+              onClick={() =>
+                setPage("dashboard")
+              }
+            >
+              Home
+            </button>
+
+
+            <button
+              className="dashboard-nav-link active"
+              onClick={() =>
+                setPage("profile")
+              }
+            >
+              Profile
+            </button>
+
+
+            <button
+              className="dashboard-nav-link"
+              onClick={() =>
+                setPage("activity")
+              }
+            >
+              Your Activity
+            </button>
+
+          </nav>
+
+
+          <div className="dashboard-header-right">
+          </div>
+
+        </header>
+
+
+        <main className="dashboard-main">
+
+          <section className="settings-page-card">
+
+            <div className="settings-page-header">
+
+              <button
+                type="button"
+                className="settings-back-button"
+                onClick={() =>
+                  setPage("profile")
+                }
+              >
+                ←
+              </button>
+
+
+              <h1>
+                Settings
+              </h1>
+
+            </div>
+
+
+            <div className="settings-category-list">
+
+              {/* ACCOUNT SETTINGS */}
+
+              <button
+                type="button"
+                className="settings-category-card"
+                onClick={() =>
+                  setSettingsSection("account")
+                }
+              >
+
+                <span className="settings-category-icon">
+                  👤
+                </span>
+
+                <span className="settings-category-name">
+                  Account Settings
+                </span>
+
+              </button>
+
+
+              {/* NOTIFICATION SETTINGS */}
+
+              <button
+                type="button"
+                className="settings-category-card"
+                onClick={() =>
+                  setSettingsSection("notifications")
+                }
+              >
+
+                <span className="settings-category-icon">
+                  🔔
+                </span>
+
+                <span className="settings-category-name">
+                  Notification Settings
+                </span>
+
+              </button>
+
+
+              {/* ACCOUNT ACTIONS */}
+
+              <button
+                type="button"
+                className="settings-category-card"
+                onClick={() =>
+                  setSettingsSection("actions")
+                }
+              >
+
+                <span className="settings-category-icon">
+                  ⚡
+                </span>
+
+                <span className="settings-category-name">
+                  Account Actions
+                </span>
+
+              </button>
+
+            </div>
+
+          </section>
+
+        </main>
+
+      </div>
+    )
+  }
+
+
+  // =======================================================
+  // ACCOUNT SETTINGS PAGE
+  // =======================================================
+
+  if (settingsSection === "account") {
+
+    return (
+      <div className="dashboard-page">
+
+        {renderToast()}
+
+        <header className="dashboard-header">
+
+          <div className="dashboard-brand">
+
+            <img
+              src={collegeConnectLogo}
+              alt="College Connect"
+              className="dashboard-logo-image"
+            />
+
+          </div>
+
+
+          <nav className="dashboard-nav">
+
+            <button
+              className="dashboard-nav-link"
+              onClick={() =>
+                setPage("dashboard")
+              }
+            >
+              Home
+            </button>
+
+
+            <button
+              className="dashboard-nav-link active"
+              onClick={() =>
+                setPage("profile")
+              }
+            >
+              Profile
+            </button>
+
+
+            <button
+              className="dashboard-nav-link"
+              onClick={() =>
+                setPage("activity")
+              }
+            >
+              Your Activity
+            </button>
+
+          </nav>
+
+
+          <div className="dashboard-header-right">
+          </div>
+
+        </header>
+
+
+        <main className="dashboard-main">
+
+          <section className="settings-page-card">
+
+            <div className="settings-page-header">
+
+              <button
+                type="button"
+                className="settings-back-button"
+                onClick={() =>
+                  setSettingsSection(null)
+                }
+              >
+                ←
+              </button>
+
+
+              <h1>
+                Account Settings
+              </h1>
+
+            </div>
+
+
+            <div className="settings-category-list">
+
+  {/* CHANGE EMAIL */}
+
+  <button
+    type="button"
+    className="settings-option-card"
+    onClick={() => {
+      setChangeEmailForm({
+        currentPassword: "",
+        newEmail: "",
+      })
+
+      setShowChangeEmail(true)
+    }}
+  >
+
+    <span className="settings-option-icon">
+      ✉️
+    </span>
+
+    <span className="settings-option-name">
+      Change Email
+    </span>
+
+  </button>
+
+
+  {/* CHANGE PASSWORD */}
+
+  <button
+    type="button"
+    className="settings-option-card"
+    onClick={() => {
+      setChangePasswordForm({
+        currentPassword: "",
+        newPassword: "",
+        confirmPassword: "",
+      })
+
+      setShowChangePassword(true)
+    }}
+  >
+
+    <span className="settings-option-icon">
+      🔒
+    </span>
+
+    <span className="settings-option-name">
+      Change Password
+    </span>
+
+  </button>
+
+</div>
+
+          </section>
+          {/* CHANGE EMAIL MODAL */}
+
+{showChangeEmail && (
+  <div className="settings-modal-overlay">
+
+    <div className="settings-modal">
+
+      <div className="settings-modal-header">
+
+        <h3>
+          Change Email
+        </h3>
+
+        <button
+          type="button"
+          className="settings-modal-close"
+          onClick={() => {
+            if (!accountSettingsSaving) {
+              setShowChangeEmail(false)
+            }
+          }}
+        >
+          ×
+        </button>
+
+      </div>
+
+
+      <div className="settings-form">
+
+        <label>
+          Current Password
+        </label>
+
+        <input
+          type="password"
+          value={
+            changeEmailForm.currentPassword
+          }
+          onChange={(e) =>
+            setChangeEmailForm(
+              (previous) => ({
+                ...previous,
+                currentPassword:
+                  e.target.value,
+              })
+            )
+          }
+          placeholder="Enter current password"
+          disabled={accountSettingsSaving}
+        />
+
+
+        <label>
+          New Email
+        </label>
+
+        <input
+          type="email"
+          value={
+            changeEmailForm.newEmail
+          }
+          onChange={(e) =>
+            setChangeEmailForm(
+              (previous) => ({
+                ...previous,
+                newEmail:
+                  e.target.value,
+              })
+            )
+          }
+          placeholder="Enter new email"
+          disabled={accountSettingsSaving}
+        />
+
+
+        <button
+          type="button"
+          className="settings-save-button"
+          onClick={handleChangeEmail}
+          disabled={accountSettingsSaving}
+        >
+          {accountSettingsSaving
+            ? "Saving..."
+            : "Change Email"}
+        </button>
+
+      </div>
+
+    </div>
+
+  </div>
+)}
+{/* CHANGE PASSWORD MODAL */}
+
+{showChangePassword && (
+  <div className="settings-modal-overlay">
+
+    <div className="settings-modal">
+
+      <div className="settings-modal-header">
+
+        <h3>
+          Change Password
+        </h3>
+
+        <button
+          type="button"
+          className="settings-modal-close"
+          onClick={() => {
+            if (!accountSettingsSaving) {
+              setShowChangePassword(false)
+            }
+          }}
+        >
+          ×
+        </button>
+
+      </div>
+
+
+      <div className="settings-form">
+
+        <label>
+  Current Password
+</label>
+
+<input
+  type="password"
+  value={
+    changePasswordForm.currentPassword
+  }
+  onChange={(e) =>
+    setChangePasswordForm(
+      (previous) => ({
+        ...previous,
+        currentPassword:
+          e.target.value,
+      })
+    )
+  }
+  placeholder="Enter current password"
+  disabled={accountSettingsSaving}
+/>
+
+
+<label>
+  New Password
+</label>
+        <input
+          type="password"
+          value={
+            changePasswordForm.newPassword
+          }
+          onChange={(e) =>
+            setChangePasswordForm(
+              (previous) => ({
+                ...previous,
+                newPassword:
+                  e.target.value,
+              })
+            )
+          }
+          placeholder="Minimum 6 characters"
+          disabled={accountSettingsSaving}
+        />
+
+
+        <label>
+          Confirm New Password
+        </label>
+
+        <input
+          type="password"
+          value={
+            changePasswordForm.confirmPassword
+          }
+          onChange={(e) =>
+            setChangePasswordForm(
+              (previous) => ({
+                ...previous,
+                confirmPassword:
+                  e.target.value,
+              })
+            )
+          }
+          placeholder="Re-enter new password"
+          disabled={accountSettingsSaving}
+        />
+        <button
+  type="button"
+  className="settings-forgot-password-button"
+  onClick={() => {
+  if (!accountSettingsSaving) {
+    setShowChangePassword(false)
+    setForgotEmail("")
+    setForgotMessage("")
+    setResendCountdown(0)
+    setForgotPasswordSource("settings")
+    setPage("forgot")
+  }
+}}
+  disabled={accountSettingsSaving}
+>
+  Forgot Password?
+</button>
+
+
+
+        <button
+          type="button"
+          className="settings-save-button"
+          onClick={handleChangePassword}
+          disabled={accountSettingsSaving}
+        >
+          {accountSettingsSaving
+            ? "Saving..."
+            : "Change Password"}
+        </button>
+
+      </div>
+
+    </div>
+
+  </div>
+)}
+
+        </main>
+
+      </div>
+    )
+  }
+
+
+  // =======================================================
+  // NOTIFICATION SETTINGS PAGE
+  // =======================================================
+
+  if (settingsSection === "notifications") {
+
+    return (
+      <div className="dashboard-page">
+
+        {renderToast()}
+
+        <header className="dashboard-header">
+
+          <div className="dashboard-brand">
+
+            <img
+              src={collegeConnectLogo}
+              alt="College Connect"
+              className="dashboard-logo-image"
+            />
+
+          </div>
+
+
+          <nav className="dashboard-nav">
+
+            <button
+              className="dashboard-nav-link"
+              onClick={() =>
+                setPage("dashboard")
+              }
+            >
+              Home
+            </button>
+
+
+            <button
+              className="dashboard-nav-link active"
+              onClick={() =>
+                setPage("profile")
+              }
+            >
+              Profile
+            </button>
+
+
+            <button
+              className="dashboard-nav-link"
+              onClick={() =>
+                setPage("activity")
+              }
+            >
+              Your Activity
+            </button>
+
+          </nav>
+
+
+          <div className="dashboard-header-right">
+          </div>
+
+        </header>
+
+
+        <main className="dashboard-main">
+
+          <section className="settings-page-card">
+
+            <div className="settings-page-header">
+
+              <button
+                type="button"
+                className="settings-back-button"
+                onClick={() =>
+                  setSettingsSection(null)
+                }
+              >
+                ←
+              </button>
+
+
+              <h1>
+                Notification Settings
+              </h1>
+
+            </div>
+
+
+            <div className="settings-toggle-list">
+
+  <div className="settings-toggle-row">
+    <span>
+      Connect Requests
+    </span>
+
+    <input
+      type="checkbox"
+      checked={notificationSettings.connectRequests}
+      onChange={(e) =>
+        handleNotificationSettingChange(
+          "connectRequests",
+          e.target.checked
+        )
+      }
+      disabled={
+        notificationSettingsLoading ||
+        notificationSettingsSaving
+      }
+    />
+  </div>
+
+
+  <div className="settings-toggle-row">
+    <span>
+      Request Accepted
+    </span>
+
+    <input
+      type="checkbox"
+      checked={notificationSettings.requestAccepted}
+      onChange={(e) =>
+        handleNotificationSettingChange(
+          "requestAccepted",
+          e.target.checked
+        )
+      }
+      disabled={
+        notificationSettingsLoading ||
+        notificationSettingsSaving
+      }
+    />
+  </div>
+
+
+  <div className="settings-toggle-row">
+    <span>
+      New Notes / Study Material
+    </span>
+
+    <input
+      type="checkbox"
+      checked={notificationSettings.studyMaterial}
+      onChange={(e) =>
+        handleNotificationSettingChange(
+          "studyMaterial",
+          e.target.checked
+        )
+      }
+      disabled={
+        notificationSettingsLoading ||
+        notificationSettingsSaving
+      }
+    />
+  </div>
+  
+<div className="settings-toggle-row">
+  <span>Chat Messages</span>
+
+  <input
+    type="checkbox"
+    checked={notificationSettings.chatMessages}
+    onChange={(e) =>
+      handleNotificationSettingChange(
+        "chatMessages",
+        e.target.checked
+      )
+    }
+    disabled={
+      notificationSettingsLoading ||
+      notificationSettingsSaving
+    }
+  />
+</div>
+
+
+  <div className="settings-toggle-row">
+    <span>
+      Queries
+    </span>
+
+    <input
+      type="checkbox"
+      checked={notificationSettings.queries}
+      onChange={(e) =>
+        handleNotificationSettingChange(
+          "queries",
+          e.target.checked
+        )
+      }
+      disabled={
+        notificationSettingsLoading ||
+        notificationSettingsSaving
+      }
+    />
+  </div>
+
+
+  <div className="settings-toggle-row">
+    <span>
+      Project Updates
+    </span>
+
+    <input
+      type="checkbox"
+      checked={notificationSettings.projectUpdates}
+      onChange={(e) =>
+        handleNotificationSettingChange(
+          "projectUpdates",
+          e.target.checked
+        )
+      }
+      disabled={
+        notificationSettingsLoading ||
+        notificationSettingsSaving
+      }
+    />
+  </div>
+
+
+  <div className="settings-toggle-row">
+    <span>
+      Important Website Updates
+    </span>
+
+    <input
+      type="checkbox"
+      checked={notificationSettings.importantWebsiteUpdates}
+      onChange={(e) =>
+        handleNotificationSettingChange(
+          "importantWebsiteUpdates",
+          e.target.checked
+        )
+      }
+      disabled={
+        notificationSettingsLoading ||
+        notificationSettingsSaving
+      }
+    />
+  </div>
+
+
+  <div className="settings-toggle-row mute-all-row">
+    <span>
+      Mute All Notifications
+    </span>
+
+    <input
+      type="checkbox"
+      checked={notificationSettings.muteAll}
+      onChange={(e) =>
+        handleNotificationSettingChange(
+          "muteAll",
+          e.target.checked
+        )
+      }
+      disabled={
+        notificationSettingsLoading ||
+        notificationSettingsSaving
+      }
+    />
+  </div>
+
+</div>
+          </section>
+
+        </main>
+
+      </div>
+    )
+  }
+
+
+  // =======================================================
+  // ACCOUNT ACTIONS PAGE
+  // =======================================================
+
+  if (settingsSection === "actions") {
+
+    return (
+      <div className="dashboard-page">
+
+        {renderToast()}
+
+        <header className="dashboard-header">
+
+          <div className="dashboard-brand">
+
+            <img
+              src={collegeConnectLogo}
+              alt="College Connect"
+              className="dashboard-logo-image"
+            />
+
+          </div>
+
+
+          <nav className="dashboard-nav">
+
+            <button
+              className="dashboard-nav-link"
+              onClick={() =>
+                setPage("dashboard")
+              }
+            >
+              Home
+            </button>
+
+
+            <button
+              className="dashboard-nav-link active"
+              onClick={() =>
+                setPage("profile")
+              }
+            >
+              Profile
+            </button>
+
+
+            <button
+              className="dashboard-nav-link"
+              onClick={() =>
+                setPage("activity")
+              }
+            >
+              Your Activity
+            </button>
+
+          </nav>
+
+
+          <div className="dashboard-header-right">
+          </div>
+
+        </header>
+
+
+        <main className="dashboard-main">
+
+          <section className="settings-page-card">
+
+            <div className="settings-page-header">
+
+              <button
+                type="button"
+                className="settings-back-button"
+                onClick={() =>
+                  setSettingsSection(null)
+                }
+              >
+                ←
+              </button>
+
+
+              <h1>
+                Account Actions
+              </h1>
+
+            </div>
+
+
+            <div className="settings-category-list">
+
+              <button
+                type="button"
+                className="settings-option-card"
+                onClick={handleLogout}
+              >
+
+                <span className="settings-option-icon">
+                  🚪
+                </span>
+
+                <span className="settings-option-name">
+                  Logout
+                </span>
+
+              </button>
+
+
+              <button
+                type="button"
+                className="settings-action-card delete-account-option"
+              >
+
+                <span className="settings-option-icon">
+                  🗑️
+                </span>
+
+                <span className="settings-option-name">
+                  Delete Account
+                </span>
+
+              </button>
+
+            </div>
+
+          </section>
+
+        </main>
+
+      </div>
+    )
+  }
+
+}
+
+  
 // =========================================================
 // CHAT PAGE
 // =========================================================
