@@ -11167,3 +11167,13 @@ html, body {
   cursor: not-allowed;
   transform: none;
 }
+.deactivate-account-option {
+  border: 1px solid #fed7aa;
+  background: #fffaf5;
+  color: #c2410c;
+}
+
+.deactivate-account-option:hover {
+  background: #fff7ed;
+  border-color: #fdba74;
+}

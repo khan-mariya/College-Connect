@@ -28,6 +28,13 @@ const authMiddleware = async (req, res, next) => {
       });
     }
 
+    if (user.accountStatus === "deactivated") {
+  return res.status(403).json({
+    message:
+      "Your account is deactivated. Please login again within 30 days to reactivate your account.",
+  });
+}
+
     req.user = user;
 
     next();

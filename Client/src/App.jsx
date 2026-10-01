@@ -158,6 +158,8 @@ const notificationRef = useRef(null)
 const [notificationsLoading, setNotificationsLoading] = useState(false)
 const [connections, setConnections] = useState([])
 const [showLogoutConfirm, setShowLogoutConfirm] = useState(false)
+const [showDeactivateConfirm, setShowDeactivateConfirm] = useState(false)
+const [showDeleteConfirm, setShowDeleteConfirm] = useState(false)
 // ================= SETTINGS - ACCOUNT =================
 
 const [showChangeEmail, setShowChangeEmail] = useState(false)
@@ -656,6 +658,7 @@ const handleLogout = () => {
 const confirmLogout = () => {
   localStorage.removeItem("collegeConnectToken")
   localStorage.removeItem("collegeConnectUser")
+  
 
   setCurrentUser(null)
   setViewingProfile(null)
@@ -664,6 +667,128 @@ const confirmLogout = () => {
   setShowIntro(false)
 
   setShowLogoutConfirm(false)
+}
+
+// =========================================================
+// DEACTIVATE ACCOUNT
+// =========================================================
+
+const handleDeactivateAccount = async () => {
+ 
+
+  try {
+    const response = await fetch(
+      `${API_URL}/api/account/deactivate`,
+      {
+        method: "PUT",
+        headers: {
+          Authorization: `Bearer ${localStorage.getItem(
+            "collegeConnectToken"
+          )}`,
+        },
+      }
+    )
+
+    const data = await response.json()
+
+    if (!response.ok) {
+      showToast(
+        data.message ||
+          "Unable to deactivate account.",
+        "error"
+      )
+
+      return
+    }
+
+    // Clear login session
+    localStorage.removeItem(
+      "collegeConnectToken"
+    )
+
+    localStorage.removeItem(
+      "collegeConnectUser"
+    )
+
+    setCurrentUser(null)
+    setViewingProfile(null)
+    setIsEditingProfile(false)
+    setSettingsSection(null)
+    setPage("landing")
+    setShowIntro(false)
+
+  } catch (error) {
+    console.error(
+      "Deactivate account error:",
+      error
+    )
+
+    showToast(
+      "Unable to connect to server.",
+      "error"
+    )
+  }
+}
+
+
+// =========================================================
+// DELETE ACCOUNT
+// =========================================================
+
+const handleDeleteAccount = async () => {
+  
+  try {
+    const response = await fetch(
+      `${API_URL}/api/account`,
+      {
+        method: "DELETE",
+        headers: {
+          Authorization: `Bearer ${localStorage.getItem(
+            "collegeConnectToken"
+          )}`,
+        },
+      }
+    )
+
+    const data = await response.json()
+
+    if (!response.ok) {
+      showToast(
+        data.message ||
+          "Unable to delete account.",
+        "error"
+      )
+
+      return
+    }
+
+    // Clear login session
+    localStorage.removeItem(
+      "collegeConnectToken"
+    )
+
+    localStorage.removeItem(
+      "collegeConnectUser"
+    )
+
+    setCurrentUser(null)
+    setViewingProfile(null)
+    setIsEditingProfile(false)
+    setSettingsSection(null)
+    setPage("landing")
+    setShowIntro(false)
+
+  } catch (error) {
+    console.error(
+      "Delete account error:",
+      error
+    )
+
+    showToast(
+      "Unable to connect to server.",
+      "error"
+    )
+  }
 }
   // =========================================================
   // SAVE PROFILE
@@ -770,6 +895,7 @@ const confirmLogout = () => {
     try {
 
       setViewingProfileLoading(true)
+      setViewingProfile(null)
 
       const response = await fetch(
         (`${API_URL}/api/users/${userId}`)
@@ -4944,44 +5070,6 @@ setShowPhotoCropper(true)
 
               </div>
     </div>
-
-{showLogoutConfirm && (
-  <div className="logout-confirm-overlay">
-    <div className="logout-confirm-box">
-
-      <div className="logout-confirm-icon">
-        ↪
-      </div>
-
-      <h3>Logout</h3>
-
-      <p>
-        Are you sure you want to logout?
-      </p>
-
-      <div className="logout-confirm-actions">
-
-        <button
-          type="button"
-          className="logout-cancel-btn"
-          onClick={() => setShowLogoutConfirm(false)}
-        >
-          Cancel
-        </button>
-
-        <button
-          type="button"
-          className="logout-confirm-btn"
-          onClick={confirmLogout}
-        >
-          Logout
-        </button>
-
-      </div>
-
-    </div>
-  </div>
-)}
         
 
           </section>
@@ -5907,40 +5995,179 @@ if (page === "settings") {
 
             <div className="settings-category-list">
 
-              <button
-                type="button"
-                className="settings-option-card"
-                onClick={handleLogout}
-              >
+  {/* LOGOUT */}
+  <button
+    type="button"
+    className="settings-option-card"
+    onClick={handleLogout}
+  >
+    <span className="settings-option-icon">
+      🚪
+    </span>
 
-                <span className="settings-option-icon">
-                  🚪
-                </span>
-
-                <span className="settings-option-name">
-                  Logout
-                </span>
-
-              </button>
+    <span className="settings-option-name">
+      Logout
+    </span>
+  </button>
 
 
-              <button
-                type="button"
-                className="settings-action-card delete-account-option"
-              >
+  {/* DEACTIVATE ACCOUNT */}
+  <button
+  type="button"
+  className="settings-action-card deactivate-account-option"
+  onClick={() => setShowDeactivateConfirm(true)}
+>
+    <span className="settings-option-icon">
+      ⏸️
+    </span>
 
-                <span className="settings-option-icon">
-                  🗑️
-                </span>
+    <span className="settings-option-name">
+      Deactivate Account
+    </span>
+  </button>
 
-                <span className="settings-option-name">
-                  Delete Account
-                </span>
 
-              </button>
+  {/* DELETE ACCOUNT */}
+  <button
+  type="button"
+  className="settings-action-card delete-account-option"
+  onClick={() => setShowDeleteConfirm(true)}
+>
+    <span className="settings-option-icon">
+      🗑️
+    </span>
 
-            </div>
+    <span className="settings-option-name">
+      Delete Account
+    </span>
+  </button>
 
+</div>
+{showLogoutConfirm && (
+  <div className="logout-confirm-overlay">
+    <div className="logout-confirm-box">
+
+      <div className="logout-confirm-icon">
+        ↪
+      </div>
+
+      <h3>Logout</h3>
+
+      <p>
+        Are you sure you want to logout?
+      </p>
+
+      <div className="logout-confirm-actions">
+
+        <button
+          type="button"
+          className="logout-cancel-btn"
+          onClick={() => setShowLogoutConfirm(false)}
+        >
+          Cancel
+        </button>
+
+        <button
+          type="button"
+          className="logout-confirm-btn"
+          onClick={confirmLogout}
+        >
+          Logout
+        </button>
+
+      </div>
+
+    </div>
+  </div>
+)}
+
+{showDeactivateConfirm && (
+  <div className="logout-confirm-overlay">
+    <div className="logout-confirm-box">
+      <div className="logout-confirm-icon">
+        !
+      </div>
+
+      <h3>Deactivate Account</h3>
+
+      <p>
+        Are you sure you want to deactivate your account?
+        <br />
+        Your account will be hidden from other students.
+        <br />
+        You can reactivate it by logging in within 30 days.
+         <br />
+        After 30 days, your account will be permanently deleted.
+      </p>
+
+      <div className="logout-confirm-actions">
+        <button
+          type="button"
+          className="logout-cancel-btn"
+          onClick={() =>
+            setShowDeactivateConfirm(false)
+          }
+        >
+          Cancel
+        </button>
+
+        <button
+          type="button"
+          className="logout-confirm-btn"
+          onClick={() => {
+            setShowDeactivateConfirm(false)
+            handleDeactivateAccount()
+          }}
+        >
+          Deactivate
+        </button>
+      </div>
+    </div>
+  </div>
+)}
+
+{showDeleteConfirm && (
+  <div className="logout-confirm-overlay">
+    <div className="logout-confirm-box">
+      <div className="logout-confirm-icon">
+        !
+      </div>
+
+      <h3>Delete Account</h3>
+
+      <p>
+        Are you sure you want to permanently delete your account?
+        <br />
+        This action cannot be undone.
+        <br />
+        Your profile and account data will be permanently deleted.
+      </p>
+
+      <div className="logout-confirm-actions">
+        <button
+          type="button"
+          className="logout-cancel-btn"
+          onClick={() =>
+            setShowDeleteConfirm(false)
+          }
+        >
+          Cancel
+        </button>
+
+        <button
+          type="button"
+          className="logout-confirm-btn"
+          onClick={() => {
+            setShowDeleteConfirm(false)
+            handleDeleteAccount()
+          }}
+        >
+          Delete
+        </button>
+      </div>
+    </div>
+  </div>
+)}
           </section>
 
         </main>

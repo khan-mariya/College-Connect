@@ -46,6 +46,22 @@ const userSchema = new mongoose.Schema(
       default: "",
       trim: true,
     },
+    
+    accountStatus: {
+  type: String,
+  enum: ["active", "deactivated"],
+  default: "active",
+},
+
+deactivatedAt: {
+  type: Date,
+  default: null,
+},
+
+deletionScheduledAt: {
+  type: Date,
+  default: null,
+},
 
     // =========================
     // PROFILE INFORMATION

@@ -104,6 +104,331 @@ const sendPushNotification = async (userId, payload) => {
 }
 
 const app = express();
+
+// ======================================================
+// PERMANENTLY DELETE USER ACCOUNT + ALL RELATED DATA
+// ======================================================
+
+const permanentlyDeleteUser = async (userId) => {
+  try {
+        // -----------------------------------------------
+    // USER KE PROJECT FILES + STUDY MATERIAL FILES
+    // PHYSICALLY DELETE KARO
+    // -----------------------------------------------
+
+    const userProjects = await Project.find({
+      owner: userId,
+    }).select("projectFileUrl");
+
+    const userStudyMaterials =
+      await StudyMaterial.find({
+        owner: userId,
+      }).select("fileUrl");
+
+
+    // -----------------------------------------------
+    // DELETE PROJECT FILES
+    // -----------------------------------------------
+
+    for (const project of userProjects) {
+      if (project.projectFileUrl) {
+        const filePath = path.join(
+          __dirname,
+          project.projectFileUrl.replace(
+            "/uploads/",
+            "uploads/"
+          )
+        );
+
+        try {
+          if (fs.existsSync(filePath)) {
+            fs.unlinkSync(filePath);
+          }
+        } catch (error) {
+          console.error(
+            "Project file deletion error:",
+            error
+          );
+        }
+      }
+    }
+
+
+    // -----------------------------------------------
+    // DELETE STUDY MATERIAL FILES
+    // -----------------------------------------------
+
+    for (const material of userStudyMaterials) {
+      if (material.fileUrl) {
+        const filePath = path.join(
+          __dirname,
+          material.fileUrl.replace(
+            "/uploads/",
+            "uploads/"
+          )
+        );
+
+        try {
+          if (fs.existsSync(filePath)) {
+            fs.unlinkSync(filePath);
+          }
+        } catch (error) {
+          console.error(
+            "Study material file deletion error:",
+            error
+          );
+        }
+      }
+    }
+    // -----------------------------------------------
+    // 1. USER KI QUERIES FIND KARO
+    // -----------------------------------------------
+
+    const userQueries = await Query.find({
+      owner: userId,
+    }).select("_id");
+
+    const queryIds = userQueries.map(
+      (query) => query._id
+    );
+
+
+    // -----------------------------------------------
+    // 2. USER KE ANSWERS FIND KARO
+    //    - Jo user ne khud diye
+    //    - Ya jo user ki queries par diye gaye
+    // -----------------------------------------------
+
+    const userAnswers = await Answer.find({
+      $or: [
+        {
+          author: userId,
+        },
+        {
+          query: {
+            $in: queryIds,
+          },
+        },
+      ],
+    }).select("_id");
+
+    const answerIds = userAnswers.map(
+      (answer) => answer._id
+    );
+
+
+    // -----------------------------------------------
+    // 3. USER KE PROJECTS DELETE
+    // -----------------------------------------------
+
+    await Project.deleteMany({
+      owner: userId,
+    });
+
+
+    // -----------------------------------------------
+    // 4. USER KI QUERIES DELETE
+    // -----------------------------------------------
+
+    await Query.deleteMany({
+      owner: userId,
+    });
+
+
+    // -----------------------------------------------
+    // 5. USER KE ANSWERS DELETE
+    // -----------------------------------------------
+
+    if (answerIds.length > 0) {
+      await Answer.deleteMany({
+        _id: {
+          $in: answerIds,
+        },
+      });
+    }
+
+
+    // -----------------------------------------------
+    // 6. SAVED ANSWERS DELETE
+    //    - User ke saved answers
+    //    - Deleted answers ke saved records
+    // -----------------------------------------------
+
+    await SavedAnswer.deleteMany({
+      $or: [
+        {
+          user: userId,
+        },
+        {
+          answer: {
+            $in: answerIds,
+          },
+        },
+      ],
+    });
+
+
+    // -----------------------------------------------
+    // 7. STUDY MATERIAL DELETE
+    // -----------------------------------------------
+
+    await StudyMaterial.deleteMany({
+      owner: userId,
+    });
+
+
+    // -----------------------------------------------
+    // 8. MESSAGES DELETE
+    // -----------------------------------------------
+
+    await Message.deleteMany({
+      $or: [
+        {
+          sender: userId,
+        },
+        {
+          receiver: userId,
+        },
+      ],
+    });
+
+
+    // -----------------------------------------------
+    // 9. CONNECTIONS DELETE
+    // -----------------------------------------------
+
+    await Connection.deleteMany({
+      $or: [
+        {
+          requester: userId,
+        },
+        {
+          recipient: userId,
+        },
+      ],
+    });
+
+
+    // -----------------------------------------------
+    // 10. BLOCKS DELETE
+    // -----------------------------------------------
+
+    await Block.deleteMany({
+      $or: [
+        {
+          blocker: userId,
+        },
+        {
+          blocked: userId,
+        },
+      ],
+    });
+
+
+    // -----------------------------------------------
+    // 11. NOTIFICATIONS DELETE
+    // -----------------------------------------------
+
+    await Notification.deleteMany({
+      user: userId,
+    });
+
+
+    // -----------------------------------------------
+    // 12. NOTIFICATION SETTINGS DELETE
+    // -----------------------------------------------
+
+    await NotificationSetting.deleteOne({
+      user: userId,
+    });
+
+
+    // -----------------------------------------------
+    // 13. PUSH SUBSCRIPTIONS DELETE
+    // -----------------------------------------------
+
+    await PushSubscription.deleteMany({
+      user: userId,
+    });
+
+
+    // -----------------------------------------------
+    // 14. USER ACCOUNT DELETE
+    // -----------------------------------------------
+
+    const deletedUser =
+      await User.findByIdAndDelete(userId);
+
+
+    if (!deletedUser) {
+      throw new Error(
+        "User account not found during permanent deletion."
+      );
+    }
+
+
+    console.log(
+      `Permanently deleted user and related data: ${userId}`
+    );
+
+    return true;
+
+  } catch (error) {
+
+    console.error(
+      "Permanent account deletion error:",
+      error
+    );
+
+    throw error;
+  }
+};
+// ======================================================
+// AUTO DELETE DEACTIVATED ACCOUNTS
+// ======================================================
+
+const deleteExpiredDeactivatedAccounts = async () => {
+  try {
+    const now = new Date();
+
+    const expiredUsers =
+      await User.find({
+        accountStatus: "deactivated",
+        deletionScheduledAt: {
+          $lte: now,
+        },
+      }).select("_id");
+
+    if (expiredUsers.length === 0) {
+      return;
+    }
+
+    for (const user of expiredUsers) {
+
+      await permanentlyDeleteUser(
+        user._id
+      );
+
+      console.log(
+        `Expired deactivated account permanently deleted: ${user._id}`
+      );
+    }
+
+  } catch (error) {
+
+    console.error(
+      "Expired deactivated account cleanup error:",
+      error
+    );
+  }
+};
+
+
+// Har 1 hour mein expired accounts check honge
+setInterval(
+  deleteExpiredDeactivatedAccounts,
+  60 * 60 * 1000
+);
 webpush.setVapidDetails(
   process.env.VAPID_EMAIL,
   process.env.VAPID_PUBLIC_KEY,
@@ -391,6 +716,37 @@ app.post("/api/auth/login", async (req, res) => {
           "Invalid email or password.",
       });
     }
+    // ======================================================
+// REACTIVATE DEACTIVATED ACCOUNT
+// ======================================================
+
+if (user.accountStatus === "deactivated") {
+
+  const now = new Date();
+
+  // 30 days ke andar login kiya hai
+  if (
+    user.deletionScheduledAt &&
+    now < user.deletionScheduledAt
+  ) {
+    user.accountStatus = "active";
+    user.deactivatedAt = null;
+    user.deletionScheduledAt = null;
+
+    await user.save();
+  } else {
+
+    // 30 days complete ho chuke hain
+    await permanentlyDeleteUser(
+  user._id
+);
+
+    return res.status(401).json({
+      message:
+        "Your account was permanently deleted because it was deactivated for more than 30 days.",
+    });
+  }
+}
 
     const token = jwt.sign(
       { userId: user._id },
@@ -677,15 +1033,18 @@ app.get(
       }
 
       const students =
-        await User.find({
-          degree: currentUser.degree,
-          year: currentUser.year,
+  await User.find({
+    degree: currentUser.degree,
+    year: currentUser.year,
 
-          // Don't show the logged-in user
-          _id: {
-            $ne: currentUser._id,
-          },
-        })
+    // Only active students should be visible
+    accountStatus: "active",
+
+    // Don't show the logged-in user
+    _id: {
+      $ne: currentUser._id,
+    },
+  })
           .select(
             "name level degree year college skills city state profilePhoto createdAt"
           )
@@ -723,15 +1082,20 @@ app.get(
       const { id } = req.params;
 
       const user =
-        await User.findById(id).select(
-          "name level degree year college skills city state profilePhoto"
-        );
-
+  await User.findById(id).select(
+    "name level degree year college skills city state profilePhoto accountStatus"
+  );
       if (!user) {
         return res.status(404).json({
           message: "Student not found.",
         });
       }
+
+      if (user.accountStatus !== "active") {
+  return res.status(404).json({
+    message: "Student not found.",
+  });
+}
 
       res.status(200).json({
         user,
@@ -1051,7 +1415,90 @@ app.put(
   }
 );
 
+// =======================================================
+// DEACTIVATE ACCOUNT
+// =======================================================
 
+app.put(
+  "/api/account/deactivate",
+  authMiddleware,
+  async (req, res) => {
+    try {
+      const user = await User.findById(req.user._id);
+
+      if (!user) {
+        return res.status(404).json({
+          message: "Account not found.",
+        });
+      }
+
+      if (user.accountStatus === "deactivated") {
+        return res.status(400).json({
+          message: "Account is already deactivated.",
+        });
+      }
+
+      const now = new Date();
+
+      const deletionDate = new Date(now);
+      deletionDate.setDate(
+        deletionDate.getDate() + 30
+      );
+
+      user.accountStatus = "deactivated";
+      user.deactivatedAt = now;
+      user.deletionScheduledAt = deletionDate;
+
+      await user.save();
+
+      res.status(200).json({
+        message:
+          "Account deactivated successfully.",
+      });
+    } catch (error) {
+      console.error(
+        "Deactivate account error:",
+        error
+      );
+
+      res.status(500).json({
+        message:
+          "Unable to deactivate account.",
+      });
+    }
+  }
+);
+
+// =======================================================
+// DELETE ACCOUNT - PERMANENT
+// =======================================================
+
+app.delete(
+  "/api/account",
+  authMiddleware,
+  async (req, res) => {
+    try {
+      await permanentlyDeleteUser(
+        req.user._id
+      );
+
+      res.status(200).json({
+        message:
+          "Account deleted permanently.",
+      });
+    } catch (error) {
+      console.error(
+        "Delete account error:",
+        error
+      );
+
+      res.status(500).json({
+        message:
+          "Unable to delete account.",
+      });
+    }
+  }
+);
 // ======================================================
 // UPDATE PROFILE
 // Degree + Year are NOT editable
@@ -1162,10 +1609,11 @@ app.get(
       // Find students who belong to
       // the same Degree + Year
       const matchingUsers =
-        await User.find({
-          degree: currentUser.degree,
-          year: currentUser.year,
-        }).select("_id");
+  await User.find({
+    degree: currentUser.degree,
+    year: currentUser.year,
+    accountStatus: "active",
+  }).select("_id");
 
       const matchingUserIds =
         matchingUsers.map(
@@ -1468,9 +1916,10 @@ app.post(
   await User.find({
     degree: user.degree,
     year: user.year,
+    accountStatus: "active",
     _id: { $ne: user._id },
   }).select("_id");
-
+  
 // 🔔 WEBSITE NOTIFICATION — ALWAYS
 if (matchingStudents.length > 0) {
   await Notification.insertMany(
@@ -1679,10 +2128,11 @@ app.get(
 
       // Find students from same Degree + Year
       const matchingStudents =
-        await User.find({
-          degree: currentUser.degree,
-          year: currentUser.year,
-        }).select("_id");
+  await User.find({
+    degree: currentUser.degree,
+    year: currentUser.year,
+    accountStatus: "active",
+  }).select("_id");
 
       const matchingStudentIds =
         matchingStudents.map(
@@ -1824,6 +2274,7 @@ app.post(
   await User.find({
     degree: user.degree,
     year: user.year,
+    accountStatus: "active",
     _id: { $ne: user._id },
   }).select("_id");
 
@@ -1921,15 +2372,32 @@ app.get(
 
 
       // Base filter
-      const filter = {
+const filter = {
 
-        degree:
-          currentUser.degree,
+  degree:
+    currentUser.degree,
 
-        year:
-          currentUser.year,
+  year:
+    currentUser.year,
 
-      };
+  owner: {
+    $in: activeStudentIds,
+  },
+
+};
+
+      // Only ACTIVE students from the same degree + year
+const activeStudents =
+  await User.find({
+    degree: currentUser.degree,
+    year: currentUser.year,
+    accountStatus: "active",
+  }).select("_id");
+
+const activeStudentIds =
+  activeStudents.map(
+    (student) => student._id
+  );
 
 
       // Optional category filter
@@ -2128,6 +2596,7 @@ app.post(
   await User.find({
     degree: user.degree,
     year: user.year,
+    accountStatus: "active",
     _id: { $ne: user._id },
   }).select("_id");
 
@@ -2516,6 +2985,26 @@ app.post(
           message: "Recipient is required",
         });
       }
+      // Check recipient account status
+const recipientUser =
+  await User.findById(recipient).select(
+    "accountStatus"
+  );
+
+if (!recipientUser) {
+  return res.status(404).json({
+    message: "Student not found.",
+  });
+}
+
+if (
+  recipientUser.accountStatus !== "active"
+) {
+  return res.status(403).json({
+    message:
+      "Connection request cannot be sent to this student.",
+  });
+}
 
       if (String(requester) === String(recipient)) {
         return res.status(400).json({
@@ -2740,24 +3229,32 @@ app.get(
       }
 
       const connections =
-        await Connection.find({
-          $or: [
-            { requester: userId },
-            { recipient: userId },
-          ],
-        })
-          .populate(
-            "requester",
-            "name email degree year level profilePhoto"
-          )
-          .populate(
-            "recipient",
-            "name email degree year level profilePhoto"
-          )
-          .sort({ createdAt: -1 });
+  await Connection.find({
+    $or: [
+      { requester: userId },
+      { recipient: userId },
+    ],
+  })
+    .populate(
+      "requester",
+      "name email degree year level profilePhoto accountStatus"
+    )
+    .populate(
+      "recipient",
+      "name email degree year level profilePhoto accountStatus"
+    )
+    .sort({ createdAt: -1 });
 
+const activeConnections =
+  connections.filter(
+    (connection) =>
+      connection.requester &&
+      connection.recipient &&
+      connection.requester.accountStatus === "active" &&
+      connection.recipient.accountStatus === "active"
+  );
       res.status(200).json({
-  connections,
+  connections: activeConnections,
 });
 
     } catch (error) {
@@ -3127,6 +3624,25 @@ app.get(
         });
       }
 
+      // ==========================================
+// CHECK BOTH USERS ARE ACTIVE
+// ==========================================
+
+const chatUsers =
+  await User.find({
+    _id: {
+      $in: [user1, user2],
+    },
+    accountStatus: "active",
+  }).select("_id");
+
+if (chatUsers.length !== 2) {
+  return res.status(403).json({
+    message:
+      "Chat is not available with this student.",
+  });
+}
+
       const messages =
         await Message.find({
           $or: [
@@ -3209,6 +3725,31 @@ app.post(
             "You cannot message yourself",
         });
       }
+
+      // ==========================================
+// CHECK RECEIVER ACCOUNT IS ACTIVE
+// ==========================================
+
+const receiverUser =
+  await User.findById(receiver)
+    .select("accountStatus");
+
+if (!receiverUser) {
+  return res.status(404).json({
+    message:
+      "Student not found.",
+  });
+}
+
+if (
+  receiverUser.accountStatus !==
+  "active"
+) {
+  return res.status(403).json({
+    message:
+      "You cannot send a message to this student.",
+  });
+}
 
       // ==========================================
       // EDUCATION-ONLY CHAT KEYWORD CHECK
