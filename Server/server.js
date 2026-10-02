@@ -10,8 +10,15 @@ const webpush = require("web-push");
 const multer = require("multer");
 const path = require("path");
 const fs = require("fs");
-
+const { PDFParse } = require("pdf-parse");
+const mammoth = require("mammoth");
 require("dotenv").config();
+const { GoogleGenAI } = require("@google/genai");
+
+const geminiAI = new GoogleGenAI({
+  apiKey: process.env.GEMINI_API_KEY,
+});
+
 
 const User = require("./models/User");
 const Message = require("./models/Message");
@@ -20,10 +27,50 @@ const Query = require("./models/Query");
 const Answer = require("./models/Answer");
 const SavedAnswer = require("./models/SavedAnswer");
 const StudyMaterial = require("./models/StudyMaterial");
+const SmartyStudy = require("./models/SmartyStudy");
 const Connection = require("./models/Connection");
 const Block = require("./models/Block");
 const Notification = require("./models/Notification");
 const NotificationSetting = require("./models/NotificationSetting");
+
+const normalizeSmartyAnswer = (answer, options = []) => {
+  if (typeof answer === "number" && Number.isInteger(answer)) {
+    return answer;
+  }
+
+  if (typeof answer !== "string") {
+    return answer;
+  }
+
+  const value = answer.trim();
+
+  // "0", "1", "2", "3"
+  if (/^[0-9]+$/.test(value)) {
+    const index = Number(value);
+
+    if (index >= 0 && index < options.length) {
+      return index;
+    }
+  }
+
+  // "A", "B", "C", "D"
+  if (/^[A-Da-d]$/.test(value)) {
+    return value.toUpperCase().charCodeAt(0) - 65;
+  }
+
+  // Exact option text
+  const optionIndex = options.findIndex(
+    (option) =>
+      String(option).trim().toLowerCase() ===
+      value.toLowerCase()
+  );
+
+  if (optionIndex !== -1) {
+    return optionIndex;
+  }
+
+  return answer;
+};
 const canSendNotification = async (
   userId,
   settingName = null
@@ -60,6 +107,497 @@ const canSendNotification = async (
 
     // Error ki situation mein notification ko completely break nahi karna
     return true;
+  }
+};
+
+// =========================================================
+// SMARTY STUDY — FILE TEXT EXTRACTION
+// =========================================================
+
+const extractStudyMaterialText = async (
+  filePath,
+  originalFileName
+) => {
+  try {
+    const extension = path
+      .extname(originalFileName || filePath)
+      .toLowerCase();
+
+    // -------------------------------------------------------
+    // PDF
+    // -------------------------------------------------------
+    if (extension === ".pdf") {
+      const fileBuffer = fs.readFileSync(filePath);
+
+      const parser = new PDFParse({
+        data: fileBuffer,
+      });
+
+      const result = await parser.getText();
+
+      await parser.destroy();
+
+      return {
+        success: true,
+        text: result.text || "",
+        type: "pdf",
+      };
+    }
+
+    // -------------------------------------------------------
+    // DOCX
+    // -------------------------------------------------------
+    if (extension === ".docx") {
+      const result = await mammoth.extractRawText({
+        path: filePath,
+      });
+
+      return {
+        success: true,
+        text: result.value || "",
+        type: "docx",
+      };
+    }
+
+    // -------------------------------------------------------
+    // Unsupported file type
+    // -------------------------------------------------------
+    return {
+      success: false,
+      text: "",
+      type: extension,
+      message:
+        "This file type is not supported for text extraction yet.",
+    };
+  } catch (error) {
+    console.error(
+      "Smarty Study text extraction error:",
+      error.message
+    );
+
+    return {
+      success: false,
+      text: "",
+      type: "unknown",
+      message:
+        "Unable to extract text from this file.",
+    };
+  }
+};
+
+// =========================================================
+// SMARTY STUDY — GEMINI MATERIAL ANALYSIS
+// =========================================================
+
+const analyzeStudyMaterialWithAI = async (sourceText) => {
+  try {
+    if (!sourceText || !sourceText.trim()) {
+      return {
+        success: false,
+        message: "No extracted study material text found.",
+      };
+    }
+
+    const prompt = `
+You are Smarty Study, an educational AI inside a college student learning platform.
+
+Your job is to transform ONLY the provided study material into a complete interactive learning system.
+
+=========================================================
+STRICT SOURCE RULES
+=========================================================
+
+1. Use ONLY information supported by the provided material.
+2. Do NOT invent chapters, concepts, facts, formulas or examples.
+3. Do NOT use outside knowledge unless absolutely necessary to explain wording already present.
+4. Preserve important terminology from the material.
+5. Every generated question and answer must be based on the material.
+6. If something is not present in the material, return an empty array or empty string.
+7. Do not create fake/sample content.
+8. Keep the content useful for college students.
+9. Return ONLY valid JSON.
+10. Do NOT use markdown code fences.
+
+=========================================================
+RETURN EXACTLY THIS JSON STRUCTURE
+=========================================================
+
+{
+  "topics": [
+    {
+      "title": "",
+      "summary": "",
+
+      "importantPoints": [
+        ""
+      ],
+
+      "simpleExplanation": "",
+
+      "shortAnswers": [
+        {
+          "question": "",
+          "answer": ""
+        }
+      ],
+
+      "flashcards": [
+        {
+          "question": "",
+          "answer": ""
+        }
+      ],
+
+      "mcqs": [
+        {
+          "question": "",
+          "options": [
+            "",
+            "",
+            "",
+            ""
+          ],
+          "correctAnswer": "",
+          "explanation": ""
+        }
+      ],
+
+      "questions": [
+        {
+          "question": "",
+          "answer": "",
+          "marks": 2
+        }
+      ],
+
+      "socratic": [
+        {
+          "question": "",
+          "expectedDirection": ""
+        }
+      ],
+
+      "teachBack": {
+        "prompt": "",
+        "keyPointsExpected": [
+          ""
+        ]
+      },
+
+      "studyQuest": [
+        {
+          "stage": "learn",
+          "task": "",
+          "question": ""
+        },
+        {
+          "stage": "practice",
+          "task": "",
+          "question": ""
+        },
+        {
+          "stage": "challenge",
+          "task": "",
+          "question": ""
+        },
+        {
+          "stage": "master",
+          "task": "",
+          "question": ""
+        }
+      ],
+
+      "findMistake": [
+        {
+          "incorrectStatement": "",
+          "mistake": "",
+          "correctVersion": "",
+          "explanation": ""
+        }
+      ],
+
+      "realLifeScenarios": [
+        {
+          "scenario": "",
+          "question": "",
+          "expectedAnswer": ""
+        }
+      ],
+
+      "examAnswers": {
+        "twoMarks": [
+          {
+            "question": "",
+            "answer": "",
+            "keywords": [
+              ""
+            ]
+          }
+        ],
+
+        "fiveMarks": [
+          {
+            "question": "",
+            "answer": "",
+            "keywords": [
+              ""
+            ]
+          }
+        ],
+
+        "tenMarks": [
+          {
+            "question": "",
+            "answer": "",
+            "keywords": [
+              ""
+            ]
+          }
+        ]
+      },
+
+      "examNight": {
+        "mustLearn": [
+          ""
+        ],
+        "importantQuestions": [
+          ""
+        ],
+        "weakTopicCheck": [
+          ""
+        ],
+        "quickRevision": [
+          ""
+        ]
+      }
+    }
+  ],
+
+  "globalQuestions": {
+    "mockTest": [
+      {
+        "question": "",
+        "options": [
+          "",
+          "",
+          "",
+          ""
+        ],
+        "correctAnswer": "",
+        "explanation": ""
+      }
+    ]
+  },
+
+  "masteryMap": [
+    {
+      "topic": "",
+      "keyConcepts": [
+        ""
+      ],
+      "status": "needs-attention"
+    }
+  ],
+
+  "bossBattle": {
+    "questions": [
+      {
+        "question": "",
+        "type": "mcq",
+        "options": [
+          "",
+          "",
+          "",
+          ""
+        ],
+        "correctAnswer": "",
+        "explanation": ""
+      }
+    ]
+  }
+}
+
+=========================================================
+CONTENT REQUIREMENTS
+=========================================================
+
+IMPORTANT POINTS:
+Extract the genuinely important points from the material.
+
+SIMPLE EXPLANATION:
+Explain the topic in simple student-friendly language without adding unsupported facts.
+
+SHORT ANSWERS:
+Create concise questions and answers directly from the material.
+
+FLASHCARDS:
+Create useful front/back style recall questions.
+
+MCQs:
+Create four-option questions.
+Only one option must be correct.
+
+QUESTIONS:
+Create descriptive questions suitable for college study.
+Use marks such as 2, 5 or 10.
+
+SOCRATIC:
+Do NOT directly provide the answer.
+Create guiding questions that help the student discover the answer.
+
+TEACH BACK:
+Create a prompt asking the student to explain the concept in their own words.
+List the key points an accurate explanation should contain.
+
+STUDY QUEST:
+Create a progression:
+learn → practice → challenge → master.
+
+FIND THE MISTAKE:
+Create intentionally incorrect statements only when the material supports a clear correction.
+Do not invent facts.
+
+REAL-LIFE SCENARIOS:
+Create realistic application situations based only on concepts present in the material.
+
+EXAM ANSWERS:
+Create 2-mark, 5-mark and 10-mark answers only when enough material exists.
+Include important keywords.
+
+EXAM NIGHT:
+Extract:
+- must learn concepts
+- important questions
+- weak-topic checks
+- quick revision points
+
+MASTERY MAP:
+Create one entry for every major topic.
+Initial status must be "needs-attention".
+
+BOSS BATTLE:
+Create difficult mixed questions based only on the uploaded material.
+Do not reveal any answer outside the JSON.
+
+=========================================================
+IMPORTANT QUALITY RULE
+=========================================================
+
+If the uploaded material contains only a small amount of information:
+
+DO NOT artificially generate large amounts of content.
+
+Generate only what can genuinely be supported by the material.
+
+Empty arrays are acceptable.
+
+=========================================================
+STUDY MATERIAL
+=========================================================
+
+${sourceText}
+`;
+
+    let response = null;
+    let lastError = null;
+
+    for (let attempt = 1; attempt <= 3; attempt++) {
+      try {
+        console.log(
+          `Smarty Study Gemini attempt ${attempt}/3`
+        );
+
+        response =
+          await geminiAI.models.generateContent({
+            model: "gemini-2.5-flash-lite",
+
+            contents: prompt,
+
+            config: {
+              responseMimeType: "application/json",
+
+              httpOptions: {
+                timeout: 30000,
+              },
+            },
+          });
+
+        if (response?.text) {
+          console.log(
+            `Smarty Study Gemini attempt ${attempt} succeeded`
+          );
+
+          break;
+        }
+
+        throw new Error(
+          "Gemini returned an empty response."
+        );
+      } catch (error) {
+        lastError = error;
+
+        console.error(
+          `Smarty Study Gemini attempt ${attempt} failed:`,
+          error.message
+        );
+
+        if (attempt < 3) {
+          await new Promise((resolve) =>
+            setTimeout(
+              resolve,
+              3000 * attempt
+            )
+          );
+        }
+      }
+    }
+
+    if (!response?.text) {
+      throw (
+        lastError ||
+        new Error(
+          "Gemini did not return a response."
+        )
+      );
+    }
+
+    const responseText =
+      response.text || "";
+
+    const cleanedText =
+      responseText
+        .replace(/^```json\s*/i, "")
+        .replace(/^```\s*/i, "")
+        .replace(/\s*```$/i, "")
+        .trim();
+
+    const parsedResult =
+      JSON.parse(cleanedText);
+
+    if (
+      !parsedResult ||
+      !Array.isArray(parsedResult.topics)
+    ) {
+      throw new Error(
+        "Invalid Smarty Study AI structure."
+      );
+    }
+
+    return {
+      success: true,
+      data: parsedResult,
+    };
+  } catch (error) {
+    console.error(
+      "Smarty Study Gemini analysis error:",
+      error.message
+    );
+
+    return {
+      success: false,
+      message:
+        "Unable to analyze study material with AI.",
+    };
   }
 };
 const PushSubscription = require("./models/PushSubscription");
@@ -102,6 +640,8 @@ const sendPushNotification = async (userId, payload) => {
     )
   }
 }
+
+
 
 const app = express();
 
@@ -1032,19 +1572,36 @@ app.get(
         });
       }
 
+      const degree = String(currentUser.degree || "").trim();
+      const year = String(currentUser.year || "").trim();
+
+      if (!degree || !year) {
+        return res.status(400).json({
+          message: "Add your degree and year to your account before viewing students.",
+        });
+      }
+
+      const exactTextMatch = (value) => {
+        const escapedParts = value
+          .split(/\s+/)
+          .map((part) => part.replace(/[.*+?^${}()|[\]\\]/g, "\\$&"));
+
+        return new RegExp(`^\\s*${escapedParts.join("\\s+")}\\s*$`, "i");
+      };
+
       const students =
-  await User.find({
-    degree: currentUser.degree,
-    year: currentUser.year,
-
-    // Only active students should be visible
-    accountStatus: "active",
-
-    // Don't show the logged-in user
-    _id: {
-      $ne: currentUser._id,
-    },
-  })
+        await User.find({
+          degree: exactTextMatch(degree),
+          year: exactTextMatch(year),
+          // Include old accounts created before accountStatus existed.
+          $or: [
+            { accountStatus: "active" },
+            { accountStatus: { $exists: false } },
+            { accountStatus: null },
+          ],
+          // Don't show the logged-in user.
+          _id: { $ne: currentUser._id },
+        })
           .select(
             "name level degree year college skills city state profilePhoto createdAt"
           )
@@ -2573,6 +3130,390 @@ app.post(
             user.year,
         });
 
+       // =========================================================
+// SMARTY STUDY — AI ANALYSIS API
+// =========================================================
+
+app.post(
+  "/api/smarty-study/analyze/:materialId",
+  authMiddleware,
+  async (req, res) => {
+    try {
+      const { materialId } = req.params;
+
+      // ---------------------------------------------------
+      // FIND STUDY MATERIAL
+      // ---------------------------------------------------
+
+      const material =
+        await StudyMaterial.findById(
+          materialId
+        );
+
+      if (!material) {
+        return res.status(404).json({
+          message:
+            "Study material not found.",
+        });
+      }
+
+      // ---------------------------------------------------
+      // CHECK OWNER
+      // ---------------------------------------------------
+
+      if (
+        String(material.owner) !==
+        String(req.user._id)
+      ) {
+        return res.status(403).json({
+          message:
+            "You are not allowed to analyze this material.",
+        });
+      }
+
+      // ---------------------------------------------------
+      // FIND SMARTY STUDY RECORD
+      // ---------------------------------------------------
+
+      const smartyStudy =
+        await SmartyStudy.findOne({
+          material: material._id,
+          owner: req.user._id,
+        });
+
+      if (!smartyStudy) {
+        return res.status(404).json({
+          message:
+            "Smarty Study record not found for this material.",
+        });
+      }
+
+      // ---------------------------------------------------
+      // CHECK SOURCE TEXT
+      // ---------------------------------------------------
+
+      if (
+        !smartyStudy.sourceText ||
+        !smartyStudy.sourceText.trim()
+      ) {
+        return res.status(400).json({
+          message:
+            "No readable text was extracted from this material.",
+        });
+      }
+
+      // ---------------------------------------------------
+      // MARK PROCESSING
+      // ---------------------------------------------------
+
+      smartyStudy.status =
+        "processing";
+
+      await smartyStudy.save();
+
+      // ---------------------------------------------------
+      // CALL GEMINI AI
+      // ---------------------------------------------------
+
+      const aiResult =
+        await analyzeStudyMaterialWithAI(
+          smartyStudy.sourceText
+        );
+
+      // ---------------------------------------------------
+      // AI FAILED
+      // ---------------------------------------------------
+
+      if (!aiResult.success) {
+        smartyStudy.status =
+          "failed";
+
+        await smartyStudy.save();
+
+        return res.status(500).json({
+          message:
+            aiResult.message ||
+            "AI analysis failed.",
+        });
+      }
+
+      const data =
+        aiResult.data;
+
+      // ---------------------------------------------------
+      // VALIDATE AI DATA
+      // ---------------------------------------------------
+
+      if (
+        !data ||
+        !Array.isArray(data.topics)
+      ) {
+        smartyStudy.status =
+          "failed";
+
+        await smartyStudy.save();
+
+        return res.status(500).json({
+          message:
+            "AI returned an invalid study structure.",
+        });
+      }
+
+      // ===================================================
+      // SAVE TOPICS
+      // ===================================================
+
+     smartyStudy.topics = data.topics.map((topic) => ({
+  ...topic,
+
+  mcqs: Array.isArray(topic.mcqs)
+    ? topic.mcqs.map((mcq) => ({
+        ...mcq,
+
+        correctAnswer: normalizeSmartyAnswer(
+          mcq.correctAnswer,
+          Array.isArray(mcq.options)
+            ? mcq.options
+            : []
+        ),
+      }))
+    : [],
+}));
+
+      // ===================================================
+      // CREATE MASTERY MAP
+      // ===================================================
+
+    if (Array.isArray(data.masteryMap)) {
+  smartyStudy.mastery = data.masteryMap.map((item) => ({
+    topic: item.topic || "",
+    keyConcepts: Array.isArray(item.keyConcepts)
+      ? item.keyConcepts
+      : [],
+    status: item.status || "needs-attention",
+    score: 0,
+  }));
+} else {
+  smartyStudy.mastery = data.topics.map((topic) => ({
+    topic: topic.title || "",
+    keyConcepts: [],
+    status: "needs-attention",
+    score: 0,
+  }));
+}
+
+      // ===================================================
+      // SAVE BOSS BATTLE
+      // ===================================================
+
+     if (
+  data.bossBattle &&
+  Array.isArray(data.bossBattle.questions)
+) {
+  smartyStudy.bossBattle = {
+    unlocked: false,
+    completed: false,
+    score: 0,
+    performance: null,
+
+    questions: data.bossBattle.questions.map((question) => ({
+      ...question,
+
+      correctAnswer: normalizeSmartyAnswer(
+        question.correctAnswer,
+        Array.isArray(question.options)
+          ? question.options
+          : []
+      ),
+    })),
+  };
+} else {
+  smartyStudy.bossBattle = {
+    unlocked: false,
+    completed: false,
+    score: 0,
+    performance: null,
+    questions: [],
+  };
+}
+
+      // ===================================================
+      // SPACED REPETITION
+      // ===================================================
+      // Do not generate review schedule yet.
+      // It will be created after the student practices.
+
+      smartyStudy.spacedRepetition = {
+        generated: false,
+        reviews: [],
+      };
+
+      // ===================================================
+      // SAVE MOCK TEST IF MODEL SUPPORTS IT
+      // ===================================================
+
+      if (
+  data.globalQuestions &&
+  Array.isArray(data.globalQuestions.mockTest)
+) {
+  smartyStudy.mockTest =
+    data.globalQuestions.mockTest.map((question) => ({
+      ...question,
+
+      correctAnswer: normalizeSmartyAnswer(
+        question.correctAnswer,
+        Array.isArray(question.options)
+          ? question.options
+          : []
+      ),
+    }));
+} else {
+  smartyStudy.mockTest = [];
+}
+
+      // ===================================================
+      // MARK READY
+      // ===================================================
+
+      smartyStudy.status =
+        "ready";
+
+      await smartyStudy.save();
+
+      // ===================================================
+      // RETURN COMPLETE STUDY DATA
+      // ===================================================
+
+      return res.status(200).json({
+        message:
+          "Study material analyzed successfully.",
+
+        smartyStudy: {
+          id:
+            smartyStudy._id,
+
+          material:
+            smartyStudy.material,
+
+          status:
+            smartyStudy.status,
+
+          topics:
+            smartyStudy.topics,
+
+          mastery:
+            smartyStudy.mastery,
+
+          bossBattle:
+            smartyStudy.bossBattle,
+
+          spacedRepetition:
+            smartyStudy.spacedRepetition,
+
+          mockTest:
+            smartyStudy.mockTest ||
+            [],
+        },
+      });
+    } catch (error) {
+      console.error(
+        "Smarty Study analysis route error:",
+        error.message
+      );
+
+      return res.status(500).json({
+        message:
+          "Unable to analyze study material.",
+      });
+    }
+  }
+);
+// =========================================================
+// SMARTY STUDY — GET GENERATED STUDY DATA
+// =========================================================
+
+app.get(
+  "/api/smarty-study/:materialId",
+  authMiddleware,
+  async (req, res) => {
+    try {
+      const { materialId } = req.params;
+
+      const smartyStudy = await SmartyStudy.findOne({
+        material: materialId,
+        owner: req.user._id,
+      }).populate(
+        "material",
+        "title description category originalFileName"
+      );
+
+      if (!smartyStudy) {
+        return res.status(404).json({
+          message: "Smarty Study data not found.",
+        });
+      }
+
+      return res.status(200).json({
+        smartyStudy,
+      });
+    } catch (error) {
+      console.error(
+        "Get Smarty Study error:",
+        error.message
+      );
+
+      return res.status(500).json({
+        message:
+          "Unable to load Smarty Study data.",
+      });
+    }
+  }
+);
+
+        // =========================================================
+// SMARTY STUDY — CREATE STUDY RECORD + EXTRACT TEXT
+// =========================================================
+
+let smartyStudy = null;
+
+try {
+  smartyStudy = await SmartyStudy.create({
+    material: material._id,
+    owner: user._id,
+    status: "processing",
+  });
+
+  const extraction = await extractStudyMaterialText(
+    req.file.path,
+    req.file.originalname
+  );
+
+  if (extraction.success && extraction.text.trim()) {
+    smartyStudy.sourceText = extraction.text.trim();
+    smartyStudy.status = "processing";
+
+    await smartyStudy.save();
+
+    console.log(
+      "Smarty Study text extracted successfully:",
+      req.file.originalname
+    );
+  } else {
+    smartyStudy.status = "failed";
+    await smartyStudy.save();
+
+    console.log(
+      "Smarty Study text extraction failed:",
+      extraction.message
+    );
+  }
+} catch (smartyError) {
+  console.error(
+    "Smarty Study creation/extraction error:",
+    smartyError.message
+  );
+}
+
 
       // -----------------------------------------------
       // GET CREATED MATERIAL
@@ -2682,6 +3623,346 @@ if (matchingStudents.length > 0) {
       res.status(500).json({
         message:
           "Unable to upload study material.",
+      });
+    }
+  }
+);
+
+// =========================================================
+// SMARTY STUDY — TEACH BACK AI EVALUATION
+// =========================================================
+
+app.post(
+  "/api/smarty-study/teach-back/:materialId",
+  authMiddleware,
+  async (req, res) => {
+    try {
+      const { materialId } = req.params;
+      const { topicIndex, explanation } = req.body;
+
+      // ---------------------------------------------------
+      // Validate student explanation
+      // ---------------------------------------------------
+      if (
+        typeof explanation !== "string" ||
+        !explanation.trim()
+      ) {
+        return res.status(400).json({
+          message:
+            "Please provide your explanation before submitting.",
+        });
+      }
+
+      // ---------------------------------------------------
+      // Validate topic index
+      // ---------------------------------------------------
+      if (
+        topicIndex === undefined ||
+        topicIndex === null ||
+        Number.isNaN(Number(topicIndex))
+      ) {
+        return res.status(400).json({
+          message:
+            "A valid study topic is required.",
+        });
+      }
+
+      // ---------------------------------------------------
+      // Find uploaded study material
+      // ---------------------------------------------------
+      const material =
+        await StudyMaterial.findById(materialId);
+
+      if (!material) {
+        return res.status(404).json({
+          message:
+            "Study material not found.",
+        });
+      }
+
+      // ---------------------------------------------------
+      // Make sure material belongs to logged-in student
+      // ---------------------------------------------------
+      if (
+        String(material.owner) !==
+        String(req.user._id)
+      ) {
+        return res.status(403).json({
+          message:
+            "You are not allowed to evaluate this material.",
+        });
+      }
+
+      // ---------------------------------------------------
+      // Find Smarty Study data
+      // ---------------------------------------------------
+      const smartyStudy =
+        await SmartyStudy.findOne({
+          material: material._id,
+          owner: req.user._id,
+        });
+
+      if (!smartyStudy) {
+        return res.status(404).json({
+          message:
+            "Smarty Study data not found.",
+        });
+      }
+
+      // ---------------------------------------------------
+      // Make sure source material exists
+      // ---------------------------------------------------
+      if (
+        !smartyStudy.sourceText ||
+        !smartyStudy.sourceText.trim()
+      ) {
+        return res.status(400).json({
+          message:
+            "Original study material is not available for evaluation.",
+        });
+      }
+
+      // ---------------------------------------------------
+      // Get selected topic
+      // ---------------------------------------------------
+      const index = Number(topicIndex);
+
+      if (
+        !Array.isArray(smartyStudy.topics) ||
+        !smartyStudy.topics[index]
+      ) {
+        return res.status(400).json({
+          message:
+            "Selected study topic was not found.",
+        });
+      }
+
+      const selectedTopic =
+        smartyStudy.topics[index];
+
+      // ---------------------------------------------------
+      // Limit explanation size
+      // ---------------------------------------------------
+      const studentExplanation =
+        explanation.trim().slice(0, 10000);
+
+      // ---------------------------------------------------
+      // AI evaluation prompt
+      // ---------------------------------------------------
+      const prompt = `
+You are the Teach Back evaluator inside a student learning platform.
+
+Your job is to evaluate a student's explanation of ONE topic.
+
+IMPORTANT RULES:
+
+1. Use ONLY the supplied study material.
+2. Use ONLY the selected topic from that material.
+3. Do NOT introduce facts that are not supported by the study material.
+4. Do NOT judge grammar, spelling, English level, or writing style.
+5. Focus on whether the student understood and explained the actual concept.
+6. Do NOT invent missing information.
+7. If something cannot be determined from the supplied material, say so.
+8. Be constructive and student-friendly.
+9. Identify what the student explained correctly.
+10. Identify important ideas from the source that the student missed.
+11. Give a short improvement suggestion.
+12. Ask exactly ONE follow-up question based only on the source material.
+13. Do not give a fake or arbitrary score.
+
+Return ONLY valid JSON.
+
+JSON format:
+
+{
+  "understood": [
+    "..."
+  ],
+  "missed": [
+    "..."
+  ],
+  "improvement": "...",
+  "followUpQuestion": "..."
+}
+
+SELECTED TOPIC:
+${JSON.stringify({
+  title: selectedTopic.title,
+  summary: selectedTopic.summary,
+  importantPoints: selectedTopic.importantPoints,
+  simpleExplanation:
+    selectedTopic.simpleExplanation,
+  shortAnswers: selectedTopic.shortAnswers,
+  questions: selectedTopic.questions,
+})}
+
+ORIGINAL STUDY MATERIAL:
+${smartyStudy.sourceText}
+
+STUDENT'S EXPLANATION:
+${studentExplanation}
+`;
+
+      // ---------------------------------------------------
+      // Call Gemini
+      // ---------------------------------------------------
+      let aiResponse = null;
+      let lastError = null;
+
+      for (
+        let attempt = 1;
+        attempt <= 3;
+        attempt++
+      ) {
+        try {
+          console.log(
+            `Teach Back Gemini attempt ${attempt}/3`
+          );
+
+          const result =
+            await geminiAI.models.generateContent({
+              model: "gemini-2.5-flash-lite",
+
+              contents: prompt,
+
+              config: {
+                httpOptions: {
+                  timeout: 60000,
+                },
+              },
+            });
+
+          aiResponse =
+            result?.text?.trim() || "";
+
+          if (aiResponse) {
+            break;
+          }
+        } catch (error) {
+          lastError = error;
+
+          console.error(
+            `Teach Back Gemini attempt ${attempt} failed:`,
+            error.message
+          );
+
+          if (attempt < 3) {
+            await new Promise(
+              (resolve) =>
+                setTimeout(
+                  resolve,
+                  3000 * attempt
+                )
+            );
+          }
+        }
+      }
+
+      // ---------------------------------------------------
+      // Gemini completely failed
+      // ---------------------------------------------------
+      if (!aiResponse) {
+        console.error(
+          "Teach Back Gemini failed:",
+          lastError?.message
+        );
+
+        return res.status(500).json({
+          message:
+            "AI evaluation could not be completed. Please try again.",
+        });
+      }
+
+      // ---------------------------------------------------
+      // Remove markdown JSON wrapper if Gemini adds one
+      // ---------------------------------------------------
+      let cleanedResponse =
+        aiResponse.trim();
+
+      if (
+        cleanedResponse.startsWith("```")
+      ) {
+        cleanedResponse =
+          cleanedResponse
+            .replace(/^```json\s*/i, "")
+            .replace(/^```\s*/i, "")
+            .replace(/\s*```$/i, "")
+            .trim();
+      }
+
+      // ---------------------------------------------------
+      // Parse AI JSON
+      // ---------------------------------------------------
+      let evaluation;
+
+      try {
+        evaluation =
+          JSON.parse(cleanedResponse);
+      } catch (parseError) {
+        console.error(
+          "Teach Back AI JSON parse error:",
+          parseError.message
+        );
+
+        console.error(
+          "Teach Back raw AI response:",
+          aiResponse
+        );
+
+        return res.status(500).json({
+          message:
+            "AI returned an invalid evaluation. Please try again.",
+        });
+      }
+
+      // ---------------------------------------------------
+      // Validate evaluation structure
+      // ---------------------------------------------------
+      if (
+        !evaluation ||
+        !Array.isArray(
+          evaluation.understood
+        ) ||
+        !Array.isArray(
+          evaluation.missed
+        ) ||
+        typeof evaluation.improvement !==
+          "string" ||
+        typeof evaluation.followUpQuestion !==
+          "string"
+      ) {
+        return res.status(500).json({
+          message:
+            "AI returned an incomplete evaluation.",
+        });
+      }
+
+      // ---------------------------------------------------
+      // Return actual AI evaluation
+      // ---------------------------------------------------
+      return res.status(200).json({
+        message:
+          "Teach Back evaluation completed.",
+        evaluation: {
+          understood:
+            evaluation.understood,
+          missed:
+            evaluation.missed,
+          improvement:
+            evaluation.improvement,
+          followUpQuestion:
+            evaluation.followUpQuestion,
+        },
+      });
+    } catch (error) {
+      console.error(
+        "Teach Back evaluation route error:",
+        error.message
+      );
+
+      return res.status(500).json({
+        message:
+          "Unable to evaluate your explanation.",
       });
     }
   }

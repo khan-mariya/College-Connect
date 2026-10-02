@@ -1,0 +1,17 @@
+# Environment variables
+Client/.env
+Server/.env
+
+# Dependencies
+node_modules/
+Client/node_modules/
+Server/node_modules/
+
+# Uploaded study material
+Server/uploads/
+
+# Build files
+Client/dist/
+
+# Logs
+*.log

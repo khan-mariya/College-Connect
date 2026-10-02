@@ -11177,3 +11177,5330 @@ html, body {
   background: #fff7ed;
   border-color: #fdba74;
 }
+
+
+/* =========================================================
+   SMARTY STUDY
+   PURPLE + BLUE + GREEN + YELLOW
+   ========================================================= */
+
+:root {
+  --ss-purple: #7c3aed;
+  --ss-purple-dark: #5b21b6;
+  --ss-purple-light: #ede9fe;
+
+  --ss-blue: #2563eb;
+  --ss-blue-dark: #1d4ed8;
+  --ss-blue-light: #dbeafe;
+
+  --ss-green: #16a34a;
+  --ss-green-dark: #15803d;
+  --ss-green-light: #dcfce7;
+
+  --ss-yellow: #eab308;
+  --ss-yellow-dark: #ca8a04;
+  --ss-yellow-light: #fef9c3;
+
+  --ss-red: #dc2626;
+  --ss-red-light: #fee2e2;
+
+  --ss-dark: #172033;
+  --ss-text: #334155;
+  --ss-muted: #64748b;
+
+  --ss-bg: #f6f7fb;
+  --ss-white: #ffffff;
+  --ss-border: #e5e7eb;
+
+  --ss-shadow: 0 12px 35px rgba(30, 41, 59, 0.08);
+}
+
+
+/* =========================================================
+   MAIN PAGE
+   ========================================================= */
+
+.smarty-study-page {
+  min-height: 100vh;
+  background:
+    radial-gradient(
+      circle at 8% 12%,
+      rgba(124, 58, 237, 0.08),
+      transparent 25%
+    ),
+    radial-gradient(
+      circle at 90% 20%,
+      rgba(37, 99, 235, 0.08),
+      transparent 25%
+    ),
+    var(--ss-bg);
+
+  color: var(--ss-dark);
+  font-family: Inter, system-ui, -apple-system, BlinkMacSystemFont,
+    "Segoe UI", sans-serif;
+}
+
+
+/* =========================================================
+   HEADER
+   ========================================================= */
+
+.smarty-study-header {
+  min-height: 92px;
+  padding: 18px 6%;
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+
+  background:
+    linear-gradient(
+      135deg,
+      #ffffff 0%,
+      #f5f3ff 50%,
+      #eff6ff 100%
+    );
+
+  border-bottom: 1px solid #e5e7eb;
+  position: relative;
+  z-index: 5;
+}
+
+.smarty-study-header-left {
+  display: flex;
+  align-items: center;
+  gap: 15px;
+}
+
+.smarty-study-logo {
+  width: 50px;
+  height: 50px;
+  border-radius: 15px;
+
+  display: flex;
+  align-items: center;
+  justify-content: center;
+
+  font-size: 27px;
+
+  background: linear-gradient(
+    135deg,
+    var(--ss-purple),
+    var(--ss-blue)
+  );
+
+  box-shadow:
+    0 8px 20px rgba(124, 58, 237, 0.22);
+}
+
+.smarty-study-header h1 {
+  margin: 0;
+  font-size: 27px;
+  font-weight: 800;
+  letter-spacing: -0.5px;
+
+  background: linear-gradient(
+    90deg,
+    var(--ss-purple),
+    var(--ss-blue)
+  );
+
+  background-clip: text;
+  -webkit-background-clip: text;
+  -webkit-text-fill-color: transparent;
+}
+
+.smarty-study-header p {
+  margin: 4px 0 0;
+  color: var(--ss-muted);
+  font-size: 14px;
+}
+
+.smarty-study-home-btn {
+  border: none;
+  background: var(--ss-dark);
+  color: white;
+
+  padding: 10px 17px;
+  border-radius: 10px;
+
+  font-weight: 700;
+  cursor: pointer;
+
+  transition: 0.25s ease;
+}
+
+.smarty-study-home-btn:hover {
+  background: var(--ss-purple);
+  transform: translateY(-2px);
+}
+
+
+/* =========================================================
+   MAIN
+   ========================================================= */
+
+.smarty-study-main {
+  width: min(1250px, 92%);
+  margin: auto;
+  padding-bottom: 90px;
+}
+
+
+/* =========================================================
+   HERO
+   ========================================================= */
+
+.smarty-study-hero {
+  min-height: 460px;
+  margin-top: 28px;
+
+  border-radius: 30px;
+  overflow: hidden;
+
+  display: grid;
+  grid-template-columns: 1.05fr 0.95fr;
+  align-items: center;
+
+  position: relative;
+
+  background:
+    radial-gradient(
+      circle at 15% 20%,
+      rgba(124, 58, 237, 0.28),
+      transparent 34%
+    ),
+    radial-gradient(
+      circle at 85% 25%,
+      rgba(37, 99, 235, 0.25),
+      transparent 35%
+    ),
+    linear-gradient(
+      135deg,
+      #f3e8ff,
+      #e0e7ff 50%,
+      #dbeafe
+    );
+
+  border: 1px solid rgba(124, 58, 237, 0.12);
+  box-shadow: 0 20px 55px rgba(76, 29, 149, 0.12);
+}
+
+.smarty-hero-content {
+  padding: 60px;
+  position: relative;
+  z-index: 2;
+}
+
+.smarty-hero-badge {
+  display: inline-flex;
+  align-items: center;
+
+  padding: 9px 15px;
+  border-radius: 30px;
+
+  background: rgba(255, 255, 255, 0.75);
+  border: 1px solid rgba(124, 58, 237, 0.15);
+
+  color: var(--ss-purple-dark);
+  font-size: 13px;
+  font-weight: 800;
+}
+
+.smarty-hero-content h2 {
+  margin: 20px 0 15px;
+
+  font-size: clamp(40px, 5vw, 64px);
+  line-height: 1.02;
+  letter-spacing: -2px;
+
+  color: var(--ss-dark);
+}
+
+.smarty-hero-content p {
+  max-width: 620px;
+  margin: 0;
+
+  font-size: 17px;
+  line-height: 1.7;
+
+  color: #475569;
+}
+
+.smarty-hero-actions {
+  margin-top: 28px;
+}
+
+
+/* =========================================================
+   PRIMARY BUTTON
+   ========================================================= */
+
+.smarty-primary-btn {
+  border: none;
+  border-radius: 13px;
+
+  padding: 14px 22px;
+
+  background: linear-gradient(
+    135deg,
+    var(--ss-purple),
+    var(--ss-blue)
+  );
+
+  color: white;
+
+  font-size: 14px;
+  font-weight: 800;
+
+  cursor: pointer;
+
+  box-shadow:
+    0 10px 25px rgba(124, 58, 237, 0.25);
+
+  transition: 0.25s ease;
+}
+
+.smarty-primary-btn:hover {
+  transform: translateY(-3px);
+
+  box-shadow:
+    0 15px 32px rgba(37, 99, 235, 0.28);
+}
+
+.smarty-primary-btn:disabled {
+  opacity: 0.6;
+  cursor: not-allowed;
+  transform: none;
+}
+
+
+/* =========================================================
+   HERO VISUAL
+   ========================================================= */
+
+.smarty-hero-visual {
+  height: 100%;
+  min-height: 420px;
+
+  position: relative;
+
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+
+.smarty-hero-brain {
+  width: 155px;
+  height: 155px;
+
+  border-radius: 50%;
+
+  display: flex;
+  align-items: center;
+  justify-content: center;
+
+  font-size: 78px;
+
+  background:
+    linear-gradient(
+      145deg,
+      rgba(255,255,255,0.95),
+      rgba(255,255,255,0.65)
+    );
+
+  border: 8px solid rgba(124, 58, 237, 0.18);
+
+  box-shadow:
+    0 25px 60px rgba(124, 58, 237, 0.2);
+
+  animation: smartyBrainFloat 4s ease-in-out infinite;
+}
+
+@keyframes smartyBrainFloat {
+  0%, 100% {
+    transform: translateY(0);
+  }
+
+  50% {
+    transform: translateY(-10px);
+  }
+}
+
+.smarty-hero-orbit {
+  position: absolute;
+
+  width: 52px;
+  height: 52px;
+
+  border-radius: 16px;
+
+  display: flex;
+  align-items: center;
+  justify-content: center;
+
+  background: white;
+
+  font-size: 24px;
+
+  box-shadow: var(--ss-shadow);
+
+  animation: smartyOrbitFloat 3.5s ease-in-out infinite;
+}
+
+.smarty-orbit-one {
+  top: 22%;
+  left: 18%;
+
+  border: 2px solid #bfdbfe;
+}
+
+.smarty-orbit-two {
+  top: 18%;
+  right: 16%;
+
+  border: 2px solid #fde68a;
+
+  animation-delay: 0.7s;
+}
+
+.smarty-orbit-three {
+  bottom: 20%;
+  right: 22%;
+
+  border: 2px solid #bbf7d0;
+
+  animation-delay: 1.2s;
+}
+
+@keyframes smartyOrbitFloat {
+  0%, 100% {
+    transform: translateY(0);
+  }
+
+  50% {
+    transform: translateY(-9px);
+  }
+}
+
+.smarty-hero-floating-card {
+  position: absolute;
+
+  padding: 13px 17px;
+
+  border-radius: 14px;
+
+  background: white;
+
+  box-shadow: var(--ss-shadow);
+
+  display: flex;
+  flex-direction: column;
+  gap: 3px;
+
+  font-size: 12px;
+}
+
+.smarty-hero-floating-card strong {
+  font-size: 14px;
+}
+
+.smarty-hero-floating-card span {
+  color: var(--ss-muted);
+}
+
+.smarty-float-card-one {
+  left: 8%;
+  bottom: 18%;
+
+  border-left: 4px solid var(--ss-green);
+}
+
+.smarty-float-card-two {
+  right: 8%;
+  bottom: 9%;
+
+  border-left: 4px solid var(--ss-yellow);
+}
+
+
+/* =========================================================
+   SECTION COMMON
+   ========================================================= */
+
+.smarty-section,
+.smarty-output-section,
+.smarty-mastery-section,
+.smarty-review-section,
+.smarty-teachback-section,
+.smarty-exam-night-section,
+.smarty-boss-section {
+  margin-top: 80px;
+}
+
+.smarty-section-heading {
+  margin-bottom: 30px;
+}
+
+.smarty-section-label {
+  display: inline-block;
+
+  margin-bottom: 10px;
+
+  font-size: 11px;
+  font-weight: 900;
+  letter-spacing: 1.5px;
+
+  color: var(--ss-purple);
+}
+
+.smarty-section-heading h2,
+.smarty-output-heading h2 {
+  margin: 0;
+
+  font-size: clamp(30px, 4vw, 43px);
+  line-height: 1.12;
+  letter-spacing: -1px;
+
+  color: var(--ss-dark);
+}
+
+.smarty-section-heading p,
+.smarty-output-heading p {
+  max-width: 650px;
+
+  margin: 13px 0 0;
+
+  color: var(--ss-muted);
+  line-height: 1.7;
+}
+
+
+/* =========================================================
+   MATERIAL → SMART LEARNING
+   ========================================================= */
+
+.smarty-output-section {
+  padding: 55px;
+
+  border-radius: 30px;
+
+  background:
+    linear-gradient(
+      135deg,
+      #eff6ff 0%,
+      #eef2ff 45%,
+      #f5f3ff 100%
+    );
+
+  border: 1px solid #dbeafe;
+
+  box-shadow: var(--ss-shadow);
+}
+
+.smarty-output-heading {
+  margin-bottom: 35px;
+}
+
+.smarty-output-heading .smarty-section-label {
+  color: var(--ss-blue);
+}
+
+
+/* =========================================================
+   OUTPUT CARDS
+   ========================================================= */
+
+.smarty-output-grid {
+  display: grid;
+
+  grid-template-columns: repeat(3, 1fr);
+
+  gap: 18px;
+}
+
+.smarty-output-card {
+  min-height: 210px;
+
+  padding: 25px;
+
+  border-radius: 20px;
+
+  position: relative;
+  overflow: hidden;
+
+  transition: 0.3s ease;
+
+  box-shadow:
+    0 8px 25px rgba(30, 41, 59, 0.07);
+}
+
+.smarty-output-card:nth-child(1) {
+  background: linear-gradient(
+    145deg,
+    #fef9c3,
+    #fff7cc
+  );
+
+  border: 1px solid #fde68a;
+}
+
+.smarty-output-card:nth-child(2) {
+  background: linear-gradient(
+    145deg,
+    #ede9fe,
+    #f5f3ff
+  );
+
+  border: 1px solid #ddd6fe;
+}
+
+.smarty-output-card:nth-child(3) {
+  background: linear-gradient(
+    145deg,
+    #dcfce7,
+    #ecfdf5
+  );
+
+  border: 1px solid #bbf7d0;
+}
+
+.smarty-output-card:nth-child(4) {
+  background: linear-gradient(
+    145deg,
+    #dbeafe,
+    #eff6ff
+  );
+
+  border: 1px solid #bfdbfe;
+}
+
+.smarty-output-card:nth-child(5) {
+  background: linear-gradient(
+    145deg,
+    #f3e8ff,
+    #faf5ff
+  );
+
+  border: 1px solid #e9d5ff;
+}
+
+.smarty-output-card:nth-child(6) {
+  background: linear-gradient(
+    145deg,
+    #fef9c3,
+    #fefce8
+  );
+
+  border: 1px solid #fde68a;
+}
+
+.smarty-output-card:hover {
+  transform: translateY(-7px);
+
+  box-shadow:
+    0 18px 35px rgba(30, 41, 59, 0.12);
+}
+
+.smarty-output-card > div {
+  width: 48px;
+  height: 48px;
+
+  border-radius: 14px;
+
+  display: flex;
+  align-items: center;
+  justify-content: center;
+
+  background: rgba(255, 255, 255, 0.7);
+
+  font-size: 23px;
+
+  margin-bottom: 20px;
+}
+
+.smarty-output-card h3 {
+  margin: 0 0 8px;
+
+  font-size: 18px;
+  color: var(--ss-dark);
+}
+
+.smarty-output-card p {
+  margin: 0;
+
+  color: #475569;
+  line-height: 1.6;
+  font-size: 14px;
+}
+
+
+/* =========================================================
+   LEARNING JOURNEY
+   ========================================================= */
+
+.smarty-learning-path {
+  display: grid;
+
+  grid-template-columns: repeat(4, 1fr);
+
+  gap: 18px;
+}
+
+.smarty-learning-card {
+  min-height: 270px;
+
+  padding: 25px;
+
+  border-radius: 22px;
+
+  position: relative;
+  overflow: hidden;
+
+  transition: 0.3s ease;
+
+  box-shadow:
+    0 10px 30px rgba(30, 41, 59, 0.08);
+
+    cursor: pointer;
+transition: transform 0.2s ease, box-shadow 0.2s ease;
+}
+
+.smarty-learning-card:nth-child(1) {
+  background: linear-gradient(
+    145deg,
+    #ede9fe,
+    #f5f3ff
+  );
+
+  border: 1px solid #ddd6fe;
+}
+
+.smarty-learning-card:nth-child(2) {
+  background: linear-gradient(
+    145deg,
+    #dbeafe,
+    #eff6ff
+  );
+
+  border: 1px solid #bfdbfe;
+}
+
+.smarty-learning-card:nth-child(3) {
+  background: linear-gradient(
+    145deg,
+    #fef9c3,
+    #fefce8
+  );
+
+  border: 1px solid #fde68a;
+}
+
+.smarty-learning-card:nth-child(4) {
+  background: linear-gradient(
+    145deg,
+    #dcfce7,
+    #ecfdf5
+  );
+
+  border: 1px solid #bbf7d0;
+}
+
+.smarty-learning-card:hover {
+  transform: translateY(-7px);
+}
+
+.smarty-learning-number {
+  position: absolute;
+
+  top: 18px;
+  right: 20px;
+
+  font-size: 12px;
+  font-weight: 900;
+
+  color: rgba(23, 32, 51, 0.35);
+}
+
+.smarty-learning-icon {
+  width: 55px;
+  height: 55px;
+
+  border-radius: 16px;
+
+  display: flex;
+  align-items: center;
+  justify-content: center;
+
+  background: rgba(255,255,255,0.72);
+
+  font-size: 27px;
+
+  margin-bottom: 25px;
+}
+
+.smarty-learning-card > span {
+  font-size: 10px;
+  font-weight: 900;
+  letter-spacing: 1.4px;
+
+  color: var(--ss-muted);
+}
+
+.smarty-learning-card h3 {
+  margin: 6px 0 10px;
+
+  font-size: 25px;
+}
+
+.smarty-learning-card p {
+  margin: 0;
+
+  color: #475569;
+  font-size: 14px;
+  line-height: 1.65;
+}
+
+
+/* =========================================================
+   SMART LEARNING MODES
+========================================================= */
+
+.smarty-mode-grid {
+  width: min(1180px, 92%);
+  margin: 48px auto 0;
+
+  display: grid;
+  grid-template-columns: repeat(4, 1fr);
+  gap: 22px;
+}
+
+
+/* =========================================================
+   MODE CARD
+========================================================= */
+
+.smarty-mode-card {
+  position: relative;
+  min-height: 300px;
+
+  padding: 28px 24px 24px;
+
+  border-radius: 24px;
+
+  border: 1px solid rgba(124, 58, 237, 0.10);
+
+  background:
+    linear-gradient(
+      145deg,
+      #ffffff 0%,
+      #faf9ff 48%,
+      #f3efff 100%
+    );
+
+  box-shadow:
+    0 10px 28px rgba(30, 41, 59, 0.06);
+
+  display: flex;
+  flex-direction: column;
+
+  transition:
+    transform 0.28s ease,
+    box-shadow 0.28s ease,
+    border-color 0.28s ease;
+
+  overflow: hidden;
+}
+
+
+/* subtle top glow */
+
+.smarty-mode-card::before {
+  content: "";
+
+  position: absolute;
+
+  top: 0;
+  left: 0;
+  right: 0;
+
+  height: 5px;
+
+  background: linear-gradient(
+    90deg,
+    #7c3aed,
+    #2563eb
+  );
+
+  opacity: 0.95;
+}
+
+
+/* soft background glow */
+
+.smarty-mode-card::after {
+  content: "";
+
+  position: absolute;
+
+  width: 150px;
+  height: 150px;
+
+  right: -70px;
+  bottom: -70px;
+
+  border-radius: 50%;
+
+  background: rgba(124, 58, 237, 0.08);
+
+  pointer-events: none;
+}
+
+
+/* hover */
+
+.smarty-mode-card:hover {
+  transform: translateY(-8px);
+
+  box-shadow:
+    0 20px 42px rgba(30, 41, 59, 0.12);
+
+  border-color: rgba(124, 58, 237, 0.22);
+}
+
+
+/* =========================================================
+   MODE ICON
+========================================================= */
+
+.smarty-mode-icon {
+  width: 52px;
+  height: 52px;
+
+  border-radius: 16px;
+
+  display: flex;
+  align-items: center;
+  justify-content: center;
+
+  font-size: 25px;
+
+  background: rgba(255, 255, 255, 0.82);
+
+  border: 1px solid rgba(124, 58, 237, 0.10);
+
+  box-shadow:
+    0 8px 20px rgba(30, 41, 59, 0.08);
+
+  margin-bottom: 25px;
+
+  position: relative;
+  z-index: 2;
+}
+
+
+/* =========================================================
+   MODE TAG
+========================================================= */
+
+.smarty-mode-tag {
+  width: fit-content;
+
+  padding: 6px 11px;
+
+  border-radius: 999px;
+
+  background: #f3e8ff;
+
+  color: #7c3aed;
+
+  font-size: 10px;
+
+  font-weight: 800;
+
+  letter-spacing: 1.2px;
+
+  margin-bottom: 10px;
+
+  position: relative;
+  z-index: 2;
+}
+
+
+/* =========================================================
+   MODE TITLE
+========================================================= */
+
+.smarty-mode-card h3 {
+  margin: 0 0 10px;
+
+  color: #172033;
+
+  font-size: 18px;
+
+  line-height: 1.35;
+
+  font-weight: 750;
+
+  position: relative;
+  z-index: 2;
+}
+
+
+/* =========================================================
+   MODE DESCRIPTION
+========================================================= */
+
+.smarty-mode-card p {
+  margin: 0;
+
+  color: #64748b;
+
+  font-size: 13.5px;
+
+  line-height: 1.7;
+
+  position: relative;
+  z-index: 2;
+}
+
+
+/* =========================================================
+   MODE FOOTER
+========================================================= */
+
+.smarty-mode-footer {
+  margin-top: auto;
+
+  padding-top: 18px;
+
+  color: #475569;
+
+  font-size: 11px;
+
+  font-weight: 700;
+
+  line-height: 1.5;
+
+  border-top: 1px solid rgba(100, 116, 139, 0.12);
+
+  position: relative;
+  z-index: 2;
+}
+
+
+/* =========================================================
+   INDIVIDUAL CARD COLORS
+========================================================= */
+
+/* 1 — Socratic */
+
+.smarty-mode-card:nth-child(1) {
+  background:
+    linear-gradient(
+      145deg,
+      #ffffff,
+      #f6efff
+    );
+}
+
+.smarty-mode-card:nth-child(1)::before {
+  background: #7c3aed;
+}
+
+.smarty-mode-card:nth-child(1) .smarty-mode-icon {
+  background: #f3e8ff;
+}
+
+
+/* 2 — Teach Back */
+
+.smarty-mode-card:nth-child(2) {
+  background:
+    linear-gradient(
+      145deg,
+      #ffffff,
+      #eef2ff
+    );
+}
+
+.smarty-mode-card:nth-child(2)::before {
+  background: #6366f1;
+}
+
+.smarty-mode-card:nth-child(2) .smarty-mode-icon {
+  background: #e0e7ff;
+}
+
+
+/* 3 — Study Quest */
+
+.smarty-mode-card:nth-child(3) {
+  background:
+    linear-gradient(
+      145deg,
+      #ffffff,
+      #eff6ff
+    );
+}
+
+.smarty-mode-card:nth-child(3)::before {
+  background: #2563eb;
+}
+
+.smarty-mode-card:nth-child(3) .smarty-mode-icon {
+  background: #dbeafe;
+}
+
+
+/* 4 — Find Mistake */
+
+.smarty-mode-card:nth-child(4) {
+  background:
+    linear-gradient(
+      145deg,
+      #fff,
+      #fffbea
+    );
+}
+
+.smarty-mode-card:nth-child(4)::before {
+  background: #eab308;
+}
+
+.smarty-mode-card:nth-child(4) .smarty-mode-icon {
+  background: #fef9c3;
+}
+
+
+/* 5 — Real Life */
+
+.smarty-mode-card:nth-child(5) {
+  background:
+    linear-gradient(
+      145deg,
+      #ffffff,
+      #ecfdf5
+    );
+}
+
+.smarty-mode-card:nth-child(5)::before {
+  background: #16a34a;
+}
+
+.smarty-mode-card:nth-child(5) .smarty-mode-icon {
+  background: #dcfce7;
+}
+
+
+/* 6 — Exam Answer */
+
+.smarty-mode-card:nth-child(6) {
+  background:
+    linear-gradient(
+      145deg,
+      #ffffff,
+      #eff6ff
+    );
+}
+
+.smarty-mode-card:nth-child(6)::before {
+  background: #2563eb;
+}
+
+.smarty-mode-card:nth-child(6) .smarty-mode-icon {
+  background: #dbeafe;
+}
+
+
+/* 7 — Exam Night */
+
+.smarty-mode-card:nth-child(7) {
+  background:
+    linear-gradient(
+      145deg,
+      #fff,
+      #fffbea
+    );
+}
+
+.smarty-mode-card:nth-child(7)::before {
+  background: #eab308;
+}
+
+.smarty-mode-card:nth-child(7) .smarty-mode-icon {
+  background: #fef9c3;
+}
+
+
+/* 8 — Spaced Repetition */
+
+.smarty-mode-card:nth-child(8) {
+  background:
+    linear-gradient(
+      145deg,
+      #ffffff,
+      #ecfdf5
+    );
+}
+
+.smarty-mode-card:nth-child(8)::before {
+  background: #16a34a;
+}
+
+.smarty-mode-card:nth-child(8) .smarty-mode-icon {
+  background: #dcfce7;
+}
+
+
+/* =========================================================
+   TAG COLORS
+========================================================= */
+
+.smarty-mode-card:nth-child(1) .smarty-mode-tag,
+.smarty-mode-card:nth-child(2) .smarty-mode-tag {
+  background: #f3e8ff;
+  color: #7c3aed;
+}
+
+.smarty-mode-card:nth-child(3) .smarty-mode-tag,
+.smarty-mode-card:nth-child(6) .smarty-mode-tag {
+  background: #dbeafe;
+  color: #2563eb;
+}
+
+.smarty-mode-card:nth-child(4) .smarty-mode-tag,
+.smarty-mode-card:nth-child(7) .smarty-mode-tag {
+  background: #fef9c3;
+  color: #a16207;
+}
+
+.smarty-mode-card:nth-child(5) .smarty-mode-tag,
+.smarty-mode-card:nth-child(8) .smarty-mode-tag {
+  background: #dcfce7;
+  color: #15803d;
+}
+
+
+/* =========================================================
+   FOOTER COLORS
+========================================================= */
+
+.smarty-mode-card:nth-child(1) .smarty-mode-footer,
+.smarty-mode-card:nth-child(2) .smarty-mode-footer {
+  color: #7c3aed;
+}
+
+.smarty-mode-card:nth-child(3) .smarty-mode-footer,
+.smarty-mode-card:nth-child(6) .smarty-mode-footer {
+  color: #2563eb;
+}
+
+.smarty-mode-card:nth-child(4) .smarty-mode-footer,
+.smarty-mode-card:nth-child(7) .smarty-mode-footer {
+  color: #a16207;
+}
+
+.smarty-mode-card:nth-child(5) .smarty-mode-footer,
+.smarty-mode-card:nth-child(8) .smarty-mode-footer {
+  color: #15803d;
+}
+
+
+/* =========================================================
+   RESPONSIVE
+========================================================= */
+
+@media (max-width: 1050px) {
+
+  .smarty-mode-grid {
+    grid-template-columns: repeat(2, 1fr);
+  }
+
+}
+
+
+@media (max-width: 650px) {
+
+  .smarty-mode-grid {
+    width: 92%;
+    grid-template-columns: 1fr;
+    gap: 18px;
+  }
+
+  .smarty-mode-card {
+    min-height: auto;
+    padding: 24px 20px;
+  }
+
+}
+
+/* =========================================================
+   TEACH BACK
+   ========================================================= */
+
+.smarty-teachback-section {
+  display: grid;
+
+  grid-template-columns: 0.9fr 1.1fr;
+
+  gap: 25px;
+
+  align-items: stretch;
+}
+
+.smarty-teachback-left {
+  padding: 45px;
+
+  border-radius: 28px;
+
+  background:
+    linear-gradient(
+      145deg,
+      #ede9fe,
+      #e0e7ff
+    );
+
+  border: 1px solid #ddd6fe;
+}
+
+.smarty-teachback-left h2 {
+  margin: 10px 0 15px;
+
+  font-size: 39px;
+  line-height: 1.1;
+}
+
+.smarty-teachback-left p {
+  color: #475569;
+  line-height: 1.7;
+}
+
+.smarty-teachback-flow {
+  margin-top: 28px;
+
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: 9px;
+}
+
+.smarty-teachback-flow span {
+  padding: 8px 11px;
+
+  border-radius: 9px;
+
+  background: rgba(255,255,255,0.72);
+
+  font-size: 12px;
+  font-weight: 800;
+}
+
+.smarty-teachback-result {
+  padding: 32px;
+
+  border-radius: 28px;
+
+  background:
+    linear-gradient(
+      145deg,
+      #eff6ff,
+      #dbeafe
+    );
+
+  border: 1px solid #bfdbfe;
+
+  box-shadow: var(--ss-shadow);
+}
+
+.smarty-result-header {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+}
+
+.smarty-result-header span {
+  font-size: 10px;
+  font-weight: 900;
+  letter-spacing: 1.3px;
+  color: var(--ss-blue);
+}
+
+.smarty-result-header h3 {
+  margin: 5px 0 0;
+  font-size: 24px;
+}
+
+.smarty-result-status {
+  padding: 8px 11px;
+
+  border-radius: 9px;
+
+  background: white;
+
+  color: var(--ss-blue);
+
+  font-size: 11px;
+  font-weight: 800;
+}
+
+.smarty-result-placeholder {
+  margin-top: 25px;
+
+  min-height: 230px;
+
+  border-radius: 20px;
+
+  background: rgba(255,255,255,0.62);
+
+  border: 2px dashed #93c5fd;
+
+  display: flex;
+  flex-direction: column;
+
+  align-items: center;
+  justify-content: center;
+
+  text-align: center;
+
+  padding: 25px;
+}
+
+.smarty-placeholder-icon {
+  font-size: 40px;
+  margin-bottom: 10px;
+}
+
+.smarty-result-placeholder h3 {
+  margin: 0 0 8px;
+}
+
+.smarty-result-placeholder p {
+  max-width: 450px;
+
+  margin: 0;
+
+  color: var(--ss-muted);
+
+  line-height: 1.6;
+  font-size: 13px;
+}
+
+
+/* =========================================================
+   MASTERY MAP
+   ========================================================= */
+
+.smarty-mastery-section {
+  padding: 50px;
+
+  border-radius: 30px;
+
+  background:
+    linear-gradient(
+      135deg,
+      #ecfdf5,
+      #eff6ff 55%,
+      #f5f3ff
+    );
+
+  border: 1px solid #dbeafe;
+}
+
+.smarty-mastery-board {
+  min-height: 300px;
+
+  border-radius: 22px;
+
+  background:
+    radial-gradient(
+      circle at 20% 20%,
+      rgba(22,163,74,0.08),
+      transparent 30%
+    ),
+    radial-gradient(
+      circle at 80% 80%,
+      rgba(37,99,235,0.08),
+      transparent 30%
+    ),
+    rgba(255,255,255,0.65);
+
+  border: 1px dashed #94a3b8;
+
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+
+.smarty-mastery-empty {
+  max-width: 480px;
+
+  text-align: center;
+  padding: 35px;
+}
+
+.smarty-mastery-empty-icon {
+  width: 65px;
+  height: 65px;
+
+  margin: 0 auto 15px;
+
+  border-radius: 18px;
+
+  display: flex;
+  align-items: center;
+  justify-content: center;
+
+  background: var(--ss-green-light);
+
+  font-size: 30px;
+}
+
+.smarty-mastery-empty h3 {
+  margin: 0 0 10px;
+  font-size: 22px;
+}
+
+.smarty-mastery-empty p {
+  margin: 0;
+
+  color: var(--ss-muted);
+  line-height: 1.65;
+}
+
+.smarty-mastery-legend {
+  display: flex;
+
+  justify-content: center;
+
+  flex-wrap: wrap;
+
+  gap: 12px;
+
+  margin-top: 22px;
+}
+
+.smarty-mastery-legend span {
+  padding: 9px 14px;
+
+  border-radius: 20px;
+
+  background: white;
+
+  font-size: 12px;
+  font-weight: 800;
+
+  box-shadow:
+    0 5px 15px rgba(30,41,59,0.06);
+}
+
+
+/* =========================================================
+   SPACED REPETITION
+   ========================================================= */
+
+.smarty-review-section {
+  display: grid;
+
+  grid-template-columns: 1fr 1fr;
+
+  gap: 25px;
+
+  align-items: center;
+}
+
+.smarty-review-content {
+  padding: 25px;
+}
+
+.smarty-review-content .smarty-section-label {
+  color: var(--ss-green);
+}
+
+.smarty-review-content h2 {
+  margin: 8px 0 13px;
+
+  font-size: 38px;
+}
+
+.smarty-review-content p {
+  color: var(--ss-muted);
+
+  line-height: 1.7;
+}
+
+.smarty-review-card {
+  padding: 40px;
+
+  border-radius: 26px;
+
+  background:
+    linear-gradient(
+      145deg,
+      #dcfce7,
+      #f0fdf4
+    );
+
+  border: 1px solid #bbf7d0;
+
+  box-shadow: var(--ss-shadow);
+
+  text-align: center;
+}
+
+.smarty-review-icon {
+  width: 65px;
+  height: 65px;
+
+  margin: 0 auto 17px;
+
+  display: flex;
+  align-items: center;
+  justify-content: center;
+
+  border-radius: 18px;
+
+  background: white;
+
+  font-size: 29px;
+}
+
+.smarty-review-card h3 {
+  margin: 0 0 10px;
+
+  font-size: 22px;
+}
+
+.smarty-review-card p {
+  margin: 0;
+
+  color: var(--ss-muted);
+
+  line-height: 1.6;
+}
+
+
+/* =========================================================
+   EXAM NIGHT
+   ========================================================= */
+
+.smarty-exam-night-section {
+  padding: 50px;
+
+  border-radius: 30px;
+
+  background:
+    linear-gradient(
+      135deg,
+      #fef9c3,
+      #fff7ed 48%,
+      #fef3c7
+    );
+
+  border: 1px solid #fde68a;
+}
+
+.smarty-exam-night-header {
+  max-width: 700px;
+  margin-bottom: 35px;
+}
+
+.smarty-exam-night-header .smarty-section-label {
+  color: var(--ss-yellow-dark);
+}
+
+.smarty-exam-night-header h2 {
+  margin: 8px 0 12px;
+
+  font-size: 38px;
+}
+
+.smarty-exam-night-header p {
+  color: #57534e;
+  line-height: 1.7;
+}
+
+.smarty-exam-night-flow {
+  display: grid;
+
+  grid-template-columns: repeat(5, 1fr);
+
+  gap: 12px;
+}
+
+.smarty-exam-night-flow > div {
+  min-height: 170px;
+
+  padding: 20px;
+
+  border-radius: 18px;
+
+  background: rgba(255,255,255,0.72);
+
+  border: 1px solid rgba(234,179,8,0.22);
+
+  display: flex;
+  flex-direction: column;
+}
+
+.smarty-exam-night-flow span {
+  font-size: 11px;
+  font-weight: 900;
+
+  color: var(--ss-yellow-dark);
+}
+
+.smarty-exam-night-flow strong {
+  margin-top: 25px;
+
+  font-size: 15px;
+}
+
+.smarty-exam-night-flow small {
+  margin-top: 8px;
+
+  color: #78716c;
+
+  line-height: 1.5;
+}
+
+
+/* =========================================================
+   BOSS BATTLE
+   ========================================================= */
+
+.smarty-boss-section {
+  min-height: 310px;
+
+  padding: 50px;
+
+  border-radius: 30px;
+
+  display: flex;
+
+  align-items: center;
+  justify-content: space-between;
+
+  overflow: hidden;
+
+  position: relative;
+
+  background:
+    radial-gradient(
+      circle at 80% 50%,
+      rgba(124,58,237,0.28),
+      transparent 35%
+    ),
+    linear-gradient(
+      135deg,
+      #172033,
+      #312e81
+    );
+
+  color: white;
+
+  box-shadow:
+    0 20px 50px rgba(23,32,51,0.18);
+}
+
+.smarty-boss-content {
+  position: relative;
+  z-index: 2;
+
+  max-width: 720px;
+}
+
+.smarty-boss-label {
+  display: inline-block;
+
+  padding: 8px 12px;
+
+  border-radius: 20px;
+
+  background: rgba(234,179,8,0.16);
+
+  color: #fde68a;
+
+  font-size: 11px;
+  font-weight: 900;
+  letter-spacing: 1.3px;
+}
+
+.smarty-boss-content h2 {
+  margin: 12px 0 10px;
+
+  font-size: 48px;
+}
+
+.smarty-boss-content p {
+  margin: 0;
+
+  color: #cbd5e1;
+
+  line-height: 1.7;
+}
+
+.smarty-boss-requirement {
+  display: inline-block;
+
+  margin-top: 22px;
+
+  padding: 10px 14px;
+
+  border-radius: 10px;
+
+  background: rgba(255,255,255,0.08);
+
+  color: #e2e8f0;
+
+  font-size: 12px;
+}
+
+.smarty-boss-visual {
+  width: 180px;
+  height: 180px;
+
+  border-radius: 50%;
+
+  display: flex;
+  align-items: center;
+  justify-content: center;
+
+  font-size: 80px;
+
+  background:
+    radial-gradient(
+      circle,
+      rgba(234,179,8,0.25),
+      rgba(124,58,237,0.15)
+    );
+
+  border: 2px solid rgba(255,255,255,0.1);
+
+  animation: smartyBossFloat 4s ease-in-out infinite;
+}
+
+@keyframes smartyBossFloat {
+  0%, 100% {
+    transform: translateY(0) rotate(-3deg);
+  }
+
+  50% {
+    transform: translateY(-10px) rotate(3deg);
+  }
+}
+
+
+/* =========================================================
+   UPLOAD MODAL
+   ========================================================= */
+
+.smarty-upload-overlay {
+  position: fixed;
+
+  inset: 0;
+
+  z-index: 9999;
+
+  display: flex;
+
+  align-items: center;
+  justify-content: center;
+
+  padding: 25px;
+
+  background: rgba(15, 23, 42, 0.62);
+
+  backdrop-filter: blur(7px);
+}
+
+.smarty-upload-modal {
+  width: min(650px, 100%);
+
+  max-height: 90vh;
+
+  overflow-y: auto;
+
+  border-radius: 25px;
+
+  background:
+    linear-gradient(
+      145deg,
+      #ffffff,
+      #f5f3ff
+    );
+
+  box-shadow:
+    0 30px 80px rgba(15,23,42,0.28);
+
+  border: 1px solid #ddd6fe;
+}
+
+.smarty-upload-modal-header {
+  padding: 27px 30px;
+
+  display: flex;
+
+  justify-content: space-between;
+  gap: 20px;
+
+  background:
+    linear-gradient(
+      135deg,
+      #ede9fe,
+      #dbeafe
+    );
+
+  border-bottom: 1px solid #ddd6fe;
+}
+
+.smarty-upload-modal-header h2 {
+  margin: 5px 0 8px;
+
+  font-size: 27px;
+}
+
+.smarty-upload-modal-header p {
+  margin: 0;
+
+  color: var(--ss-muted);
+
+  font-size: 13px;
+}
+
+.smarty-upload-close {
+  width: 38px;
+  height: 38px;
+
+  border: none;
+
+  border-radius: 11px;
+
+  background: white;
+
+  color: var(--ss-dark);
+
+  font-size: 23px;
+
+  cursor: pointer;
+
+  flex-shrink: 0;
+}
+
+.smarty-upload-close:hover {
+  background: var(--ss-red-light);
+  color: var(--ss-red);
+}
+
+.smarty-upload-form {
+  padding: 30px;
+}
+
+.smarty-form-group {
+  margin-bottom: 20px;
+}
+
+.smarty-form-group label {
+  display: block;
+
+  margin-bottom: 8px;
+
+  font-size: 13px;
+  font-weight: 800;
+
+  color: var(--ss-dark);
+}
+
+.smarty-form-group label span {
+  color: var(--ss-muted);
+
+  font-weight: 500;
+
+  margin-left: 5px;
+}
+
+.smarty-form-group input,
+.smarty-form-group select,
+.smarty-form-group textarea {
+  width: 100%;
+
+  box-sizing: border-box;
+
+  border: 1px solid #d8dee9;
+
+  border-radius: 12px;
+
+  padding: 12px 14px;
+
+  background: white;
+
+  color: var(--ss-dark);
+
+  font: inherit;
+
+  outline: none;
+
+  transition: 0.2s ease;
+}
+
+.smarty-form-group textarea {
+  resize: vertical;
+}
+
+.smarty-form-group input:focus,
+.smarty-form-group select:focus,
+.smarty-form-group textarea:focus {
+  border-color: var(--ss-purple);
+
+  box-shadow:
+    0 0 0 4px rgba(124,58,237,0.10);
+}
+
+
+/* =========================================================
+   FILE DROPZONE
+   ========================================================= */
+
+.smarty-file-dropzone {
+  min-height: 150px;
+
+  padding: 25px;
+
+  border-radius: 17px;
+
+  border: 2px dashed #a78bfa;
+
+  background:
+    linear-gradient(
+      145deg,
+      #f5f3ff,
+      #eff6ff
+    );
+
+  display: flex;
+
+  flex-direction: column;
+
+  align-items: center;
+  justify-content: center;
+
+  text-align: center;
+
+  cursor: pointer;
+
+  transition: 0.25s ease;
+}
+
+.smarty-file-dropzone:hover {
+  background: #ede9fe;
+
+  border-color: var(--ss-purple);
+
+  transform: translateY(-2px);
+}
+
+.smarty-file-icon {
+  font-size: 32px;
+
+  margin-bottom: 9px;
+}
+
+.smarty-file-dropzone strong {
+  color: var(--ss-dark);
+
+  font-size: 14px;
+}
+
+.smarty-file-dropzone span {
+  margin-top: 5px;
+
+  color: var(--ss-muted);
+
+  font-size: 12px;
+}
+
+.smarty-file-dropzone small {
+  margin-top: 10px;
+
+  padding: 6px 10px;
+
+  border-radius: 8px;
+
+  background: var(--ss-green-light);
+
+  color: var(--ss-green-dark);
+
+  font-size: 11px;
+  font-weight: 700;
+}
+
+.smarty-hidden-file-input {
+  display: none;
+}
+
+
+/* =========================================================
+   UPLOAD ACTIONS
+   ========================================================= */
+
+.smarty-upload-actions {
+  display: flex;
+
+  justify-content: flex-end;
+
+  gap: 12px;
+
+  margin-top: 25px;
+
+  padding-top: 20px;
+
+  border-top: 1px solid #e5e7eb;
+}
+
+.smarty-cancel-btn {
+  border: 1px solid #d1d5db;
+
+  background: white;
+
+  color: var(--ss-text);
+
+  border-radius: 12px;
+
+  padding: 12px 19px;
+
+  font-weight: 700;
+
+  cursor: pointer;
+}
+
+.smarty-cancel-btn:hover {
+  background: #f8fafc;
+}
+
+
+/* =========================================================
+   TOAST
+   ========================================================= */
+
+.smarty-toast {
+  position: fixed;
+
+  top: 22px;
+  right: 22px;
+
+  z-index: 10000;
+
+  padding: 13px 18px;
+
+  border-radius: 12px;
+
+  background: var(--ss-dark);
+
+  color: white;
+
+  box-shadow:
+    0 15px 35px rgba(15,23,42,0.18);
+
+  font-size: 13px;
+  font-weight: 700;
+
+  animation: smartyToastIn 0.25s ease;
+}
+
+@keyframes smartyToastIn {
+  from {
+    opacity: 0;
+    transform: translateY(-8px);
+  }
+
+  to {
+    opacity: 1;
+    transform: translateY(0);
+  }
+}
+
+
+/* =========================================================
+   SCROLLBAR
+   ========================================================= */
+
+.smarty-study-page::-webkit-scrollbar {
+  width: 9px;
+}
+
+.smarty-study-page::-webkit-scrollbar-track {
+  background: #f1f5f9;
+}
+
+.smarty-study-page::-webkit-scrollbar-thumb {
+  background: linear-gradient(
+    var(--ss-purple),
+    var(--ss-blue)
+  );
+
+  border-radius: 20px;
+}
+
+
+/* =========================================================
+   RESPONSIVE
+   ========================================================= */
+
+@media (max-width: 1100px) {
+
+  .smarty-output-grid {
+    grid-template-columns: repeat(2, 1fr);
+  }
+
+  .smarty-learning-path {
+    grid-template-columns: repeat(2, 1fr);
+  }
+
+  .smarty-mode-grid {
+    grid-template-columns: repeat(2, 1fr);
+  }
+
+  .smarty-exam-night-flow {
+    grid-template-columns: repeat(2, 1fr);
+  }
+
+}
+
+
+@media (max-width: 850px) {
+
+  .smarty-study-hero {
+    grid-template-columns: 1fr;
+  }
+
+  .smarty-hero-content {
+    padding: 45px 30px;
+  }
+
+  .smarty-hero-visual {
+    min-height: 320px;
+  }
+
+  .smarty-teachback-section,
+  .smarty-review-section {
+    grid-template-columns: 1fr;
+  }
+
+  .smarty-boss-section {
+    flex-direction: column;
+    align-items: flex-start;
+    gap: 30px;
+  }
+
+}
+
+
+@media (max-width: 650px) {
+
+  .smarty-study-header {
+    padding: 15px 4%;
+  }
+
+  .smarty-study-header p {
+    display: none;
+  }
+
+  .smarty-study-main {
+    width: 94%;
+  }
+
+  .smarty-output-section,
+  .smarty-mastery-section,
+  .smarty-exam-night-section,
+  .smarty-boss-section {
+    padding: 30px 20px;
+  }
+
+  .smarty-output-grid,
+  .smarty-learning-path,
+  .smarty-mode-grid,
+  .smarty-exam-night-flow {
+    grid-template-columns: 1fr;
+  }
+
+  .smarty-hero-content h2 {
+    font-size: 42px;
+  }
+
+  .smarty-hero-visual {
+    min-height: 280px;
+  }
+
+  .smarty-hero-brain {
+    width: 120px;
+    height: 120px;
+    font-size: 60px;
+  }
+
+  .smarty-teachback-left,
+  .smarty-teachback-result {
+    padding: 28px 22px;
+  }
+
+  .smarty-boss-content h2 {
+    font-size: 38px;
+  }
+
+  .smarty-boss-visual {
+    width: 130px;
+    height: 130px;
+    font-size: 60px;
+  }
+
+  .smarty-upload-modal-header,
+  .smarty-upload-form {
+    padding: 22px;
+  }
+
+  .smarty-upload-actions {
+    flex-direction: column-reverse;
+  }
+
+  .smarty-upload-actions button {
+    width: 100%;
+  }
+
+}
+/* =========================================================
+   TEACH BACK TEXT VISIBILITY FIX
+========================================================= */
+
+.smarty-teachback-left h2 {
+  color: #172033 !important;
+  opacity: 1 !important;
+}
+
+.smarty-teachback-left p {
+  color: #475569 !important;
+  opacity: 1 !important;
+}
+
+.smarty-teachback-left .smarty-section-label {
+  color: #7c3aed !important;
+  opacity: 1 !important;
+}
+
+.smarty-teachback-flow {
+  color: #334155 !important;
+}
+
+.smarty-teachback-flow span {
+  color: #334155 !important;
+}
+
+/* =========================================================
+   SMARTY STUDY CONTENT VIEW
+========================================================= */
+
+.smarty-content-view {
+  margin: 40px auto;
+  max-width: 1180px;
+  padding: 0 24px 60px;
+}
+
+.smarty-content-view-header {
+  display: flex;
+  align-items: flex-start;
+  gap: 24px;
+  margin-bottom: 28px;
+}
+
+.smarty-back-button {
+  border: none;
+  background: #f3e8ff;
+  color: #6d28d9;
+  padding: 11px 17px;
+  border-radius: 10px;
+  font-weight: 700;
+  cursor: pointer;
+}
+
+.smarty-back-button:hover {
+  background: #e9d5ff;
+}
+
+.smarty-content-view-header h2 {
+  margin: 5px 0 0;
+  color: #172033;
+  font-size: 30px;
+}
+
+.smarty-topic-list,
+.smarty-question-list {
+  display: grid;
+  gap: 20px;
+}
+
+.smarty-learning-content-card {
+  background: #ffffff;
+  border: 1px solid #e5e7eb;
+  border-radius: 18px;
+  padding: 24px;
+  box-shadow: 0 8px 25px rgba(23, 32, 51, 0.06);
+}
+
+.smarty-content-card-top {
+  margin-bottom: 18px;
+}
+
+.smarty-content-card-top span {
+  display: inline-block;
+  font-size: 12px;
+  font-weight: 800;
+  color: #7c3aed;
+  text-transform: uppercase;
+  letter-spacing: 0.08em;
+  margin-bottom: 7px;
+}
+
+.smarty-content-card-top h3 {
+  margin: 0;
+  color: #172033;
+  font-size: 22px;
+}
+
+.smarty-point-list {
+  margin: 0;
+  padding-left: 22px;
+}
+
+.smarty-point-list li {
+  margin-bottom: 11px;
+  color: #374151;
+  line-height: 1.65;
+}
+
+.smarty-explanation-box {
+  background: #f7f8fc;
+  border-radius: 14px;
+  padding: 18px;
+}
+
+.smarty-explanation-box p {
+  margin: 0;
+  color: #374151;
+  line-height: 1.75;
+}
+
+.smarty-answer-list {
+  display: grid;
+  gap: 14px;
+}
+
+.smarty-answer-item {
+  background: #f7f8fc;
+  padding: 17px;
+  border-radius: 14px;
+}
+
+.smarty-answer-item h4 {
+  margin: 0 0 8px;
+  color: #172033;
+  font-size: 16px;
+}
+
+.smarty-answer-item p {
+  margin: 0;
+  color: #475569;
+  line-height: 1.65;
+}
+
+.smarty-no-content {
+  color: #64748b;
+  margin: 0;
+}
+
+.smarty-empty-state {
+  text-align: center;
+  background: #ffffff;
+  border: 1px solid #e5e7eb;
+  border-radius: 18px;
+  padding: 50px 25px;
+}
+
+.smarty-empty-state > div {
+  font-size: 42px;
+  margin-bottom: 12px;
+}
+
+.smarty-empty-state h3 {
+  margin: 0 0 8px;
+  color: #172033;
+}
+
+.smarty-empty-state p {
+  margin: 0;
+  color: #64748b;
+}
+
+
+/* =========================================================
+   FLASHCARDS
+========================================================= */
+
+.smarty-flashcard-section {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+}
+
+.smarty-flashcard-progress {
+  color: #64748b;
+  font-weight: 700;
+  margin-bottom: 15px;
+}
+
+.smarty-flashcard {
+  width: min(720px, 100%);
+  min-height: 330px;
+  border: none;
+  border-radius: 24px;
+  background: #f3e8ff;
+  color: #172033;
+  padding: 45px;
+  cursor: pointer;
+  display: flex;
+  flex-direction: column;
+  justify-content: center;
+  align-items: center;
+  text-align: center;
+  box-shadow: 0 15px 35px rgba(109, 40, 217, 0.12);
+}
+
+.smarty-flashcard:hover {
+  transform: translateY(-3px);
+}
+
+.smarty-flashcard-topic {
+  color: #7c3aed;
+  font-size: 13px;
+  font-weight: 800;
+  margin-bottom: 22px;
+}
+
+.smarty-flashcard-label {
+  font-size: 12px;
+  font-weight: 800;
+  color: #64748b;
+  letter-spacing: 0.1em;
+  margin-bottom: 12px;
+}
+
+.smarty-flashcard strong {
+  font-size: 25px;
+  line-height: 1.5;
+}
+
+.smarty-flashcard small {
+  margin-top: 25px;
+  color: #64748b;
+}
+
+.smarty-flashcard-actions {
+  display: flex;
+  gap: 12px;
+  margin-top: 20px;
+}
+
+.smarty-flashcard-actions button {
+  border: 1px solid #ddd6fe;
+  background: #ffffff;
+  color: #6d28d9;
+  padding: 11px 18px;
+  border-radius: 10px;
+  font-weight: 700;
+  cursor: pointer;
+}
+
+.smarty-flashcard-actions button:disabled {
+  opacity: 0.45;
+  cursor: not-allowed;
+}
+
+
+/* =========================================================
+   MCQ
+========================================================= */
+
+.smarty-mcq-item {
+  border-top: 1px solid #e5e7eb;
+  padding-top: 20px;
+  margin-top: 20px;
+}
+
+.smarty-mcq-item h4 {
+  margin: 0 0 14px;
+  color: #172033;
+  line-height: 1.5;
+}
+
+.smarty-mcq-options {
+  display: grid;
+  gap: 10px;
+}
+
+.smarty-mcq-options button {
+  text-align: left;
+  border: 1px solid #e2e8f0;
+  background: #ffffff;
+  padding: 13px 15px;
+  border-radius: 10px;
+  cursor: pointer;
+  color: #334155;
+}
+
+.smarty-mcq-options button:hover {
+  border-color: #a78bfa;
+  background: #f5f3ff;
+}
+
+.smarty-mcq-options button.selected {
+  border-color: #7c3aed;
+  background: #f3e8ff;
+  color: #6d28d9;
+  font-weight: 700;
+}
+
+.smarty-test-actions {
+  display: flex;
+  justify-content: center;
+  margin-top: 10px;
+}
+
+.smarty-score-card {
+  margin-top: 20px;
+  background: #dcfce7;
+  border-radius: 16px;
+  padding: 22px;
+  text-align: center;
+}
+
+.smarty-score-card strong {
+  display: block;
+  font-size: 30px;
+  color: #166534;
+}
+
+.smarty-score-card span {
+  color: #166534;
+  font-weight: 600;
+}
+
+
+/* =========================================================
+   MOCK TEST
+========================================================= */
+
+.smarty-test-question {
+  color: #334155;
+  line-height: 1.7;
+  font-weight: 600;
+}
+
+.smarty-test-answer {
+  width: 100%;
+  min-height: 130px;
+  resize: vertical;
+  box-sizing: border-box;
+  border: 1px solid #dbe2ea;
+  border-radius: 12px;
+  padding: 14px;
+  font-family: inherit;
+  font-size: 15px;
+  outline: none;
+}
+
+.smarty-test-answer:focus {
+  border-color: #7c3aed;
+  box-shadow: 0 0 0 3px rgba(124, 58, 237, 0.1);
+}
+
+
+/* =========================================================
+   MOBILE
+========================================================= */
+
+@media (max-width: 700px) {
+
+  .smarty-content-view {
+    padding: 0 15px 40px;
+  }
+
+  .smarty-content-view-header {
+    flex-direction: column;
+    gap: 15px;
+  }
+
+  .smarty-content-view-header h2 {
+    font-size: 25px;
+  }
+
+  .smarty-learning-content-card {
+    padding: 18px;
+  }
+
+  .smarty-flashcard {
+    min-height: 280px;
+    padding: 28px 20px;
+  }
+
+  .smarty-flashcard strong {
+    font-size: 21px;
+  }
+
+}
+/* =========================================================
+   SMARTY STUDY — COLORFUL PREMIUM 21 CARDS
+   ========================================================= */
+
+/* =========================================================
+   1. MATERIAL → SMART LEARNING — 6 CARDS
+   ========================================================= */
+
+.smarty-output-grid {
+  display: grid;
+  grid-template-columns: repeat(3, 1fr);
+  gap: 24px;
+}
+
+.smarty-output-card {
+  position: relative;
+  overflow: hidden;
+
+  min-height: 235px;
+  padding: 28px;
+
+  border: 1px solid transparent;
+  border-radius: 26px;
+
+  cursor: pointer;
+
+  transition:
+    transform 0.35s ease,
+    box-shadow 0.35s ease,
+    border-color 0.35s ease;
+}
+
+
+/* BIG BACKGROUND GLOW */
+
+.smarty-output-card::before {
+  content: "";
+
+  position: absolute;
+
+  width: 190px;
+  height: 190px;
+
+  right: -80px;
+  bottom: -80px;
+
+  border-radius: 50%;
+
+  background: rgba(255, 255, 255, 0.28);
+
+  transition: 0.4s ease;
+}
+
+
+/* TOP COLOR LINE */
+
+.smarty-output-card::after {
+  content: "";
+
+  position: absolute;
+
+  left: 0;
+  top: 0;
+
+  width: 100%;
+  height: 5px;
+
+  background: rgba(255, 255, 255, 0.65);
+}
+
+
+/* HOVER */
+
+.smarty-output-card:hover {
+  transform: translateY(-10px) scale(1.015);
+
+  box-shadow:
+    0 24px 45px rgba(30, 41, 59, 0.16);
+}
+
+.smarty-output-card:hover::before {
+  transform: scale(1.4);
+}
+
+
+/* ICON */
+
+.smarty-output-card > div:first-child {
+  position: relative;
+  z-index: 2;
+
+  width: 62px;
+  height: 62px;
+
+  display: flex;
+  align-items: center;
+  justify-content: center;
+
+  margin-bottom: 22px;
+
+  border-radius: 19px;
+
+  background: rgba(255, 255, 255, 0.65);
+
+  backdrop-filter: blur(8px);
+
+  font-size: 30px;
+
+  box-shadow:
+    0 10px 22px rgba(15, 23, 42, 0.08);
+
+  transition:
+    transform 0.3s ease,
+    box-shadow 0.3s ease;
+}
+
+.smarty-output-card:hover > div:first-child {
+  transform: rotate(-5deg) scale(1.12);
+
+  box-shadow:
+    0 14px 28px rgba(15, 23, 42, 0.14);
+}
+
+
+/* TITLE */
+
+.smarty-output-card h3 {
+  position: relative;
+  z-index: 2;
+
+  margin: 0 0 10px;
+
+  color: #172033;
+
+  font-size: 20px;
+  font-weight: 850;
+
+  letter-spacing: -0.5px;
+}
+
+
+/* DESCRIPTION */
+
+.smarty-output-card p {
+  position: relative;
+  z-index: 2;
+
+  margin: 0;
+
+  color: #334155;
+
+  font-size: 13.5px;
+  line-height: 1.7;
+}
+
+
+/* -------------------------
+   CARD 1 — IMPORTANT POINTS
+-------------------------- */
+
+.smarty-output-card:nth-child(1) {
+  background:
+    linear-gradient(
+      135deg,
+      #fff7c2 0%,
+      #ffd6a5 100%
+    );
+
+  border-color: #fde68a;
+}
+
+.smarty-output-card:nth-child(1) > div:first-child {
+  background: #fff3a8;
+}
+
+
+/* -------------------------
+   CARD 2 — EXPLANATIONS
+-------------------------- */
+
+.smarty-output-card:nth-child(2) {
+  background:
+    linear-gradient(
+      135deg,
+      #dbeafe 0%,
+      #bae6fd 100%
+    );
+
+  border-color: #93c5fd;
+}
+
+.smarty-output-card:nth-child(2) > div:first-child {
+  background: #d7efff;
+}
+
+
+/* -------------------------
+   CARD 3 — SHORT ANSWERS
+-------------------------- */
+
+.smarty-output-card:nth-child(3) {
+  background:
+    linear-gradient(
+      135deg,
+      #dcfce7 0%,
+      #bbf7d0 100%
+    );
+
+  border-color: #86efac;
+}
+
+.smarty-output-card:nth-child(3) > div:first-child {
+  background: #d5f9df;
+}
+
+
+/* -------------------------
+   CARD 4 — FLASHCARDS
+-------------------------- */
+
+.smarty-output-card:nth-child(4) {
+  background:
+    linear-gradient(
+      135deg,
+      #ede9fe 0%,
+      #ddd6fe 100%
+    );
+
+  border-color: #c4b5fd;
+}
+
+.smarty-output-card:nth-child(4) > div:first-child {
+  background: #eee9ff;
+}
+
+
+/* -------------------------
+   CARD 5 — MCQS
+-------------------------- */
+
+.smarty-output-card:nth-child(5) {
+  background:
+    linear-gradient(
+      135deg,
+      #cffafe 0%,
+      #a5f3fc 100%
+    );
+
+  border-color: #67e8f9;
+}
+
+.smarty-output-card:nth-child(5) > div:first-child {
+  background: #d8fbff;
+}
+
+
+/* -------------------------
+   CARD 6 — MOCK TEST
+-------------------------- */
+
+.smarty-output-card:nth-child(6) {
+  background:
+    linear-gradient(
+      135deg,
+      #ffe4e6 0%,
+      #fecdd3 100%
+    );
+
+  border-color: #fda4af;
+}
+
+.smarty-output-card:nth-child(6) > div:first-child {
+  background: #ffe9ec;
+}
+
+
+/* =========================================================
+   2. LEARNING JOURNEY — 4 CARDS
+   ========================================================= */
+
+.smarty-learning-path {
+  display: grid;
+
+  grid-template-columns: repeat(4, 1fr);
+
+  gap: 22px;
+}
+
+.smarty-learning-card {
+  position: relative;
+  overflow: hidden;
+
+  min-height: 245px;
+
+  padding: 27px;
+
+  border-radius: 26px;
+
+  cursor: pointer;
+
+  transition:
+    transform 0.35s ease,
+    box-shadow 0.35s ease;
+}
+
+
+/* NUMBER */
+
+.smarty-learning-number {
+  position: absolute;
+
+  top: 20px;
+  right: 20px;
+
+  width: 34px;
+  height: 34px;
+
+  display: flex;
+  align-items: center;
+  justify-content: center;
+
+  border-radius: 50%;
+
+  background: rgba(255, 255, 255, 0.55);
+
+  color: #334155;
+
+  font-size: 11px;
+  font-weight: 900;
+}
+
+
+/* ICON */
+
+.smarty-learning-icon {
+  width: 62px;
+  height: 62px;
+
+  display: flex;
+  align-items: center;
+  justify-content: center;
+
+  margin-bottom: 20px;
+
+  border-radius: 19px;
+
+  background: rgba(255, 255, 255, 0.62);
+
+  font-size: 30px;
+
+  box-shadow:
+    0 10px 20px rgba(15, 23, 42, 0.08);
+
+  transition: 0.3s ease;
+}
+
+
+/* LABEL */
+
+.smarty-learning-card > span {
+  display: inline-block;
+
+  margin-bottom: 7px;
+
+  font-size: 10px;
+  font-weight: 900;
+
+  letter-spacing: 1.5px;
+}
+
+
+/* TITLE */
+
+.smarty-learning-card h3 {
+  margin: 0 0 9px;
+
+  font-size: 22px;
+  font-weight: 850;
+
+  color: #172033;
+}
+
+
+/* DESCRIPTION */
+
+.smarty-learning-card p {
+  margin: 0;
+
+  color: #334155;
+
+  font-size: 13px;
+  line-height: 1.65;
+}
+
+
+/* HOVER */
+
+.smarty-learning-card:hover {
+  transform: translateY(-10px);
+
+  box-shadow:
+    0 24px 45px rgba(30, 41, 59, 0.15);
+}
+
+.smarty-learning-card:hover .smarty-learning-icon {
+  transform: rotate(-5deg) scale(1.1);
+}
+
+
+/* 4 COLORS */
+
+.smarty-learning-card:nth-child(1) {
+  background:
+    linear-gradient(
+      135deg,
+      #dbeafe,
+      #bae6fd
+    );
+}
+
+.smarty-learning-card:nth-child(2) {
+  background:
+    linear-gradient(
+      135deg,
+      #dcfce7,
+      #bbf7d0
+    );
+}
+
+.smarty-learning-card:nth-child(3) {
+  background:
+    linear-gradient(
+      135deg,
+      #fef3c7,
+      #fde68a
+    );
+}
+
+.smarty-learning-card:nth-child(4) {
+  background:
+    linear-gradient(
+      135deg,
+      #ede9fe,
+      #ddd6fe
+    );
+}
+
+
+/* =========================================================
+   3. SMART LEARNING MODES — 8 CARDS
+   ========================================================= */
+
+.smarty-mode-grid,
+.smarty-modes-grid {
+  display: grid;
+
+  grid-template-columns: repeat(4, 1fr);
+
+  gap: 22px;
+}
+
+.smarty-mode-card {
+  position: relative;
+  overflow: hidden;
+
+  min-height: 225px;
+
+  padding: 25px;
+
+  border-radius: 24px;
+
+  cursor: pointer;
+
+  transition:
+    transform 0.35s ease,
+    box-shadow 0.35s ease;
+}
+
+
+/* GLOW */
+
+.smarty-mode-card::before {
+  content: "";
+
+  position: absolute;
+
+  width: 140px;
+  height: 140px;
+
+  right: -60px;
+  bottom: -60px;
+
+  border-radius: 50%;
+
+  background: rgba(255, 255, 255, 0.28);
+}
+
+
+/* ICON */
+
+.smarty-mode-icon {
+  width: 57px;
+  height: 57px;
+
+  display: flex;
+  align-items: center;
+  justify-content: center;
+
+  margin-bottom: 17px;
+
+  border-radius: 18px;
+
+  background: rgba(255, 255, 255, 0.65);
+
+  font-size: 27px;
+
+  box-shadow:
+    0 9px 20px rgba(15, 23, 42, 0.08);
+
+  transition: 0.3s ease;
+}
+
+
+/* LABEL */
+
+.smarty-mode-card > span {
+  position: relative;
+  z-index: 2;
+
+  font-size: 10px;
+
+  font-weight: 900;
+
+  letter-spacing: 1.3px;
+}
+
+
+/* TITLE */
+
+.smarty-mode-card h3 {
+  position: relative;
+  z-index: 2;
+
+  margin: 7px 0 8px;
+
+  color: #172033;
+
+  font-size: 18px;
+
+  font-weight: 850;
+}
+
+
+/* TEXT */
+
+.smarty-mode-card p {
+  position: relative;
+  z-index: 2;
+
+  margin: 0;
+
+  color: #334155;
+
+  font-size: 12.5px;
+
+  line-height: 1.65;
+}
+
+
+/* HOVER */
+
+.smarty-mode-card:hover {
+  transform: translateY(-9px);
+
+  box-shadow:
+    0 22px 42px rgba(30, 41, 59, 0.14);
+}
+
+.smarty-mode-card:hover .smarty-mode-icon {
+  transform: rotate(-5deg) scale(1.1);
+}
+
+
+/* 8 COLORS */
+
+.smarty-mode-card:nth-child(1) {
+  background: linear-gradient(135deg, #dbeafe, #bfdbfe);
+}
+
+.smarty-mode-card:nth-child(2) {
+  background: linear-gradient(135deg, #dcfce7, #bbf7d0);
+}
+
+.smarty-mode-card:nth-child(3) {
+  background: linear-gradient(135deg, #fef3c7, #fde68a);
+}
+
+.smarty-mode-card:nth-child(4) {
+  background: linear-gradient(135deg, #ffedd5, #fed7aa);
+}
+
+.smarty-mode-card:nth-child(5) {
+  background: linear-gradient(135deg, #cffafe, #a5f3fc);
+}
+
+.smarty-mode-card:nth-child(6) {
+  background: linear-gradient(135deg, #d1fae5, #a7f3d0);
+}
+
+.smarty-mode-card:nth-child(7) {
+  background: linear-gradient(135deg, #ffe4e6, #fecdd3);
+}
+
+.smarty-mode-card:nth-child(8) {
+  background: linear-gradient(135deg, #ede9fe, #ddd6fe);
+}
+
+
+/* =========================================================
+   4. FINAL 3 — RESULT / MASTERY / BOSS
+   ========================================================= */
+
+.smarty-result-section,
+.smarty-mastery-section,
+.smarty-boss-section,
+.smarty-review-section {
+  margin-top: 25px;
+}
+
+
+/* RESULT */
+
+.smarty-result-card,
+.smarty-mastery-card,
+.smarty-review-card {
+  border-radius: 28px;
+
+  padding: 32px;
+
+  color: #172033;
+
+  box-shadow:
+    0 18px 38px rgba(30, 41, 59, 0.10);
+}
+
+
+/* RESULT COLOR */
+
+.smarty-result-card {
+  background:
+    linear-gradient(
+      135deg,
+      #dbeafe,
+      #bfdbfe,
+      #bae6fd
+    );
+}
+
+
+/* MASTERY COLOR */
+
+.smarty-mastery-card {
+  background:
+    linear-gradient(
+      135deg,
+      #dcfce7,
+      #bbf7d0,
+      #a7f3d0
+    );
+}
+
+
+/* REVIEW COLOR */
+
+.smarty-review-card {
+  background:
+    linear-gradient(
+      135deg,
+      #fef3c7,
+      #fde68a,
+      #fed7aa
+    );
+}
+
+
+/* BOSS BATTLE */
+
+.smarty-boss-section {
+  position: relative;
+  overflow: hidden;
+
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+
+  gap: 30px;
+
+  padding: 36px;
+
+  border-radius: 30px;
+
+  background:
+    linear-gradient(
+      135deg,
+      #312e81,
+      #6d28d9,
+      #9333ea
+    );
+
+  color: #ffffff;
+
+  box-shadow:
+    0 24px 50px rgba(79, 70, 229, 0.25);
+}
+
+.smarty-boss-section::before {
+  content: "";
+
+  position: absolute;
+
+  width: 260px;
+  height: 260px;
+
+  right: -90px;
+  top: -100px;
+
+  border-radius: 50%;
+
+  background: rgba(255, 255, 255, 0.10);
+}
+
+.smarty-boss-content {
+  position: relative;
+  z-index: 2;
+}
+
+.smarty-boss-label {
+  font-size: 11px;
+
+  font-weight: 900;
+
+  letter-spacing: 1.5px;
+
+  color: #ddd6fe;
+}
+
+.smarty-boss-section h2 {
+  margin: 9px 0;
+
+  color: #ffffff;
+
+  font-size: 30px;
+
+  font-weight: 900;
+}
+
+.smarty-boss-section p {
+  max-width: 650px;
+
+  color: #ede9fe;
+
+  line-height: 1.7;
+}
+
+.smarty-boss-requirement {
+  display: inline-block;
+
+  margin-top: 10px;
+
+  padding: 10px 15px;
+
+  border-radius: 12px;
+
+  background: rgba(255, 255, 255, 0.12);
+
+  color: #f5f3ff;
+
+  font-size: 12px;
+
+  backdrop-filter: blur(8px);
+}
+
+.smarty-boss-visual {
+  position: relative;
+  z-index: 2;
+
+  width: 110px;
+  height: 110px;
+
+  display: flex;
+  align-items: center;
+  justify-content: center;
+
+  flex-shrink: 0;
+
+  border-radius: 50%;
+
+  background:
+    linear-gradient(
+      135deg,
+      #f5f3ff,
+      #ddd6fe
+    );
+
+  color: #6d28d9;
+
+  font-size: 50px;
+
+  box-shadow:
+    0 15px 35px rgba(0, 0, 0, 0.2);
+}
+
+
+/* =========================================================
+   MOBILE
+   ========================================================= */
+
+@media (max-width: 1000px) {
+
+  .smarty-output-grid {
+    grid-template-columns: repeat(2, 1fr);
+  }
+
+  .smarty-learning-path {
+    grid-template-columns: repeat(2, 1fr);
+  }
+
+  .smarty-mode-grid,
+  .smarty-modes-grid {
+    grid-template-columns: repeat(2, 1fr);
+  }
+}
+
+
+@media (max-width: 650px) {
+
+  .smarty-output-grid,
+  .smarty-learning-path,
+  .smarty-mode-grid,
+  .smarty-modes-grid {
+    grid-template-columns: 1fr;
+  }
+
+  .smarty-output-card,
+  .smarty-learning-card,
+  .smarty-mode-card {
+    min-height: 210px;
+  }
+
+  .smarty-boss-section {
+    flex-direction: column;
+    align-items: flex-start;
+  }
+
+  .smarty-boss-visual {
+    width: 85px;
+    height: 85px;
+    font-size: 38px;
+  }
+}
+/* ============================================================
+   SMARTY STUDY — INNER PAGES / ALL 21 FEATURES
+   PREMIUM COLORFUL DESIGN
+   ============================================================ */
+
+
+/* ============================================================
+   GLOBAL INNER PAGE
+   ============================================================ */
+
+.smarty-learning-detail,
+.smarty-detail-page,
+.smarty-study-detail {
+  position: relative;
+
+  padding: 35px 0 70px;
+}
+
+
+/* ============================================================
+   TOP DETAIL HERO
+   ============================================================ */
+
+.smarty-detail-hero {
+  position: relative;
+  overflow: hidden;
+
+  display: flex;
+  align-items: center;
+  gap: 22px;
+
+  margin-bottom: 28px;
+  padding: 30px 34px;
+
+  border-radius: 28px;
+
+  background:
+    linear-gradient(
+      135deg,
+      #e0f2fe 0%,
+      #dbeafe 45%,
+      #dcfce7 100%
+    );
+
+  border: 1px solid #bae6fd;
+
+  box-shadow:
+    0 16px 40px rgba(14, 116, 144, 0.10);
+}
+
+.smarty-detail-hero::before {
+  content: "";
+
+  position: absolute;
+
+  width: 220px;
+  height: 220px;
+
+  right: -90px;
+  top: -110px;
+
+  border-radius: 50%;
+
+  background: rgba(255, 255, 255, 0.35);
+}
+
+.smarty-detail-hero::after {
+  content: "";
+
+  position: absolute;
+
+  width: 140px;
+  height: 140px;
+
+  left: -70px;
+  bottom: -70px;
+
+  border-radius: 50%;
+
+  background: rgba(134, 239, 172, 0.25);
+}
+
+
+/* HERO ICON */
+
+.smarty-detail-hero > span {
+  position: relative;
+  z-index: 2;
+
+  width: 72px;
+  height: 72px;
+
+  flex-shrink: 0;
+
+  display: flex;
+  align-items: center;
+  justify-content: center;
+
+  border-radius: 21px;
+
+  background: rgba(255,255,255,0.70);
+
+  font-size: 34px;
+
+  box-shadow:
+    0 10px 25px rgba(15,23,42,0.08);
+}
+
+
+/* HERO CONTENT */
+
+.smarty-detail-hero > div {
+  position: relative;
+  z-index: 2;
+}
+
+.smarty-detail-hero .smarty-section-label {
+  color: #0284c7;
+
+  font-size: 11px;
+  font-weight: 900;
+
+  letter-spacing: 1.6px;
+}
+
+.smarty-detail-hero h2 {
+  margin: 7px 0 6px;
+
+  color: #172033;
+
+  font-size: 31px;
+  font-weight: 900;
+
+  letter-spacing: -0.7px;
+}
+
+.smarty-detail-hero p {
+  margin: 0;
+
+  color: #475569;
+
+  font-size: 14px;
+  line-height: 1.65;
+}
+
+
+/* ============================================================
+   TOPIC LIST
+   ============================================================ */
+
+.smarty-topic-list {
+  display: grid;
+
+  grid-template-columns:
+    repeat(2, minmax(0, 1fr));
+
+  gap: 24px;
+}
+
+
+/* ============================================================
+   TOPIC CARD
+   ============================================================ */
+
+.smarty-detail-card,
+.smarty-topic-card {
+  position: relative;
+  overflow: hidden;
+
+  padding: 28px;
+
+  border-radius: 25px;
+
+  border: 1px solid transparent;
+
+  box-shadow:
+    0 12px 32px rgba(15,23,42,0.07);
+
+  transition:
+    transform 0.3s ease,
+    box-shadow 0.3s ease;
+}
+
+
+/* DIFFERENT COLOR PER TOPIC CARD */
+
+.smarty-detail-card:nth-child(4n + 1),
+.smarty-topic-card:nth-child(4n + 1) {
+  background:
+    linear-gradient(
+      145deg,
+      #fff7ed,
+      #fed7aa
+    );
+
+  border-color: #fdba74;
+}
+
+.smarty-detail-card:nth-child(4n + 2),
+.smarty-topic-card:nth-child(4n + 2) {
+  background:
+    linear-gradient(
+      145deg,
+      #eff6ff,
+      #bfdbfe
+    );
+
+  border-color: #93c5fd;
+}
+
+.smarty-detail-card:nth-child(4n + 3),
+.smarty-topic-card:nth-child(4n + 3) {
+  background:
+    linear-gradient(
+      145deg,
+      #f0fdf4,
+      #bbf7d0
+    );
+
+  border-color: #86efac;
+}
+
+.smarty-detail-card:nth-child(4n + 4),
+.smarty-topic-card:nth-child(4n + 4) {
+  background:
+    linear-gradient(
+      145deg,
+      #f5f3ff,
+      #ddd6fe
+    );
+
+  border-color: #c4b5fd;
+}
+
+
+.smarty-detail-card::before,
+.smarty-topic-card::before {
+  content: "";
+
+  position: absolute;
+
+  width: 130px;
+  height: 130px;
+
+  right: -65px;
+  bottom: -65px;
+
+  border-radius: 50%;
+
+  background: rgba(255,255,255,0.25);
+
+  transition: 0.4s ease;
+}
+
+
+.smarty-detail-card:hover,
+.smarty-topic-card:hover {
+  transform: translateY(-7px);
+
+  box-shadow:
+    0 22px 45px rgba(15,23,42,0.12);
+}
+
+.smarty-detail-card:hover::before,
+.smarty-topic-card:hover::before {
+  transform: scale(1.45);
+}
+
+
+/* ============================================================
+   TOPIC HEADER
+   ============================================================ */
+
+.smarty-topic-card-header {
+  position: relative;
+  z-index: 2;
+
+  display: flex;
+  align-items: center;
+
+  gap: 15px;
+
+  margin-bottom: 23px;
+}
+
+.smarty-topic-number {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+
+  min-width: 44px;
+  height: 44px;
+
+  padding: 0 9px;
+
+  border-radius: 14px;
+
+  background: rgba(255,255,255,0.72);
+
+  color: #7c3aed;
+
+  font-size: 11px;
+  font-weight: 900;
+
+  box-shadow:
+    0 7px 16px rgba(15,23,42,0.07);
+}
+
+.smarty-topic-card-header h3,
+.smarty-detail-card h3 {
+  margin: 0;
+
+  color: #172033;
+
+  font-size: 21px;
+  font-weight: 900;
+}
+
+
+/* ============================================================
+   IMPORTANT POINTS
+   ============================================================ */
+
+.smarty-points-list,
+.smarty-point-list {
+  position: relative;
+  z-index: 2;
+
+  margin: 0;
+
+  padding: 0;
+
+  list-style: none;
+}
+
+.smarty-points-list li,
+.smarty-point-list li {
+  position: relative;
+
+  margin-bottom: 12px;
+
+  padding: 14px 16px 14px 44px;
+
+  border-radius: 14px;
+
+  background: rgba(255,255,255,0.58);
+
+  color: #334155;
+
+  font-size: 13.5px;
+
+  line-height: 1.65;
+
+  box-shadow:
+    0 5px 14px rgba(15,23,42,0.035);
+}
+
+.smarty-points-list li::before,
+.smarty-point-list li::before {
+  content: "✓";
+
+  position: absolute;
+
+  left: 15px;
+  top: 13px;
+
+  width: 23px;
+  height: 23px;
+
+  display: flex;
+  align-items: center;
+  justify-content: center;
+
+  border-radius: 50%;
+
+  background: #22c55e;
+
+  color: white;
+
+  font-size: 12px;
+  font-weight: 900;
+}
+
+
+/* ============================================================
+   SIMPLE EXPLANATION
+   ============================================================ */
+
+.smarty-explanation-box {
+  position: relative;
+  z-index: 2;
+
+  padding: 23px;
+
+  border-radius: 18px;
+
+  background:
+    linear-gradient(
+      135deg,
+      rgba(255,255,255,0.72),
+      rgba(224,242,254,0.75)
+    );
+
+  border: 1px solid rgba(255,255,255,0.75);
+
+  color: #334155;
+
+  font-size: 14px;
+
+  line-height: 1.8;
+
+  box-shadow:
+    0 7px 18px rgba(15,23,42,0.05);
+}
+
+.smarty-explanation-box p {
+  margin: 0;
+}
+
+
+/* ============================================================
+   SHORT ANSWERS
+   ============================================================ */
+
+.smarty-answer-list {
+  display: grid;
+
+  gap: 15px;
+}
+
+.smarty-answer-item {
+  position: relative;
+
+  padding: 20px;
+
+  border-radius: 17px;
+
+  background: rgba(255,255,255,0.65);
+
+  border: 1px solid rgba(255,255,255,0.7);
+
+  box-shadow:
+    0 7px 17px rgba(15,23,42,0.05);
+}
+
+.smarty-answer-item h4 {
+  margin: 0 0 9px;
+
+  color: #1d4ed8;
+
+  font-size: 15px;
+  font-weight: 850;
+}
+
+.smarty-answer-item p {
+  margin: 0;
+
+  color: #475569;
+
+  line-height: 1.7;
+}
+
+
+/* ============================================================
+   QUESTIONS
+   ============================================================ */
+
+.smarty-question-list {
+  display: grid;
+
+  gap: 14px;
+}
+
+.smarty-question-item {
+  display: flex;
+  align-items: flex-start;
+
+  gap: 14px;
+
+  padding: 17px;
+
+  border-radius: 16px;
+
+  background: rgba(255,255,255,0.66);
+
+  border: 1px solid rgba(255,255,255,0.75);
+}
+
+.smarty-question-number {
+  width: 34px;
+  height: 34px;
+
+  flex-shrink: 0;
+
+  display: flex;
+  align-items: center;
+  justify-content: center;
+
+  border-radius: 11px;
+
+  background: #7c3aed;
+
+  color: white;
+
+  font-size: 12px;
+  font-weight: 900;
+}
+
+.smarty-question-item strong {
+  color: #334155;
+
+  font-size: 14px;
+
+  line-height: 1.6;
+}
+
+
+/* ============================================================
+   MCQ
+   ============================================================ */
+
+.smarty-mcq-list {
+  display: grid;
+
+  gap: 18px;
+}
+
+.smarty-mcq-item {
+  padding: 21px;
+
+  border-radius: 19px;
+
+  background:
+    rgba(255,255,255,0.64);
+
+  border: 1px solid rgba(255,255,255,0.8);
+}
+
+.smarty-mcq-question {
+  display: flex;
+
+  gap: 11px;
+
+  margin-bottom: 16px;
+}
+
+.smarty-mcq-question > span {
+  color: #7c3aed;
+
+  font-weight: 900;
+}
+
+.smarty-mcq-question strong {
+  color: #172033;
+
+  line-height: 1.55;
+}
+
+.smarty-mcq-options {
+  display: grid;
+
+  grid-template-columns:
+    repeat(2, 1fr);
+
+  gap: 11px;
+}
+
+.smarty-mcq-option {
+  display: flex;
+  align-items: center;
+
+  gap: 11px;
+
+  padding: 13px;
+
+  border-radius: 13px;
+
+  background: rgba(255,255,255,0.75);
+
+  border: 1px solid rgba(148,163,184,0.18);
+
+  transition:
+    transform 0.2s ease,
+    background 0.2s ease;
+}
+
+.smarty-mcq-option:hover {
+  transform: translateY(-2px);
+
+  background: #ffffff;
+}
+
+.smarty-mcq-option > span {
+  width: 30px;
+  height: 30px;
+
+  flex-shrink: 0;
+
+  display: flex;
+  align-items: center;
+  justify-content: center;
+
+  border-radius: 9px;
+
+  background: #dbeafe;
+
+  color: #2563eb;
+
+  font-size: 12px;
+  font-weight: 900;
+}
+
+.smarty-mcq-option p {
+  margin: 0;
+
+  color: #475569;
+
+  font-size: 13px;
+}
+
+
+/* ============================================================
+   FLASHCARDS
+   ============================================================ */
+
+.smarty-flashcard-section {
+  display: flex;
+
+  flex-direction: column;
+
+  align-items: center;
+
+  padding: 10px 0 30px;
+}
+
+.smarty-flashcard-progress {
+  margin-bottom: 18px;
+
+  color: #7c3aed;
+
+  font-size: 13px;
+  font-weight: 850;
+}
+
+.smarty-flashcard {
+  position: relative;
+  overflow: hidden;
+
+  width: min(720px, 100%);
+
+  min-height: 360px;
+
+  padding: 50px;
+
+  border: none;
+
+  border-radius: 30px;
+
+  background:
+    linear-gradient(
+      135deg,
+      #7c3aed,
+      #a855f7,
+      #ec4899
+    );
+
+  color: white;
+
+  box-shadow:
+    0 25px 55px rgba(124,58,237,0.25);
+
+  cursor: pointer;
+
+  transition:
+    transform 0.35s ease,
+    box-shadow 0.35s ease;
+}
+
+.smarty-flashcard::before {
+  content: "";
+
+  position: absolute;
+
+  width: 250px;
+  height: 250px;
+
+  right: -100px;
+  top: -100px;
+
+  border-radius: 50%;
+
+  background: rgba(255,255,255,0.12);
+}
+
+.smarty-flashcard:hover {
+  transform: translateY(-8px) rotateX(2deg);
+
+  box-shadow:
+    0 30px 65px rgba(124,58,237,0.32);
+}
+
+.smarty-flashcard-topic {
+  position: relative;
+  z-index: 2;
+
+  color: #f3e8ff;
+
+  font-size: 12px;
+
+  font-weight: 900;
+
+  letter-spacing: 1.4px;
+}
+
+.smarty-flashcard-question {
+  position: relative;
+  z-index: 2;
+
+  margin-top: 22px;
+
+  color: white;
+
+  font-size: 25px;
+  font-weight: 850;
+
+  line-height: 1.5;
+}
+
+.smarty-flashcard-answer {
+  position: relative;
+  z-index: 2;
+
+  margin-top: 22px;
+
+  color: #fdf4ff;
+
+  font-size: 17px;
+
+  line-height: 1.7;
+}
+
+
+/* ============================================================
+   CONTENT BOXES
+   ============================================================ */
+
+.smarty-topic-content {
+  position: relative;
+  z-index: 2;
+
+  margin-top: 20px;
+
+  padding: 20px;
+
+  border-radius: 18px;
+
+  background: rgba(255,255,255,0.54);
+
+  border: 1px solid rgba(255,255,255,0.7);
+}
+
+.smarty-topic-content > h4 {
+  margin: 0 0 15px;
+
+  color: #7c3aed;
+
+  font-size: 14px;
+
+  font-weight: 900;
+}
+
+
+/* ============================================================
+   FLASHCARD PREVIEW
+   ============================================================ */
+
+.smarty-flashcard-preview-list {
+  display: grid;
+
+  gap: 13px;
+}
+
+.smarty-flashcard-preview {
+  padding: 17px;
+
+  border-radius: 15px;
+
+  background:
+    linear-gradient(
+      135deg,
+      rgba(255,255,255,0.8),
+      rgba(237,233,254,0.8)
+    );
+
+  border: 1px solid #ddd6fe;
+}
+
+.smarty-flashcard-preview strong {
+  display: block;
+
+  margin-bottom: 7px;
+
+  color: #5b21b6;
+}
+
+.smarty-flashcard-preview p {
+  margin: 0;
+
+  color: #475569;
+
+  line-height: 1.6;
+}
+
+
+/* ============================================================
+   TEACH BACK
+   ============================================================ */
+
+.smarty-teachback,
+.smarty-teachback-container {
+  padding: 28px;
+
+  border-radius: 27px;
+
+  background:
+    linear-gradient(
+      135deg,
+      #dbeafe,
+      #e0f2fe,
+      #dcfce7
+    );
+
+  border: 1px solid #bae6fd;
+
+  box-shadow:
+    0 18px 40px rgba(14,116,144,0.10);
+}
+
+.smarty-teachback textarea {
+  width: 100%;
+
+  min-height: 180px;
+
+  margin-top: 18px;
+
+  padding: 18px;
+
+  resize: vertical;
+
+  border: 2px solid #bae6fd;
+
+  border-radius: 17px;
+
+  background: rgba(255,255,255,0.75);
+
+  color: #172033;
+
+  font-size: 14px;
+
+  outline: none;
+
+  transition: 0.25s ease;
+}
+
+.smarty-teachback textarea:focus {
+  border-color: #38bdf8;
+
+  background: white;
+
+  box-shadow:
+    0 0 0 4px rgba(56,189,248,0.12);
+}
+
+.smarty-primary-button {
+  margin-top: 16px;
+
+  padding: 13px 20px;
+
+  border: none;
+
+  border-radius: 13px;
+
+  background:
+    linear-gradient(
+      135deg,
+      #2563eb,
+      #7c3aed
+    );
+
+  color: white;
+
+  font-weight: 800;
+
+  cursor: pointer;
+
+  box-shadow:
+    0 9px 20px rgba(37,99,235,0.20);
+
+  transition: 0.25s ease;
+}
+
+.smarty-primary-button:hover {
+  transform: translateY(-2px);
+
+  box-shadow:
+    0 13px 26px rgba(37,99,235,0.28);
+}
+
+
+/* ============================================================
+   TEACH BACK EVALUATION
+   ============================================================ */
+
+.smarty-teachback-evaluation {
+  display: grid;
+
+  gap: 16px;
+
+  margin-top: 24px;
+}
+
+.smarty-evaluation-card {
+  display: flex;
+
+  align-items: flex-start;
+
+  gap: 15px;
+
+  padding: 20px;
+
+  border-radius: 18px;
+
+  background:
+    linear-gradient(
+      135deg,
+      #ffffff,
+      #eff6ff
+    );
+
+  border: 1px solid #bfdbfe;
+
+  box-shadow:
+    0 8px 20px rgba(15,23,42,0.06);
+}
+
+.smarty-evaluation-icon {
+  width: 42px;
+  height: 42px;
+
+  flex-shrink: 0;
+
+  display: flex;
+  align-items: center;
+  justify-content: center;
+
+  border-radius: 13px;
+
+  background: #dbeafe;
+
+  color: #2563eb;
+
+  font-weight: 900;
+}
+
+.smarty-evaluation-card h4 {
+  margin: 0 0 7px;
+
+  color: #172033;
+
+  font-size: 15px;
+}
+
+.smarty-evaluation-card p,
+.smarty-evaluation-card li {
+  color: #475569;
+
+  line-height: 1.65;
+}
+
+.smarty-evaluation-card ul {
+  margin: 5px 0 0;
+
+  padding-left: 18px;
+}
+
+
+/* ============================================================
+   SOCrATIC / STUDY QUEST / MISTAKE
+   ============================================================ */
+
+.smarty-socratic-card,
+.smarty-quest-card,
+.smarty-mistake-card,
+.smarty-scenario-card {
+  padding: 26px;
+
+  border-radius: 24px;
+
+  background:
+    linear-gradient(
+      135deg,
+      #fef3c7,
+      #fed7aa
+    );
+
+  border: 1px solid #fbbf24;
+
+  box-shadow:
+    0 15px 32px rgba(245,158,11,0.10);
+}
+
+.smarty-socratic-question,
+.smarty-quest-question {
+  padding: 20px;
+
+  border-radius: 17px;
+
+  background: rgba(255,255,255,0.68);
+
+  color: #78350f;
+
+  font-size: 16px;
+
+  font-weight: 750;
+
+  line-height: 1.65;
+}
+
+
+/* ============================================================
+   FIND THE MISTAKE
+   ============================================================ */
+
+.smarty-mistake-card {
+  background:
+    linear-gradient(
+      135deg,
+      #ffe4e6,
+      #fecdd3
+    );
+
+  border-color: #fda4af;
+}
+
+.smarty-mistake-card .incorrect,
+.smarty-incorrect-statement {
+  padding: 17px;
+
+  border-radius: 15px;
+
+  background: #fff1f2;
+
+  border: 1px solid #fda4af;
+
+  color: #9f1239;
+}
+
+.smarty-correct-answer,
+.smarty-correct-version {
+  margin-top: 13px;
+
+  padding: 17px;
+
+  border-radius: 15px;
+
+  background: #f0fdf4;
+
+  border: 1px solid #86efac;
+
+  color: #166534;
+}
+
+
+/* ============================================================
+   REAL LIFE SCENARIO
+   ============================================================ */
+
+.smarty-scenario-card {
+  background:
+    linear-gradient(
+      135deg,
+      #cffafe,
+      #a5f3fc
+    );
+
+  border-color: #67e8f9;
+}
+
+.smarty-scenario-box {
+  padding: 22px;
+
+  border-radius: 18px;
+
+  background: rgba(255,255,255,0.67);
+
+  color: #164e63;
+
+  line-height: 1.75;
+}
+
+
+/* ============================================================
+   EXAM ANSWER
+   ============================================================ */
+
+.smarty-exam-answer-card {
+  padding: 25px;
+
+  border-radius: 22px;
+
+  background:
+    linear-gradient(
+      135deg,
+      #ede9fe,
+      #ddd6fe
+    );
+
+  border: 1px solid #c4b5fd;
+
+  box-shadow:
+    0 14px 30px rgba(124,58,237,0.09);
+}
+
+.smarty-exam-answer-card h4 {
+  color: #6d28d9;
+
+  font-size: 17px;
+
+  font-weight: 900;
+}
+
+.smarty-exam-answer {
+  padding: 19px;
+
+  border-radius: 16px;
+
+  background: rgba(255,255,255,0.67);
+
+  color: #374151;
+
+  line-height: 1.8;
+}
+
+.smarty-keywords {
+  display: flex;
+
+  flex-wrap: wrap;
+
+  gap: 8px;
+
+  margin-top: 15px;
+}
+
+.smarty-keywords span {
+  padding: 7px 11px;
+
+  border-radius: 20px;
+
+  background: #7c3aed;
+
+  color: white;
+
+  font-size: 11px;
+
+  font-weight: 750;
+}
+
+
+/* ============================================================
+   EXAM NIGHT
+   ============================================================ */
+
+.smarty-exam-night-card {
+  padding: 28px;
+
+  border-radius: 27px;
+
+  background:
+    linear-gradient(
+      135deg,
+      #1e1b4b,
+      #312e81,
+      #4c1d95
+    );
+
+  color: white;
+
+  box-shadow:
+    0 24px 50px rgba(49,46,129,0.24);
+}
+
+.smarty-exam-night-card h3,
+.smarty-exam-night-card h4 {
+  color: white;
+}
+
+.smarty-exam-night-item {
+  margin-top: 13px;
+
+  padding: 15px;
+
+  border-radius: 14px;
+
+  background: rgba(255,255,255,0.10);
+
+  border: 1px solid rgba(255,255,255,0.12);
+
+  color: #ede9fe;
+
+  line-height: 1.6;
+}
+
+
+/* ============================================================
+   SPACED REPETITION
+   ============================================================ */
+
+.smarty-spaced-card {
+  padding: 30px;
+
+  border-radius: 27px;
+
+  background:
+    linear-gradient(
+      135deg,
+      #ccfbf1,
+      #a7f3d0,
+      #bbf7d0
+    );
+
+  border: 1px solid #6ee7b7;
+
+  box-shadow:
+    0 17px 38px rgba(16,185,129,0.12);
+}
+
+.smarty-spaced-card button {
+  margin-top: 18px;
+
+  padding: 11px 18px;
+
+  border: none;
+
+  border-radius: 12px;
+
+  background: #047857;
+
+  color: white;
+
+  font-weight: 800;
+
+  cursor: pointer;
+}
+
+
+/* ============================================================
+   RESULT
+   ============================================================ */
+
+.smarty-result-card {
+  padding: 35px;
+
+  border-radius: 29px;
+
+  background:
+    linear-gradient(
+      135deg,
+      #dbeafe,
+      #bae6fd,
+      #dcfce7
+    );
+
+  border: 1px solid #93c5fd;
+
+  box-shadow:
+    0 20px 45px rgba(14,116,144,0.12);
+
+  text-align: center;
+}
+
+.smarty-result-card h2 {
+  margin-bottom: 10px;
+
+  color: #172033;
+
+  font-size: 28px;
+}
+
+.smarty-result-score {
+  display: inline-flex;
+
+  align-items: center;
+  justify-content: center;
+
+  min-width: 130px;
+  min-height: 90px;
+
+  margin: 18px 0;
+
+  padding: 15px 25px;
+
+  border-radius: 24px;
+
+  background:
+    linear-gradient(
+      135deg,
+      #2563eb,
+      #06b6d4
+    );
+
+  color: white;
+
+  font-size: 34px;
+
+  font-weight: 900;
+
+  box-shadow:
+    0 15px 30px rgba(37,99,235,0.22);
+}
+
+
+/* ============================================================
+   MASTERY MAP
+   ============================================================ */
+
+.smarty-mastery-card {
+  padding: 30px;
+
+  border-radius: 28px;
+
+  background:
+    linear-gradient(
+      135deg,
+      #dcfce7,
+      #bbf7d0,
+      #a7f3d0
+    );
+
+  border: 1px solid #86efac;
+
+  box-shadow:
+    0 18px 40px rgba(22,163,74,0.10);
+}
+
+.smarty-mastery-item {
+  margin-top: 14px;
+
+  padding: 18px;
+
+  border-radius: 17px;
+
+  background: rgba(255,255,255,0.65);
+}
+
+.smarty-mastery-item h4 {
+  margin: 0 0 7px;
+
+  color: #166534;
+}
+
+.smarty-mastery-progress {
+  height: 9px;
+
+  margin-top: 12px;
+
+  overflow: hidden;
+
+  border-radius: 20px;
+
+  background: #bbf7d0;
+}
+
+.smarty-mastery-progress > div {
+  height: 100%;
+
+  border-radius: inherit;
+
+  background:
+    linear-gradient(
+      90deg,
+      #22c55e,
+      #14b8a6
+    );
+}
+
+
+/* ============================================================
+   BOSS BATTLE
+   ============================================================ */
+
+.smarty-boss-section {
+  position: relative;
+  overflow: hidden;
+
+  padding: 40px;
+
+  border-radius: 32px;
+
+  background:
+    linear-gradient(
+      135deg,
+      #312e81,
+      #6d28d9,
+      #9333ea,
+      #c026d3
+    );
+
+  color: white;
+
+  box-shadow:
+    0 25px 60px rgba(109,40,217,0.28);
+}
+
+.smarty-boss-section::before {
+  content: "";
+
+  position: absolute;
+
+  width: 300px;
+  height: 300px;
+
+  right: -110px;
+  top: -130px;
+
+  border-radius: 50%;
+
+  background: rgba(255,255,255,0.10);
+}
+
+.smarty-boss-section h2,
+.smarty-boss-section h3 {
+  position: relative;
+  z-index: 2;
+
+  color: white;
+
+  font-size: 30px;
+  font-weight: 900;
+}
+
+.smarty-boss-section p {
+  position: relative;
+  z-index: 2;
+
+  color: #ede9fe;
+
+  line-height: 1.7;
+}
+
+.smarty-boss-question {
+  position: relative;
+  z-index: 2;
+
+  margin-top: 18px;
+
+  padding: 21px;
+
+  border-radius: 17px;
+
+  background: rgba(255,255,255,0.10);
+
+  border: 1px solid rgba(255,255,255,0.15);
+
+  color: white;
+}
+
+.smarty-boss-option {
+  margin-top: 10px;
+
+  padding: 13px;
+
+  border-radius: 12px;
+
+  background: rgba(255,255,255,0.08);
+
+  color: #f5f3ff;
+}
+
+
+/* ============================================================
+   EMPTY STATE
+   ============================================================ */
+
+.smarty-empty-state {
+  padding: 60px 30px;
+
+  border-radius: 28px;
+
+  background:
+    linear-gradient(
+      135deg,
+      #e0f2fe,
+      #dbeafe,
+      #dcfce7
+    );
+
+  border: 1px solid #bae6fd;
+
+  text-align: center;
+
+  box-shadow:
+    0 15px 35px rgba(14,116,144,0.08);
+}
+
+.smarty-empty-state > div,
+.smarty-empty-icon {
+  width: 75px;
+  height: 75px;
+
+  margin: 0 auto 18px;
+
+  display: flex;
+  align-items: center;
+  justify-content: center;
+
+  border-radius: 22px;
+
+  background: rgba(255,255,255,0.65);
+
+  font-size: 35px;
+}
+
+.smarty-empty-state h3 {
+  margin: 0 0 9px;
+
+  color: #172033;
+
+  font-size: 21px;
+}
+
+.smarty-empty-state p {
+  margin: 0;
+
+  color: #475569;
+}
+
+
+/* ============================================================
+   ERROR
+   ============================================================ */
+
+.smarty-error-card {
+  margin-top: 18px;
+
+  padding: 18px;
+
+  border-radius: 17px;
+
+  background:
+    linear-gradient(
+      135deg,
+      #ffe4e6,
+      #fecdd3
+    );
+
+  border: 1px solid #fda4af;
+
+  color: #9f1239;
+}
+
+
+/* ============================================================
+   NO CONTENT
+   ============================================================ */
+
+.smarty-no-content {
+  margin: 0;
+
+  padding: 15px;
+
+  border-radius: 14px;
+
+  background: rgba(255,255,255,0.55);
+
+  color: #64748b;
+
+  font-size: 13px;
+}
+
+
+/* ============================================================
+   RESPONSIVE
+   ============================================================ */
+
+@media (max-width: 900px) {
+
+  .smarty-topic-list {
+    grid-template-columns: 1fr;
+  }
+
+  .smarty-mcq-options {
+    grid-template-columns: 1fr;
+  }
+
+  .smarty-detail-hero {
+    padding: 25px;
+  }
+
+  .smarty-detail-hero h2 {
+    font-size: 26px;
+  }
+}
+
+
+@media (max-width: 600px) {
+
+  .smarty-detail-hero {
+    flex-direction: column;
+    align-items: flex-start;
+  }
+
+  .smarty-detail-hero > span {
+    width: 58px;
+    height: 58px;
+    font-size: 27px;
+  }
+
+  .smarty-detail-hero h2 {
+    font-size: 23px;
+  }
+
+  .smarty-detail-card,
+  .smarty-topic-card {
+    padding: 21px;
+  }
+
+  .smarty-flashcard {
+    min-height: 300px;
+    padding: 30px;
+  }
+
+  .smarty-flashcard-question {
+    font-size: 20px;
+  }
+
+  .smarty-boss-section {
+    padding: 27px;
+  }
+}
+/* =========================================================
+   SMARTY STUDY — INNER PAGE BACK BUTTON
+   Applies to all 21 inner pages
+   ========================================================= */
+
+.smarty-detail-back,
+.smarty-back-button,
+.smarty-learning-back,
+.smarty-study-back {
+  position: relative;
+
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+
+  gap: 8px;
+
+  min-height: 44px;
+
+  margin-bottom: 18px;
+  padding: 11px 19px;
+
+  border: 1px solid rgba(124, 58, 237, 0.18);
+  border-radius: 13px;
+
+  background:
+    linear-gradient(
+      135deg,
+      #ffffff 0%,
+      #f3e8ff 100%
+    );
+
+  color: #6d28d9;
+
+  font-size: 13px;
+  font-weight: 800;
+
+  letter-spacing: 0.1px;
+
+  cursor: pointer;
+
+  box-shadow:
+    0 7px 18px rgba(109, 40, 217, 0.10);
+
+  transition:
+    transform 0.25s ease,
+    box-shadow 0.25s ease,
+    background 0.25s ease,
+    color 0.25s ease,
+    border-color 0.25s ease;
+}
+
+
+/* ARROW */
+
+.smarty-detail-back::first-letter,
+.smarty-back-button::first-letter,
+.smarty-learning-back::first-letter,
+.smarty-study-back::first-letter {
+  font-weight: 900;
+}
+
+
+/* HOVER */
+
+.smarty-detail-back:hover,
+.smarty-back-button:hover,
+.smarty-learning-back:hover,
+.smarty-study-back:hover {
+  transform: translateY(-3px);
+
+  background:
+    linear-gradient(
+      135deg,
+      #7c3aed,
+      #a855f7
+    );
+
+  border-color: #7c3aed;
+
+  color: #ffffff;
+
+  box-shadow:
+    0 12px 27px rgba(124, 58, 237, 0.25);
+}
+
+
+/* CLICK */
+
+.smarty-detail-back:active,
+.smarty-back-button:active,
+.smarty-learning-back:active,
+.smarty-study-back:active {
+  transform: translateY(0) scale(0.97);
+
+  box-shadow:
+    0 5px 12px rgba(124, 58, 237, 0.18);
+}
+
+
+/* KEYBOARD FOCUS */
+
+.smarty-detail-back:focus-visible,
+.smarty-back-button:focus-visible,
+.smarty-learning-back:focus-visible,
+.smarty-study-back:focus-visible {
+  outline: 3px solid rgba(168, 85, 247, 0.30);
+
+  outline-offset: 3px;
+}
+
+
+/* =========================================================
+   IF YOUR BUTTON IS INSIDE THE SMARTY DETAIL HEADER
+   ========================================================= */
+
+.smarty-detail-header .smarty-detail-back,
+.smarty-detail-header .smarty-back-button {
+  align-self: flex-start;
+}
+
+
+/* =========================================================
+   TOP POSITION / SPACING
+   ========================================================= */
+
+.smarty-detail-page > .smarty-detail-back:first-child,
+.smarty-learning-detail > .smarty-detail-back:first-child,
+.smarty-study-detail > .smarty-detail-back:first-child {
+  margin-left: 2px;
+}
+
+
+/* =========================================================
+   MOBILE
+   ========================================================= */
+
+@media (max-width: 600px) {
+
+  .smarty-detail-back,
+  .smarty-back-button,
+  .smarty-learning-back,
+  .smarty-study-back {
+    width: auto;
+
+    min-height: 44px;
+
+    padding: 10px 16px;
+
+    font-size: 12px;
+  }
+}

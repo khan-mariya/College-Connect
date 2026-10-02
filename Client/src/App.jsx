@@ -1,5 +1,6 @@
 import './App.css'
 import { useEffect, useState, useRef } from "react"
+import collegeConnectLogo from "./assets/college-connect-logo.png"
 const urlBase64ToUint8Array = (base64String) => {
   const padding =
     "=".repeat((4 - (base64String.length % 4)) % 4)
@@ -18,7 +19,6 @@ const urlBase64ToUint8Array = (base64String) => {
   )
 }
 
-import collegeConnectLogo from "./assets/college-connect-logo.png";
 const API_URL = import.meta.env.VITE_API_URL || "http://localhost:5000";
 
 function App() {
@@ -249,7 +249,6 @@ const getAcademicYear = () => {
   const [answerSavingState, setAnswerSavingState] = useState({})
 
   // ================= STUDY HUB =================
-
   const [studyMaterials, setStudyMaterials] = useState([])
   const [studyMaterialsLoading, setStudyMaterialsLoading] = useState(false)
   const [showUploadMaterial, setShowUploadMaterial] = useState(false)
@@ -263,10 +262,402 @@ const getAcademicYear = () => {
     file: null,
   })
 
+  // ================= SMARTY STUDY =================
+
+
+const [smartyStudyView, setSmartyStudyView] = useState("dashboard")
+const [smartyStudy, setSmartyStudy] = useState(null)
+
+const [smartyFlashcardIndex, setSmartyFlashcardIndex] = useState(0)
+const [smartyFlashcardFlipped, setSmartyFlashcardFlipped] = useState(false)
+
+const [smartySelectedAnswers, setSmartySelectedAnswers] = useState({})
+const [smartyTestScore, setSmartyTestScore] = useState(null)
+const [smartyLearningView, setSmartyLearningView] = useState("dashboard")
+// =========================================================
+// SMARTY STUDY — MAIN DATA + 21 CARD CONNECTION
+// =========================================================
+
+const [smartyStudyLoading, setSmartyStudyLoading] = useState(false)
+const [smartyStudyError, setSmartyStudyError] = useState("")
+
+const [smartySelectedTopicIndex, setSmartySelectedTopicIndex] = useState(0)
+
+const [smartyActiveCard, setSmartyActiveCard] = useState(null)
+
+const [smartyCardLoading, setSmartyCardLoading] = useState(false)
+
+const [smartyCardError, setSmartyCardError] = useState("")
+
+const [smartyMockTestAnswers, setSmartyMockTestAnswers] = useState({})
+
+const [smartyMockTestSubmitted, setSmartyMockTestSubmitted] =
+  useState(false)
+
+const [smartyMockTestScore, setSmartyMockTestScore] =
+  useState(null)
+
+const [smartyBossAnswers, setSmartyBossAnswers] = useState({})
+
+const [smartyBossSubmitted, setSmartyBossSubmitted] =
+  useState(false)
+
+const [smartyBossScore, setSmartyBossScore] =
+  useState(null)
+
+const [smartySocraticAnswer, setSmartySocraticAnswer] =
+  useState("")
+
+const [smartySocraticSubmitted, setSmartySocraticSubmitted] =
+  useState(false)
+
+const [smartyQuestStep, setSmartyQuestStep] = useState(0)
+
+const [smartyQuestAnswer, setSmartyQuestAnswer] =
+  useState("")
+
+const [smartyQuestSubmitted, setSmartyQuestSubmitted] =
+  useState(false)
+
+const [smartyMistakeAnswer, setSmartyMistakeAnswer] =
+  useState("")
+
+const [smartyMistakeSubmitted, setSmartyMistakeSubmitted] =
+  useState(false)
+
+const [smartyScenarioAnswer, setSmartyScenarioAnswer] =
+  useState("")
+
+const [smartyScenarioSubmitted, setSmartyScenarioSubmitted] =
+  useState(false)
+
+const [smartyExamNightTopicIndex, setSmartyExamNightTopicIndex] =
+  useState(0)
+
+const [smartySpacedIndex, setSmartySpacedIndex] =
+  useState(0)
+
+const [smartySpacedAnswer, setSmartySpacedAnswer] =
+  useState("")
+
+const [smartySpacedSubmitted, setSmartySpacedSubmitted] =
+  useState(false)
+
+
+// =========================================================
+// SMARTY STUDY — FETCH COMPLETE AI DATA
+// =========================================================
+
+const fetchSmartyStudy = async (materialId) => {
+  if (!materialId) {
+    return null
+  }
+
+  try {
+    setSmartyStudyLoading(true)
+    setSmartyStudyError("")
+
+    const token = localStorage.getItem(
+      "collegeConnectToken"
+    )
+
+    const response = await fetch(
+      `${API_URL}/api/smarty-study/${materialId}`,
+      {
+        method: "GET",
+        headers: {
+          Authorization: `Bearer ${token}`,
+        },
+      }
+    )
+
+    const data = await response.json()
+
+    if (!response.ok) {
+      throw new Error(
+        data.message ||
+          "Unable to load Smarty Study."
+      )
+    }
+
+    if (!data.smartyStudy) {
+      throw new Error(
+        "Smarty Study data was not returned."
+      )
+    }
+
+    setSmartyStudy(data.smartyStudy)
+
+    return data.smartyStudy
+
+  } catch (error) {
+
+    console.error(
+      "Smarty Study fetch error:",
+      error
+    )
+
+    setSmartyStudyError(
+      error.message ||
+        "Unable to load study content."
+    )
+
+    return null
+
+  } finally {
+
+    setSmartyStudyLoading(false)
+
+  }
+}
+
+
+// =========================================================
+// SMARTY STUDY — GET CURRENT MATERIAL ID
+// =========================================================
+
+const getSmartyMaterialId = () => {
+
+  if (!smartyStudy) {
+    return null
+  }
+
+  if (smartyStudy.material?._id) {
+    return smartyStudy.material._id
+  }
+
+  if (smartyStudy.material) {
+    return smartyStudy.material
+  }
+
+  return null
+}
+
+
+// =========================================================
+// SMARTY STUDY — LOAD DATA WHEN CARD IS OPENED
+// =========================================================
+
+const openSmartyCard = async (cardName) => {
+
+  setSmartyActiveCard(cardName)
+
+  setSmartyCardError("")
+
+  const materialId = getSmartyMaterialId()
+
+  if (!materialId) {
+
+    setSmartyCardError(
+      "Please upload and analyze your study material first."
+    )
+
+    return
+  }
+
+  if (
+    !smartyStudy?.topics ||
+    !Array.isArray(smartyStudy.topics) ||
+    smartyStudy.topics.length === 0
+  ) {
+
+    setSmartyCardError(
+      "No AI study content is available yet."
+    )
+
+    return
+  }
+
+  setSmartyCardLoading(true)
+
+  try {
+
+    const latestStudy =
+      await fetchSmartyStudy(materialId)
+
+    if (latestStudy) {
+
+      setSmartyActiveCard(cardName)
+
+    }
+
+  } catch (error) {
+
+    console.error(
+      "Smarty card loading error:",
+      error
+    )
+
+  } finally {
+
+    setSmartyCardLoading(false)
+
+  }
+}
+
+
+// =========================================================
+// SMARTY STUDY — CHANGE TOPIC
+// =========================================================
+
+const changeSmartyTopic = (direction) => {
+
+  if (
+    !smartyStudy?.topics ||
+    smartyStudy.topics.length === 0
+  ) {
+    return
+  }
+
+  setSmartySelectedTopicIndex((current) => {
+
+    const next =
+      current + direction
+
+    if (next < 0) {
+      return smartyStudy.topics.length - 1
+    }
+
+    if (
+      next >= smartyStudy.topics.length
+    ) {
+      return 0
+    }
+
+    return next
+
+  })
+}
+
+
+// =========================================================
+// SMARTY STUDY — CURRENT TOPIC
+// =========================================================
+
+const smartyCurrentTopic =
+  smartyStudy?.topics?.[
+    smartySelectedTopicIndex
+  ] || null
+
+
+// =========================================================
+// SMARTY STUDY — CLOSE CARD
+// =========================================================
+
+const closeSmartyCard = () => {
+
+  setSmartyActiveCard(null)
+
+  setSmartyCardError("")
+
+  setSmartyMockTestSubmitted(false)
+
+  setSmartyMockTestScore(null)
+
+  setSmartyBossSubmitted(false)
+
+  setSmartyBossScore(null)
+
+  setSmartySocraticAnswer("")
+
+  setSmartySocraticSubmitted(false)
+
+  setSmartyQuestStep(0)
+
+  setSmartyQuestAnswer("")
+
+  setSmartyQuestSubmitted(false)
+
+  setSmartyMistakeAnswer("")
+
+  setSmartyMistakeSubmitted(false)
+
+  setSmartyScenarioAnswer("")
+
+  setSmartyScenarioSubmitted(false)
+
+  setSmartySpacedAnswer("")
+
+  setSmartySpacedSubmitted(false)
+
+}
+const [smartyTeachBackTopicIndex, setSmartyTeachBackTopicIndex] = useState(null)
+const [smartyTeachBackAnswer, setSmartyTeachBackAnswer] = useState("")
+const [smartyTeachBackSubmitted, setSmartyTeachBackSubmitted] = useState(false)
+const [smartyTeachBackEvaluation, setSmartyTeachBackEvaluation] = useState(null)
+const [smartyTeachBackLoading, setSmartyTeachBackLoading] = useState(false)
+const [smartyTeachBackError, setSmartyTeachBackError] = useState("")
+
+const submitSmartyTeachBack = async () => {
+  if (
+    smartyTeachBackTopicIndex === null ||
+    !smartyTeachBackAnswer.trim() ||
+    !smartyStudy?.material?._id
+  ) {
+    return
+  }
+
+  try {
+    setSmartyTeachBackLoading(true)
+    setSmartyTeachBackError("")
+    setSmartyTeachBackSubmitted(false)
+    setSmartyTeachBackEvaluation(null)
+
+    const response = await fetch(
+      `${API_URL}/api/smarty-study/teach-back/${smartyStudy.material._id}`,
+      {
+        method: "POST",
+        headers: {
+          "Content-Type": "application/json",
+          Authorization: `Bearer ${localStorage.getItem(
+            "collegeConnectToken"
+          )}`,
+        },
+        body: JSON.stringify({
+          topicIndex: smartyTeachBackTopicIndex,
+          explanation: smartyTeachBackAnswer.trim(),
+        }),
+      }
+    )
+
+    const data = await response.json()
+
+    if (!response.ok) {
+      throw new Error(
+        data.message ||
+          "Unable to evaluate your explanation."
+      )
+    }
+
+    if (!data.evaluation) {
+      throw new Error(
+        "AI evaluation was not returned."
+      )
+    }
+
+    setSmartyTeachBackEvaluation(
+      data.evaluation
+    )
+
+    setSmartyTeachBackSubmitted(true)
+  } catch (error) {
+    console.error(
+      "Teach Back submission error:",
+      error
+    )
+
+    setSmartyTeachBackError(
+      error.message ||
+        "Unable to evaluate your explanation."
+    )
+  } finally {
+    setSmartyTeachBackLoading(false)
+  }
+}
   // ================= CONNECTIONS =================
 
   const [connectionSaving, setConnectionSaving] = useState({})
-  const [, setConnectionsLoading] = useState(false)
+  const [connectionsLoading, setConnectionsLoading] = useState(false)
   const [activeChatConnection, setActiveChatConnection] = useState(null)
   const [settingsSection, setSettingsSection] = useState(null)
   const [notificationSettings, setNotificationSettings] =
@@ -307,7 +698,6 @@ const [profileSaving, setProfileSaving] = useState(false)
 
 const [viewingProfile, setViewingProfile] = useState(null)
 const [, setViewingProfileLoading] = useState(false)
-const [profilePhotoFile, setProfilePhotoFile] = useState(null)
 const [showPhotoCropper, setShowPhotoCropper] = useState(false)
 const [photoPreview, setPhotoPreview] = useState("")
 const [photoZoom, setPhotoZoom] = useState(1)
@@ -650,6 +1040,21 @@ const handleChangePassword = async () => {
 
   const currentUserId =
     currentUser?._id || currentUser?.id || ""
+
+  const connectedStudents = connections
+    .filter((connection) => connection?.status === "accepted")
+    .map((connection) => {
+      if (connection?.otherUser) return connection.otherUser
+
+      const requester = connection?.requester
+      const recipient = connection?.recipient
+      const requesterId = requester?._id || requester?.id || requester
+
+      return String(requesterId) === String(currentUserId)
+        ? recipient
+        : requester
+    })
+    .filter((student) => student && (student._id || student.id))
 
 const handleLogout = () => {
   setShowLogoutConfirm(true)
@@ -1913,80 +2318,252 @@ useEffect(() => {
     }
   }
 
+  
+
   const handleUploadMaterial = async () => {
-    const userId = currentUser?._id || currentUser?.id
+  const userId = currentUser?._id || currentUser?.id
 
-    if (!userId) {
-      showToast("Please login again.", "warning")
-      return
-    }
+  if (!userId) {
+    showToast("Please login again.", "warning")
+    return
+  }
 
-    if (!materialForm.title.trim()) {
-      showToast("Please enter a material title.", "warning")
-      return
-    }
+  if (!materialForm.title.trim()) {
+    showToast("Please enter a material title.", "warning")
+    return
+  }
 
-    if (!materialForm.file) {
-      showToast("Please select a study material file.", "warning")
-      return
-    }
+  if (!materialForm.file) {
+    showToast("Please select a study material file.", "warning")
+    return
+  }
 
-    try {
-      setMaterialUploading(true)
+  try {
+    setMaterialUploading(true)
 
-      const formData = new FormData()
-      formData.append("title", materialForm.title.trim())
-      formData.append(
-        "description",
-        materialForm.description.trim()
+    // =========================================================
+    // STEP 1 — UPLOAD MATERIAL
+    // =========================================================
+
+    const formData = new FormData()
+
+    formData.append(
+      "title",
+      materialForm.title.trim()
+    )
+
+    formData.append(
+      "description",
+      materialForm.description.trim()
+    )
+
+    formData.append(
+      "category",
+      materialForm.category
+    )
+
+    formData.append(
+      "file",
+      materialForm.file
+    )
+
+    const response = await fetch(
+      `${API_URL}/api/study-materials`,
+      {
+        method: "POST",
+        headers: {
+          Authorization: `Bearer ${localStorage.getItem(
+            "collegeConnectToken"
+          )}`,
+        },
+        body: formData,
+      }
+    )
+
+    const data = await response.json()
+
+    if (!response.ok) {
+      showToast(
+        data.message ||
+          "Unable to upload material.",
+        "error"
       )
-      formData.append("category", materialForm.category)
-      formData.append("file", materialForm.file)
 
-      const response = await fetch(
-        `${API_URL}/api/study-materials`,
+      return
+    }
+
+    // =========================================================
+    // STEP 2 — SAVE MATERIAL IN FRONTEND
+    // =========================================================
+
+    setStudyMaterials((previous) => [
+      data.material,
+      ...previous,
+    ])
+
+    const materialId =
+      data.material?._id
+
+    if (!materialId) {
+      throw new Error(
+        "Material uploaded but material ID was not returned."
+      )
+    }
+
+    // =========================================================
+    // STEP 3 — AI ANALYSIS
+    // =========================================================
+
+    showToast(
+      "Material uploaded. AI is analyzing it...",
+      "success"
+    )
+
+    const analysisResponse =
+      await fetch(
+        `${API_URL}/api/smarty-study/analyze/${materialId}`,
         {
           method: "POST",
           headers: {
-            Authorization: `Bearer ${localStorage.getItem("collegeConnectToken")}`,
+            Authorization: `Bearer ${localStorage.getItem(
+              "collegeConnectToken"
+            )}`,
           },
-          body: formData,
         }
       )
 
-      const data = await response.json()
+    const analysisData =
+      await analysisResponse.json()
 
-      if (!response.ok) {
-        showToast(data.message || "Unable to upload material.", "error")
-        return
-      }
+    if (!analysisResponse.ok) {
+      throw new Error(
+        analysisData.message ||
+          "AI analysis failed."
+      )
+    }
 
-      setStudyMaterials((previous) => [
-        data.material,
-        ...previous,
-      ])
+    // =========================================================
+    // STEP 4 — SAVE COMPLETE AI RESULT
+    // =========================================================
 
-      setMaterialForm({
-        title: "",
-        description: "",
-        category: "Notes",
-        file: null,
-      })
-      setShowUploadMaterial(false)
+    if (
+      !analysisData.smartyStudy
+    ) {
+      throw new Error(
+        "AI analysis completed but study data was not returned."
+      )
+    }
 
-      const fileInput = document.getElementById(
+    setSmartyStudy(
+      analysisData.smartyStudy
+    )
+
+    setSmartyStudyView("dashboard")
+    setSmartyLearningView("dashboard")
+
+    // =========================================================
+    // STEP 5 — RESET SELECTED TOPIC
+    // =========================================================
+
+    setSmartySelectedTopicIndex(0)
+
+    // =========================================================
+    // STEP 6 — OPEN SMARTY STUDY DASHBOARD
+    // =========================================================
+
+    setSmartyLearningView(
+      "dashboard"
+    )
+
+    // =========================================================
+    // STEP 7 — CLEAR OLD CARD STATE
+    // =========================================================
+
+    setSmartyActiveCard(null)
+
+    setSmartyCardError("")
+
+    setSmartyMockTestAnswers({})
+    setSmartyMockTestSubmitted(false)
+    setSmartyMockTestScore(null)
+
+    setSmartyBossAnswers({})
+    setSmartyBossSubmitted(false)
+    setSmartyBossScore(null)
+
+    setSmartySocraticAnswer("")
+    setSmartySocraticSubmitted(false)
+
+    setSmartyQuestStep(0)
+    setSmartyQuestAnswer("")
+    setSmartyQuestSubmitted(false)
+
+    setSmartyMistakeAnswer("")
+    setSmartyMistakeSubmitted(false)
+
+    setSmartyScenarioAnswer("")
+    setSmartyScenarioSubmitted(false)
+
+    setSmartyTeachBackTopicIndex(null)
+    setSmartyTeachBackAnswer("")
+    setSmartyTeachBackSubmitted(false)
+    setSmartyTeachBackEvaluation(null)
+    setSmartyTeachBackError("")
+
+    setSmartySpacedIndex(0)
+    setSmartySpacedAnswer("")
+    setSmartySpacedSubmitted(false)
+
+    // =========================================================
+    // STEP 8 — SUCCESS
+    // =========================================================
+
+    showToast(
+      "Smarty Study analysis completed!",
+      "success"
+    )
+
+    // =========================================================
+    // STEP 9 — RESET UPLOAD FORM
+    // =========================================================
+
+    setMaterialForm({
+      title: "",
+      description: "",
+      category: "Notes",
+      file: null,
+    })
+
+    setShowUploadMaterial(false)
+
+    const fileInput =
+      document.getElementById(
         "study-material-file-input"
       )
-      if (fileInput) fileInput.value = ""
 
-      showToast("Study material shared successfully!", "success")
-    } catch (error) {
-      console.error("Study material upload error:", error)
-      showToast("Unable to connect to server.", "error")
-    } finally {
-      setMaterialUploading(false)
+    if (fileInput) {
+      fileInput.value = ""
     }
+
+  } catch (error) {
+
+    console.error(
+      "Study material upload / Smarty Study error:",
+      error
+    )
+
+    showToast(
+      error.message ||
+        "Unable to connect to server.",
+      "error"
+    )
+
+  } finally {
+
+    setMaterialUploading(false)
+
   }
+}
 
   const handleDeleteMaterial = async (materialId) => {
     const userId = currentUser?._id || currentUser?.id
@@ -2892,6 +3469,7 @@ if (response.ok) {
 
     fetchStudents()
 
+    // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [page])
 
 
@@ -2964,6 +3542,17 @@ if (response.ok) {
   // =========================================================
 
   useEffect(() => {
+    if (page !== "studyHub" || !currentUser) return
+
+    const loadTimer = window.setTimeout(() => {
+      void fetchStudyMaterials()
+    }, 0)
+
+    return () => window.clearTimeout(loadTimer)
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [page, currentUser?._id, currentUser?.id])
+
+  useEffect(() => {
 
     if (
       page !== "dashboard" &&
@@ -3030,13 +3619,19 @@ useEffect(() => {
   // eslint-disable-next-line react-hooks/exhaustive-deps
 }, [currentUser?._id, currentUser?.id])
 useEffect(() => {
+  let settingsLoadTimer
+
   if (
     page === "settings" &&
     settingsSection === "notifications" &&
     currentUser
   ) {
-    fetchNotificationSettings()
+    settingsLoadTimer = window.setTimeout(() => {
+      void fetchNotificationSettings()
+    }, 0)
   }
+
+  return () => window.clearTimeout(settingsLoadTimer)
 
   // eslint-disable-next-line react-hooks/exhaustive-deps
 }, [
@@ -3044,25 +3639,7 @@ useEffect(() => {
   settingsSection,
   currentUser,
 ])
-  // =========================================================
-  // FETCH STUDY MATERIALS
-  // =========================================================
-
-  useEffect(() => {
-    if (
-      page !== "studyHub" &&
-      page !== "activity"
-    ) {
-      return
-    }
-
-    // This fetch function updates loading/data state as part of the async request.
-    // eslint-disable-next-line react-hooks/set-state-in-effect
-    fetchStudyMaterials()
-    // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [page, currentUserId, currentUser?.degree, currentUser?.year])
-
-
+  
   // =========================================================
   // FETCH SAVED ANSWERS
   // =========================================================
@@ -4559,8 +5136,6 @@ if (page === "student-profile" && viewingProfile) {
 
       if (!file) return
 
-      setProfilePhotoFile(file)
-
 const previewUrl = URL.createObjectURL(file)
 
 setPhotoPreview(previewUrl)
@@ -4585,8 +5160,6 @@ setShowPhotoCropper(true)
 
       if (!file) return
 
-      setProfilePhotoFile(file)
-
 const previewUrl = URL.createObjectURL(file)
 
 setPhotoPreview(previewUrl)
@@ -4609,8 +5182,6 @@ setShowPhotoCropper(true)
       const file = e.target.files?.[0]
 
       if (!file) return
-
-     setProfilePhotoFile(file)
 
 const previewUrl = URL.createObjectURL(file)
 
@@ -5115,39 +5686,6 @@ if (page === "settings") {
           </div>
 
 
-          <nav className="dashboard-nav">
-
-            <button
-              className="dashboard-nav-link"
-              onClick={() =>
-                setPage("dashboard")
-              }
-            >
-              Home
-            </button>
-
-
-            <button
-              className="dashboard-nav-link active"
-              onClick={() =>
-                setPage("profile")
-              }
-            >
-              Profile
-            </button>
-
-
-            <button
-              className="dashboard-nav-link"
-              onClick={() =>
-                setPage("activity")
-              }
-            >
-              Your Activity
-            </button>
-
-          </nav>
-
 
           <div className="dashboard-header-right">
           </div>
@@ -5276,40 +5814,6 @@ if (page === "settings") {
             />
 
           </div>
-
-
-          <nav className="dashboard-nav">
-
-            <button
-              className="dashboard-nav-link"
-              onClick={() =>
-                setPage("dashboard")
-              }
-            >
-              Home
-            </button>
-
-
-            <button
-              className="dashboard-nav-link active"
-              onClick={() =>
-                setPage("profile")
-              }
-            >
-              Profile
-            </button>
-
-
-            <button
-              className="dashboard-nav-link"
-              onClick={() =>
-                setPage("activity")
-              }
-            >
-              Your Activity
-            </button>
-
-          </nav>
 
 
           <div className="dashboard-header-right">
@@ -5657,38 +6161,6 @@ if (page === "settings") {
           </div>
 
 
-          <nav className="dashboard-nav">
-
-            <button
-              className="dashboard-nav-link"
-              onClick={() =>
-                setPage("dashboard")
-              }
-            >
-              Home
-            </button>
-
-
-            <button
-              className="dashboard-nav-link active"
-              onClick={() =>
-                setPage("profile")
-              }
-            >
-              Profile
-            </button>
-
-
-            <button
-              className="dashboard-nav-link"
-              onClick={() =>
-                setPage("activity")
-              }
-            >
-              Your Activity
-            </button>
-
-          </nav>
 
 
           <div className="dashboard-header-right">
@@ -5927,41 +6399,6 @@ if (page === "settings") {
             />
 
           </div>
-
-
-          <nav className="dashboard-nav">
-
-            <button
-              className="dashboard-nav-link"
-              onClick={() =>
-                setPage("dashboard")
-              }
-            >
-              Home
-            </button>
-
-
-            <button
-              className="dashboard-nav-link active"
-              onClick={() =>
-                setPage("profile")
-              }
-            >
-              Profile
-            </button>
-
-
-            <button
-              className="dashboard-nav-link"
-              onClick={() =>
-                setPage("activity")
-              }
-            >
-              Your Activity
-            </button>
-
-          </nav>
-
 
           <div className="dashboard-header-right">
           </div>
@@ -8008,6 +8445,3196 @@ if (page === "chat") {
     )
   }
 
+// =========================================================
+// SMARTY STUDY PAGE
+// =========================================================
+
+if (page === "smartyStudy") {
+  if (smartyLearningView !== "dashboard") {
+    const topics = Array.isArray(smartyStudy?.topics)
+      ? smartyStudy.topics
+      : []
+
+    const goBackToSmarty = () => {
+      setSmartyLearningView("dashboard")
+      setSmartyTeachBackTopicIndex(null)
+      setSmartyTeachBackAnswer("")
+      setSmartyTeachBackSubmitted(false)
+      setSmartyTeachBackEvaluation(null)
+      setSmartyTeachBackError("")
+    }
+
+    const spacedCards =
+      topics.flatMap((topic) =>
+        Array.isArray(topic.flashcards)
+          ? topic.flashcards.map((card) => ({
+              ...card,
+              topicTitle: topic.title,
+            }))
+          : []
+      )
+
+    return (
+      <div className="smarty-study-page">
+        {renderToast()}
+
+        <header className="smarty-detail-header">
+          <button
+            className="smarty-back-button"
+            type="button"
+            onClick={goBackToSmarty}
+          >
+            ← Back to Smarty Study
+          </button>
+
+          <div className="smarty-detail-header-content">
+            <span className="smarty-section-label">
+              SMART LEARNING MODE
+            </span>
+
+            <h1>
+              {smartyLearningView === "learn" && "Learn"}
+              {smartyLearningView === "practice" && "Practice"}
+              {smartyLearningView === "challenge" && "Challenge"}
+              {smartyLearningView === "master" && "Master"}
+              {smartyLearningView === "socratic" &&
+                "Interactive Socratic Questioning"}
+              {smartyLearningView === "teachBack" && "Teach Back Mode"}
+              {smartyLearningView === "studyQuest" && "Study Quest"}
+              {smartyLearningView === "findMistake" && "Find the Mistake"}
+              {smartyLearningView === "realLife" && "Real-Life Scenario"}
+              {smartyLearningView === "examAnswer" && "Exam Answer Mode"}
+              {smartyLearningView === "examNight" && "Exam Night Mode"}
+              {smartyLearningView === "spacedRepetition" &&
+                "Spaced Repetition"}
+              {smartyLearningView === "result" && "Your Learning Result"}
+              {smartyLearningView === "masteryMap" && "Mastery Map"}
+              {smartyLearningView === "bossBattle" && "Boss Battle"}
+            </h1>
+
+            <p>
+              {smartyLearningView === "learn" &&
+                "Understand concepts from your uploaded study material."}
+              {smartyLearningView === "practice" &&
+                "Practice using questions and activities from your material."}
+              {smartyLearningView === "challenge" &&
+                "Challenge your understanding using your actual study material."}
+              {smartyLearningView === "master" &&
+                "Strengthen your understanding through revision and practice."}
+              {smartyLearningView === "socratic" &&
+                "Think through questions instead of receiving the answer immediately."}
+              {smartyLearningView === "teachBack" &&
+                "Explain what you learned in your own words."}
+              {smartyLearningView === "studyQuest" &&
+                "Move through the learning journey using your actual study content."}
+              {smartyLearningView === "findMistake" &&
+                "Identify mistakes and understand the correct reasoning."}
+              {smartyLearningView === "realLife" &&
+                "Connect concepts from your material with practical situations."}
+              {smartyLearningView === "examAnswer" &&
+                "Prepare answers using the AI-generated exam structure."}
+              {smartyLearningView === "examNight" &&
+                "Focus your revision around the material you actually uploaded."}
+              {smartyLearningView === "spacedRepetition" &&
+                "Review concepts again using generated flashcards."}
+              {smartyLearningView === "result" &&
+                "Review your latest Teach Back evaluation."}
+              {smartyLearningView === "masteryMap" &&
+                "See which topics need attention based on your learning data."}
+              {smartyLearningView === "bossBattle" &&
+                "Finish with a mixed challenge generated from your material."}
+            </p>
+          </div>
+        </header>
+
+        <main className="smarty-detail-main">
+          {!Array.isArray(topics) || topics.length === 0 ? (
+            <div className="smarty-empty-state">
+              <h3>No study content available yet</h3>
+              <p>Upload and analyze your study material first.</p>
+            </div>
+          ) : (
+            <>
+              {/* LEARN */}
+              {smartyLearningView === "learn" && (
+                <section className="smarty-learning-detail">
+                  <div className="smarty-detail-section-header">
+                    <span className="smarty-section-label">UNDERSTAND</span>
+                    <h2>Learn</h2>
+                    <p>
+                      Understand concepts from your actual study material.
+                    </p>
+                  </div>
+
+                  <div className="smarty-topic-list">
+                    {topics.map((topic, index) => (
+                      <article
+                        key={topic._id || index}
+                        className="smarty-topic-card"
+                      >
+                        <span className="smarty-topic-number">
+                          TOPIC {String(index + 1).padStart(2, "0")}
+                        </span>
+                        <h3>{topic.title}</h3>
+
+                        {topic.summary && (
+                          <div className="smarty-content-list">
+                            <h4>Topic Summary</h4>
+                            <p>{topic.summary}</p>
+                          </div>
+                        )}
+
+                        {topic.simpleExplanation && (
+                          <div className="smarty-content-list">
+                            <h4>Simple Explanation</h4>
+                            <p>{topic.simpleExplanation}</p>
+                          </div>
+                        )}
+
+                        {Array.isArray(topic.importantPoints) &&
+                          topic.importantPoints.length > 0 && (
+                            <div className="smarty-content-list">
+                              <h4>Important Points</h4>
+                              <ul>
+                                {topic.importantPoints.map((point, i) => (
+                                  <li key={i}>
+                                    {typeof point === "string"
+                                      ? point
+                                      : point.text ||
+                                        point.point ||
+                                        point.answer ||
+                                        ""}
+                                  </li>
+                                ))}
+                              </ul>
+                            </div>
+                          )}
+
+                        {Array.isArray(topic.shortAnswers) &&
+                          topic.shortAnswers.length > 0 && (
+                            <div className="smarty-content-list">
+                              <h4>Short Answers</h4>
+                              {topic.shortAnswers.map((item, i) => (
+                                <div key={i} className="smarty-short-answer-item">
+                                  <strong>
+                                    {item?.question || `Question ${i + 1}`}
+                                  </strong>
+                                  <p>{item?.answer || ""}</p>
+                                </div>
+                              ))}
+                            </div>
+                          )}
+                      </article>
+                    ))}
+                  </div>
+                </section>
+              )}
+
+              {/* PRACTICE */}
+              {smartyLearningView === "practice" && (
+                <section className="smarty-learning-detail">
+                  <div className="smarty-detail-section-header">
+                    <span className="smarty-section-label">PRACTICE</span>
+                    <h2>Practice</h2>
+                    <p>
+                      Practice questions and MCQs generated from your material.
+                    </p>
+                  </div>
+
+                  <div className="smarty-topic-list">
+                    {topics.map((topic, topicIndex) => (
+                      <article
+                        key={topic._id || topicIndex}
+                        className="smarty-topic-card"
+                      >
+                        <span className="smarty-topic-number">
+                          TOPIC {String(topicIndex + 1).padStart(2, "0")}
+                        </span>
+                        <h3>{topic.title}</h3>
+
+                        {Array.isArray(topic.mcqs) &&
+                          topic.mcqs.map((mcq, mcqIndex) => (
+                            <div className="smarty-mcq-item" key={mcqIndex}>
+                              <h4>{mcq.question}</h4>
+                              {Array.isArray(mcq.options) &&
+                                mcq.options.map((option, optionIndex) => (
+                                  <div className="smarty-option" key={optionIndex}>
+                                    <span>
+                                      {String.fromCharCode(65 + optionIndex)}
+                                    </span>
+                                    {typeof option === "string"
+                                      ? option
+                                      : option?.text ||
+                                        option?.label ||
+                                        option?.value ||
+                                        ""}
+                                  </div>
+                                ))}
+                              {mcq.explanation && (
+                                <p>{mcq.explanation}</p>
+                              )}
+                            </div>
+                          ))}
+
+                        {Array.isArray(topic.questions) &&
+                          topic.questions.length > 0 && (
+                            <div className="smarty-content-list">
+                              <h4>Written Questions</h4>
+                              <ul>
+                                {topic.questions.map((question, i) => (
+                                  <li key={i}>
+                                    {typeof question === "string"
+                                      ? question
+                                      : question?.question || ""}
+                                  </li>
+                                ))}
+                              </ul>
+                            </div>
+                          )}
+                      </article>
+                    ))}
+                  </div>
+                </section>
+              )}
+
+              {/* CHALLENGE */}
+              {smartyLearningView === "challenge" && (
+                <section className="smarty-learning-detail">
+                  <div className="smarty-detail-section-header">
+                    <span className="smarty-section-label">CHALLENGE</span>
+                    <h2>Challenge</h2>
+                    <p>
+                      Try harder questions and mixed activities from your
+                      actual study material.
+                    </p>
+                  </div>
+
+                  <div className="smarty-topic-list">
+                    {topics.map((topic, index) => (
+                      <article
+                        key={topic._id || index}
+                        className="smarty-topic-card"
+                      >
+                        <span className="smarty-topic-number">
+                          CHALLENGE {String(index + 1).padStart(2, "0")}
+                        </span>
+                        <h3>{topic.title}</h3>
+
+                        {Array.isArray(topic.questions) &&
+                          topic.questions.map((question, i) => (
+                            <div className="smarty-content-list" key={i}>
+                              <h4>Question {i + 1}</h4>
+                              <p>
+                                {typeof question === "string"
+                                  ? question
+                                  : question?.question || ""}
+                              </p>
+                              {typeof question === "object" &&
+                                question?.answer && (
+                                  <details>
+                                    <summary>Show answer</summary>
+                                    <p>{question.answer}</p>
+                                  </details>
+                                )}
+                            </div>
+                          ))}
+
+                        {Array.isArray(topic.mcqs) &&
+                          topic.mcqs.slice(0, 3).map((mcq, i) => (
+                            <div className="smarty-content-list" key={`mcq-${i}`}>
+                              <h4>Challenge MCQ</h4>
+                              <p>{mcq.question}</p>
+                              {mcq.explanation && <p>{mcq.explanation}</p>}
+                            </div>
+                          ))}
+                      </article>
+                    ))}
+                  </div>
+                </section>
+              )}
+
+              {/* MASTER */}
+              {smartyLearningView === "master" && (
+                <section className="smarty-learning-detail">
+                  <div className="smarty-detail-section-header">
+                    <span className="smarty-section-label">MASTER</span>
+                    <h2>Strengthen what you learned</h2>
+                    <p>
+                      Review summaries, key concepts and questions from your
+                      uploaded study material.
+                    </p>
+                  </div>
+
+                  <div className="smarty-topic-list">
+                    {topics.map((topic, index) => {
+                      const mastery =
+                        smartyStudy?.mastery?.find(
+                          (item) => item.topic === topic.title
+                        ) || null
+
+                      return (
+                        <article
+                          key={topic._id || index}
+                          className="smarty-topic-card"
+                        >
+                          <span className="smarty-topic-number">
+                            TOPIC {String(index + 1).padStart(2, "0")}
+                          </span>
+                          <h3>{topic.title}</h3>
+
+                          {mastery && (
+                            <p>
+                              Mastery: {mastery.status} • {mastery.score || 0}%
+                            </p>
+                          )}
+
+                          {topic.summary && (
+                            <div className="smarty-content-list">
+                              <h4>Review</h4>
+                              <p>{topic.summary}</p>
+                            </div>
+                          )}
+
+                          {Array.isArray(topic.importantPoints) &&
+                            topic.importantPoints.length > 0 && (
+                              <div className="smarty-content-list">
+                                <h4>Key Points</h4>
+                                <ul>
+                                  {topic.importantPoints.map((point, i) => (
+                                    <li key={i}>
+                                      {typeof point === "string"
+                                        ? point
+                                        : point.text ||
+                                          point.point ||
+                                          point.answer ||
+                                          ""}
+                                    </li>
+                                  ))}
+                                </ul>
+                              </div>
+                            )}
+                        </article>
+                      )
+                    })}
+                  </div>
+                </section>
+              )}
+
+              {/* SOCRATIC */}
+              {smartyLearningView === "socratic" && (
+                <section className="smarty-learning-detail">
+                  <div className="smarty-detail-section-header">
+                    <span className="smarty-section-label">THINK</span>
+                    <h2>Interactive Socratic Questioning</h2>
+                    <p>
+                      Think through counter-questions instead of receiving the
+                      answer immediately.
+                    </p>
+                  </div>
+
+                  <div className="smarty-topic-list">
+                    {topics.map((topic, index) => (
+                      <article
+                        key={topic._id || index}
+                        className="smarty-topic-card"
+                      >
+                        <span className="smarty-topic-number">
+                          TOPIC {String(index + 1).padStart(2, "0")}
+                        </span>
+                        <h3>{topic.title}</h3>
+
+                        {Array.isArray(topic.socratic) &&
+                        topic.socratic.length > 0 ? (
+                          topic.socratic.map((item, i) => (
+                            <div className="smarty-content-list" key={i}>
+                              <h4>Think about this</h4>
+                              <p>{item.question}</p>
+                              {item.expectedDirection && (
+                                <details>
+                                  <summary>Guidance</summary>
+                                  <p>{item.expectedDirection}</p>
+                                </details>
+                              )}
+                            </div>
+                          ))
+                        ) : (
+                          <p>No Socratic questions were generated.</p>
+                        )}
+                      </article>
+                    ))}
+                  </div>
+                </section>
+              )}
+
+              {/* TEACH BACK */}
+              {smartyLearningView === "teachBack" && (
+                <section className="smarty-learning-detail">
+                  <div className="smarty-detail-section-header">
+                    <span className="smarty-section-label">EXPLAIN</span>
+                    <h2>Teach Back Mode</h2>
+                    <p>Choose a topic and explain it in your own words.</p>
+                  </div>
+
+                  {smartyTeachBackTopicIndex === null ? (
+                    <div className="smarty-topic-list">
+                      {topics.map((topic, index) => (
+                        <button
+                          key={topic._id || index}
+                          type="button"
+                          className="smarty-topic-card smarty-topic-select-card"
+                          onClick={() => {
+                            setSmartyTeachBackTopicIndex(index)
+                            setSmartyTeachBackAnswer("")
+                            setSmartyTeachBackSubmitted(false)
+                            setSmartyTeachBackEvaluation(null)
+                            setSmartyTeachBackError("")
+                          }}
+                        >
+                          <span className="smarty-topic-number">
+                            TOPIC {String(index + 1).padStart(2, "0")}
+                          </span>
+                          <h3>{topic.title}</h3>
+                          {topic.summary && <p>{topic.summary}</p>}
+                          <span className="smarty-topic-select-action">
+                            Explain this topic →
+                          </span>
+                        </button>
+                      ))}
+                    </div>
+                  ) : (
+                    <div className="smarty-teachback-answer-panel">
+                      <div className="smarty-selected-topic-card">
+                        <span className="smarty-section-label">
+                          SELECTED TOPIC
+                        </span>
+                        <h3>
+                          {topics[smartyTeachBackTopicIndex]?.title}
+                        </h3>
+                        {topics[smartyTeachBackTopicIndex]?.summary && (
+                          <p>{topics[smartyTeachBackTopicIndex].summary}</p>
+                        )}
+                      </div>
+
+                      <div className="smarty-teachback-input-card">
+                        <label htmlFor="smarty-teachback-answer">
+                          Explain this topic in your own words
+                        </label>
+                        <textarea
+                          id="smarty-teachback-answer"
+                          value={smartyTeachBackAnswer}
+                          onChange={(event) => {
+                            setSmartyTeachBackAnswer(event.target.value)
+                            setSmartyTeachBackSubmitted(false)
+                            setSmartyTeachBackEvaluation(null)
+                            setSmartyTeachBackError("")
+                          }}
+                          placeholder="Explain what you understood from this topic..."
+                          rows={8}
+                          disabled={smartyTeachBackLoading}
+                        />
+
+                        <div className="smarty-teachback-actions">
+                          <button
+                            type="button"
+                            className="smarty-secondary-button"
+                            onClick={() => {
+                              setSmartyTeachBackTopicIndex(null)
+                              setSmartyTeachBackAnswer("")
+                              setSmartyTeachBackSubmitted(false)
+                              setSmartyTeachBackEvaluation(null)
+                              setSmartyTeachBackError("")
+                            }}
+                          >
+                            ← Choose Another Topic
+                          </button>
+
+                          <button
+                            type="button"
+                            className="smarty-primary-button"
+                            onClick={submitSmartyTeachBack}
+                            disabled={
+                              smartyTeachBackLoading ||
+                              !smartyTeachBackAnswer.trim()
+                            }
+                          >
+                            {smartyTeachBackLoading
+                              ? "Evaluating Your Explanation..."
+                              : "Submit Explanation →"}
+                          </button>
+                        </div>
+
+                        {smartyTeachBackError && (
+                          <div className="smarty-error-card">
+                            <strong>Unable to evaluate</strong>
+                            <p>{smartyTeachBackError}</p>
+                          </div>
+                        )}
+                      </div>
+
+                      {smartyTeachBackSubmitted &&
+                        smartyTeachBackEvaluation && (
+                          <div className="smarty-teachback-evaluation">
+                            {Array.isArray(
+                              smartyTeachBackEvaluation.understood
+                            ) &&
+                              smartyTeachBackEvaluation.understood.length > 0 && (
+                                <div className="smarty-evaluation-card">
+                                  <div className="smarty-evaluation-icon">✓</div>
+                                  <div>
+                                    <h4>What You Understood</h4>
+                                    <ul>
+                                      {smartyTeachBackEvaluation.understood.map(
+                                        (item, index) => (
+                                          <li key={index}>{item}</li>
+                                        )
+                                      )}
+                                    </ul>
+                                  </div>
+                                </div>
+                              )}
+
+                            {Array.isArray(smartyTeachBackEvaluation.missed) &&
+                              smartyTeachBackEvaluation.missed.length > 0 && (
+                                <div className="smarty-evaluation-card">
+                                  <div className="smarty-evaluation-icon">!</div>
+                                  <div>
+                                    <h4>What You Missed</h4>
+                                    <ul>
+                                      {smartyTeachBackEvaluation.missed.map(
+                                        (item, index) => (
+                                          <li key={index}>{item}</li>
+                                        )
+                                      )}
+                                    </ul>
+                                  </div>
+                                </div>
+                              )}
+
+                            {smartyTeachBackEvaluation.improvement && (
+                              <div className="smarty-evaluation-card">
+                                <div className="smarty-evaluation-icon">💡</div>
+                                <div>
+                                  <h4>How You Can Improve</h4>
+                                  <p>
+                                    {smartyTeachBackEvaluation.improvement}
+                                  </p>
+                                </div>
+                              </div>
+                            )}
+
+                            {smartyTeachBackEvaluation.followUpQuestion && (
+                              <div className="smarty-evaluation-card smarty-followup-card">
+                                <div className="smarty-evaluation-icon">?</div>
+                                <div>
+                                  <h4>Think About This</h4>
+                                  <p>
+                                    {smartyTeachBackEvaluation.followUpQuestion}
+                                  </p>
+                                </div>
+                              </div>
+                            )}
+                          </div>
+                        )}
+                    </div>
+                  )}
+                </section>
+              )}
+
+              {/* STUDY QUEST */}
+              {smartyLearningView === "studyQuest" && (
+                <section className="smarty-learning-detail">
+                  <div className="smarty-detail-section-header">
+                    <span className="smarty-section-label">STUDY QUEST</span>
+                    <h2>Study Quest</h2>
+                    <p>
+                      Move through stages using content from your uploaded
+                      material.
+                    </p>
+                  </div>
+
+                  <div className="smarty-topic-list">
+                    {topics.map((topic, index) => (
+                      <article
+                        key={topic._id || index}
+                        className="smarty-topic-card"
+                      >
+                        <span className="smarty-topic-number">
+                          QUEST {String(index + 1).padStart(2, "0")}
+                        </span>
+                        <h3>{topic.title}</h3>
+
+                        {Array.isArray(topic.studyQuest) &&
+                        topic.studyQuest.length > 0 ? (
+                          topic.studyQuest.map((item, i) => (
+                            <div className="smarty-content-list" key={i}>
+                              <h4>
+                                Stage {item.stage || i + 1}
+                              </h4>
+                              <p>
+                                <strong>Task:</strong> {item.task || ""}
+                              </p>
+                              <p>
+                                <strong>Question:</strong> {item.question || ""}
+                              </p>
+                            </div>
+                          ))
+                        ) : (
+                          <p>No Study Quest stages were generated.</p>
+                        )}
+                      </article>
+                    ))}
+                  </div>
+                </section>
+              )}
+
+              {/* FIND THE MISTAKE */}
+              {smartyLearningView === "findMistake" && (
+                <section className="smarty-learning-detail">
+                  <div className="smarty-detail-section-header">
+                    <span className="smarty-section-label">DETECT</span>
+                    <h2>Find the Mistake</h2>
+                    <p>
+                      Try to identify the error before revealing the correction.
+                    </p>
+                  </div>
+
+                  <div className="smarty-topic-list">
+                    {topics.map((topic, index) => (
+                      <article
+                        key={topic._id || index}
+                        className="smarty-topic-card"
+                      >
+                        <span className="smarty-topic-number">
+                          TOPIC {String(index + 1).padStart(2, "0")}
+                        </span>
+                        <h3>{topic.title}</h3>
+
+                        {Array.isArray(topic.findMistake) &&
+                        topic.findMistake.length > 0 ? (
+                          topic.findMistake.map((item, i) => (
+                            <div className="smarty-content-list" key={i}>
+                              <h4>Incorrect Statement</h4>
+                              <p>{item.incorrectStatement}</p>
+
+                              <details>
+                                <summary>Reveal correction</summary>
+                                {item.mistake && <p><strong>Mistake:</strong> {item.mistake}</p>}
+                                {item.correctVersion && (
+                                  <p>
+                                    <strong>Correct version:</strong>{" "}
+                                    {item.correctVersion}
+                                  </p>
+                                )}
+                                {item.explanation && <p>{item.explanation}</p>}
+                              </details>
+                            </div>
+                          ))
+                        ) : (
+                          <p>No mistake-detection activity was generated.</p>
+                        )}
+                      </article>
+                    ))}
+                  </div>
+                </section>
+              )}
+
+              {/* REAL LIFE */}
+              {smartyLearningView === "realLife" && (
+                <section className="smarty-learning-detail">
+                  <div className="smarty-detail-section-header">
+                    <span className="smarty-section-label">APPLY</span>
+                    <h2>Real-Life Scenario</h2>
+                    <p>
+                      Connect concepts from your material with realistic
+                      situations.
+                    </p>
+                  </div>
+
+                  <div className="smarty-topic-list">
+                    {topics.map((topic, index) => (
+                      <article
+                        key={topic._id || index}
+                        className="smarty-topic-card"
+                      >
+                        <span className="smarty-topic-number">
+                          SCENARIO {String(index + 1).padStart(2, "0")}
+                        </span>
+                        <h3>{topic.title}</h3>
+
+                        {Array.isArray(topic.realLifeScenarios) &&
+                        topic.realLifeScenarios.length > 0 ? (
+                          topic.realLifeScenarios.map((item, i) => (
+                            <div className="smarty-content-list" key={i}>
+                              <h4>Situation</h4>
+                              <p>{item.scenario}</p>
+                              <p>
+                                <strong>Question:</strong> {item.question}
+                              </p>
+                              <details>
+                                <summary>Show expected answer</summary>
+                                <p>{item.expectedAnswer}</p>
+                              </details>
+                            </div>
+                          ))
+                        ) : (
+                          <p>No real-life scenarios were generated.</p>
+                        )}
+                      </article>
+                    ))}
+                  </div>
+                </section>
+              )}
+
+              {/* EXAM ANSWER */}
+              {smartyLearningView === "examAnswer" && (
+                <section className="smarty-learning-detail">
+                  <div className="smarty-detail-section-header">
+                    <span className="smarty-section-label">WRITE</span>
+                    <h2>Exam Answer Mode</h2>
+                    <p>
+                      Prepare answers by marks and focus on important keywords.
+                    </p>
+                  </div>
+
+                  <div className="smarty-topic-list">
+                    {topics.map((topic, index) => (
+                      <article
+                        key={topic._id || index}
+                        className="smarty-topic-card"
+                      >
+                        <span className="smarty-topic-number">
+                          TOPIC {String(index + 1).padStart(2, "0")}
+                        </span>
+                        <h3>{topic.title}</h3>
+
+                        {[
+                          ["2 Marks", topic.examAnswers?.twoMarks],
+                          ["5 Marks", topic.examAnswers?.fiveMarks],
+                          ["10 Marks", topic.examAnswers?.tenMarks],
+                        ].map(([label, answers]) =>
+                          Array.isArray(answers) && answers.length > 0 ? (
+                            <div className="smarty-content-list" key={label}>
+                              <h4>{label}</h4>
+                              {answers.map((item, i) => (
+                                <div
+                                  className="smarty-short-answer-item"
+                                  key={i}
+                                >
+                                  <strong>{item.question}</strong>
+                                  <p>{item.answer}</p>
+                                  {Array.isArray(item.keywords) &&
+                                    item.keywords.length > 0 && (
+                                      <small>
+                                        Keywords: {item.keywords.join(", ")}
+                                      </small>
+                                    )}
+                                </div>
+                              ))}
+                            </div>
+                          ) : null
+                        )}
+                      </article>
+                    ))}
+                  </div>
+                </section>
+              )}
+
+              {/* EXAM NIGHT */}
+              {smartyLearningView === "examNight" && (
+                <section className="smarty-learning-detail">
+                  <div className="smarty-detail-section-header">
+                    <span className="smarty-section-label">EXAM</span>
+                    <h2>Exam Night Mode</h2>
+                    <p>
+                      Use the generated revision plan when time is limited.
+                    </p>
+                  </div>
+
+                  <div className="smarty-topic-list">
+                    {topics.map((topic, index) => (
+                      <article
+                        key={topic._id || index}
+                        className="smarty-topic-card"
+                      >
+                        <span className="smarty-topic-number">
+                          TOPIC {String(index + 1).padStart(2, "0")}
+                        </span>
+                        <h3>{topic.title}</h3>
+
+                        {[
+                          ["Must Learn", topic.examNight?.mustLearn],
+                          ["Important Questions", topic.examNight?.importantQuestions],
+                          ["Weak Topic Check", topic.examNight?.weakTopicCheck],
+                          ["Quick Revision", topic.examNight?.quickRevision],
+                        ].map(([label, items]) =>
+                          Array.isArray(items) && items.length > 0 ? (
+                            <div className="smarty-content-list" key={label}>
+                              <h4>{label}</h4>
+                              <ul>
+                                {items.map((item, i) => (
+                                  <li key={i}>{item}</li>
+                                ))}
+                              </ul>
+                            </div>
+                          ) : null
+                        )}
+                      </article>
+                    ))}
+                  </div>
+                </section>
+              )}
+
+              {/* SPACED REPETITION */}
+              {smartyLearningView === "spacedRepetition" && (
+                <section className="smarty-learning-detail">
+                  <div className="smarty-detail-section-header">
+                    <span className="smarty-section-label">REMEMBER</span>
+                    <h2>Spaced Repetition</h2>
+                    <p>
+                      Review generated flashcards again over time.
+                    </p>
+                  </div>
+
+                  {spacedCards.length === 0 ? (
+                    <div className="smarty-empty-state">
+                      <h3>No review cards available</h3>
+                      <p>
+                        Upload and analyze study material with flashcards first.
+                      </p>
+                    </div>
+                  ) : (
+                    (() => {
+                      const safeIndex = Math.min(
+                        smartySpacedIndex,
+                        spacedCards.length - 1
+                      )
+                      const card = spacedCards[safeIndex]
+
+                      return (
+                        <div className="smarty-flashcard-page">
+                          <div className="smarty-flashcard-progress">
+                            Review card {safeIndex + 1} of {spacedCards.length}
+                          </div>
+
+                          <div className="smarty-content-list">
+                            <h4>{card.topicTitle}</h4>
+                            <p>{card.question || card.front || ""}</p>
+                          </div>
+
+                          {!smartySpacedSubmitted ? (
+                            <>
+                              <textarea
+                                rows={5}
+                                value={smartySpacedAnswer}
+                                onChange={(event) => {
+                                  setSmartySpacedAnswer(event.target.value)
+                                }}
+                                placeholder="Write what you remember..."
+                              />
+
+                              <button
+                                type="button"
+                                className="smarty-primary-btn"
+                                onClick={() => {
+                                  if (!smartySpacedAnswer.trim()) return
+                                  setSmartySpacedSubmitted(true)
+                                }}
+                              >
+                                Reveal Answer
+                              </button>
+                            </>
+                          ) : (
+                            <div className="smarty-content-list">
+                              <h4>Answer</h4>
+                              <p>{card.answer || card.back || ""}</p>
+
+                              <div className="smarty-flashcard-controls">
+                                <button
+                                  type="button"
+                                  onClick={() => {
+                                    setSmartySpacedIndex((value) =>
+                                      Math.max(0, value - 1)
+                                    )
+                                    setSmartySpacedAnswer("")
+                                    setSmartySpacedSubmitted(false)
+                                  }}
+                                  disabled={safeIndex === 0}
+                                >
+                                  ← Previous
+                                </button>
+
+                                <button
+                                  type="button"
+                                  onClick={() => {
+                                    if (safeIndex < spacedCards.length - 1) {
+                                      setSmartySpacedIndex((value) => value + 1)
+                                      setSmartySpacedAnswer("")
+                                      setSmartySpacedSubmitted(false)
+                                    }
+                                  }}
+                                  disabled={
+                                    safeIndex === spacedCards.length - 1
+                                  }
+                                >
+                                  Next →
+                                </button>
+                              </div>
+                            </div>
+                          )}
+                        </div>
+                      )
+                    })()
+                  )}
+                </section>
+              )}
+
+              {/* MASTERY MAP */}
+              {/* RESULT */}
+              {smartyLearningView === "result" && (
+                <section className="smarty-learning-detail">
+                  <div className="smarty-detail-section-header">
+                    <span className="smarty-section-label">RESULT</span>
+                    <h2>Your Learning Result</h2>
+                    <p>
+                      Review the latest result from your Teach Back activity.
+                    </p>
+                  </div>
+
+                  {smartyTeachBackEvaluation ? (
+                    <div className="smarty-teachback-evaluation">
+                      {Array.isArray(smartyTeachBackEvaluation.understood) &&
+                        smartyTeachBackEvaluation.understood.length > 0 && (
+                          <div className="smarty-evaluation-card">
+                            <div className="smarty-evaluation-icon">✓</div>
+                            <div>
+                              <h4>What You Understood</h4>
+                              <ul>
+                                {smartyTeachBackEvaluation.understood.map(
+                                  (item, index) => (
+                                    <li key={index}>{item}</li>
+                                  )
+                                )}
+                              </ul>
+                            </div>
+                          </div>
+                        )}
+
+                      {Array.isArray(smartyTeachBackEvaluation.missed) &&
+                        smartyTeachBackEvaluation.missed.length > 0 && (
+                          <div className="smarty-evaluation-card">
+                            <div className="smarty-evaluation-icon">!</div>
+                            <div>
+                              <h4>What You Missed</h4>
+                              <ul>
+                                {smartyTeachBackEvaluation.missed.map(
+                                  (item, index) => (
+                                    <li key={index}>{item}</li>
+                                  )
+                                )}
+                              </ul>
+                            </div>
+                          </div>
+                        )}
+
+                      {smartyTeachBackEvaluation.improvement && (
+                        <div className="smarty-evaluation-card">
+                          <div className="smarty-evaluation-icon">💡</div>
+                          <div>
+                            <h4>How You Can Improve</h4>
+                            <p>{smartyTeachBackEvaluation.improvement}</p>
+                          </div>
+                        </div>
+                      )}
+
+                      {smartyTeachBackEvaluation.followUpQuestion && (
+                        <div className="smarty-evaluation-card smarty-followup-card">
+                          <div className="smarty-evaluation-icon">?</div>
+                          <div>
+                            <h4>Think About This</h4>
+                            <p>
+                              {smartyTeachBackEvaluation.followUpQuestion}
+                            </p>
+                          </div>
+                        </div>
+                      )}
+                    </div>
+                  ) : (
+                    <div className="smarty-empty-state">
+                      <div className="smarty-empty-icon">📊</div>
+                      <h3>Your result will appear here.</h3>
+                      <p>
+                        Open Teach Back Mode, explain a topic in your own words,
+                        and submit it for AI evaluation.
+                      </p>
+                      <button
+                        type="button"
+                        className="smarty-primary-btn"
+                        onClick={() => setSmartyLearningView("teachBack")}
+                      >
+                        Start Teach Back →
+                      </button>
+                    </div>
+                  )}
+                </section>
+              )}
+
+              {/* MASTERY MAP */}
+              {smartyLearningView === "masteryMap" && (
+                <section className="smarty-learning-detail">
+                  <div className="smarty-detail-section-header">
+                    <span className="smarty-section-label">MASTERY MAP</span>
+                    <h2>Know what needs your attention.</h2>
+                    <p>
+                      Your current AI-generated mastery structure for this
+                      material.
+                    </p>
+                  </div>
+
+                  <div className="smarty-topic-list">
+                    {topics.map((topic, index) => {
+                      const mastery =
+                        smartyStudy?.mastery?.find(
+                          (item) => item.topic === topic.title
+                        ) || null
+
+                      return (
+                        <article
+                          key={topic._id || index}
+                          className="smarty-topic-card"
+                        >
+                          <span className="smarty-topic-number">
+                            TOPIC {String(index + 1).padStart(2, "0")}
+                          </span>
+                          <h3>{topic.title}</h3>
+
+                          <p>
+                            Status:{" "}
+                            {mastery?.status || "needs-attention"}
+                          </p>
+                          <p>
+                            Score: {mastery?.score || 0}%
+                          </p>
+
+                          {Array.isArray(mastery?.keyConcepts) &&
+                            mastery.keyConcepts.length > 0 && (
+                              <div className="smarty-content-list">
+                                <h4>Key Concepts</h4>
+                                <ul>
+                                  {mastery.keyConcepts.map((concept, i) => (
+                                    <li key={i}>{concept}</li>
+                                  ))}
+                                </ul>
+                              </div>
+                            )}
+
+                          {topic.summary && <p>{topic.summary}</p>}
+                        </article>
+                      )
+                    })}
+                  </div>
+                </section>
+              )}
+
+              {/* BOSS BATTLE */}
+              {smartyLearningView === "bossBattle" && (
+                <section className="smarty-learning-detail">
+                  <div className="smarty-detail-section-header">
+                    <span className="smarty-section-label">
+                      ⚔️ FINAL CHALLENGE
+                    </span>
+                    <h2>Boss Battle</h2>
+                    <p>
+                      Complete the final AI-generated challenge from your
+                      material.
+                    </p>
+                  </div>
+
+                  {!Array.isArray(smartyStudy?.bossBattle?.questions) ||
+                  smartyStudy.bossBattle.questions.length === 0 ? (
+                    <div className="smarty-empty-state">
+                      <h3>Boss Battle is not available yet</h3>
+                      <p>
+                        Upload and analyze your study material first.
+                      </p>
+                    </div>
+                  ) : (
+                    <div className="smarty-topic-list">
+                      {smartyStudy.bossBattle.questions.map((question, index) => (
+                        <article
+                          key={question._id || index}
+                          className="smarty-topic-card"
+                        >
+                          <span className="smarty-topic-number">
+                            BOSS {String(index + 1).padStart(2, "0")}
+                          </span>
+
+                          <h3>{question.question}</h3>
+
+                          {Array.isArray(question.options) &&
+                            question.options.length > 0 && (
+                              <div className="smarty-content-list">
+                                {question.options.map((option, optionIndex) => (
+                                  <button
+                                    type="button"
+                                    key={optionIndex}
+                                    className={`smarty-option ${
+                                      smartyBossAnswers[index] === optionIndex
+                                        ? "selected"
+                                        : ""
+                                    }`}
+                                    onClick={() => {
+                                      if (smartyBossSubmitted) return
+                                      setSmartyBossAnswers((previous) => ({
+                                        ...previous,
+                                        [index]: optionIndex,
+                                      }))
+                                    }}
+                                  >
+                                    <span>
+                                      {String.fromCharCode(65 + optionIndex)}
+                                    </span>
+                                    {typeof option === "string"
+                                      ? option
+                                      : option?.text ||
+                                        option?.label ||
+                                        option?.value ||
+                                        ""}
+                                  </button>
+                                ))}
+                              </div>
+                            )}
+
+                          {smartyBossSubmitted && (
+                            <div className="smarty-content-list">
+                              <p>
+                                Correct answer:{" "}
+                                {typeof question.correctAnswer === "number"
+                                  ? String.fromCharCode(
+                                      65 + question.correctAnswer
+                                    )
+                                  : question.correctAnswer}
+                              </p>
+                              {question.explanation && (
+                                <p>{question.explanation}</p>
+                              )}
+                            </div>
+                          )}
+                        </article>
+                      ))}
+
+                      {!smartyBossSubmitted ? (
+                        <button
+                          type="button"
+                          className="smarty-primary-btn"
+                          onClick={() => {
+                            let score = 0
+
+                            smartyStudy.bossBattle.questions.forEach(
+                              (question, index) => {
+                                const selected = smartyBossAnswers[index]
+                                const correct =
+                                  typeof question.correctAnswer === "number"
+                                    ? question.correctAnswer
+                                    : question.answerIndex
+
+                                if (
+                                  selected !== undefined &&
+                                  selected === correct
+                                ) {
+                                  score += 1
+                                }
+                              }
+                            )
+
+                            setSmartyBossScore({
+                              score,
+                              total: smartyStudy.bossBattle.questions.length,
+                            })
+                            setSmartyBossSubmitted(true)
+                          }}
+                        >
+                          Submit Boss Battle
+                        </button>
+                      ) : (
+                        <div className="smarty-test-result">
+                          <h3>Boss Battle Result</h3>
+                          <strong>
+                            {smartyBossScore?.score || 0} /{" "}
+                            {smartyBossScore?.total ||
+                              smartyStudy.bossBattle.questions.length}
+                          </strong>
+                          <p>
+                            Your result is based on the answers you submitted.
+                          </p>
+                        </div>
+                      )}
+                    </div>
+                  )}
+                </section>
+              )}
+            </>
+          )}
+        </main>
+      </div>
+    )
+  }
+}
+
+  if (page === "smartyStudy" && smartyStudyView !== "dashboard") {
+    return (
+      <div className="smarty-study-page">
+        {renderToast()}
+
+        <header className="smarty-study-header">
+          <div className="smarty-study-header-left">
+            <div className="smarty-study-logo">
+              🧠
+            </div>
+
+            <div>
+              <h1>Smarty Study</h1>
+              <p>Your personal smart learning space</p>
+            </div>
+          </div>
+
+          <button
+            type="button"
+            className="smarty-study-home-btn"
+            onClick={() => {
+              setSmartyStudyView("dashboard")
+              setSmartyFlashcardIndex(0)
+              setSmartyFlashcardFlipped(false)
+              setSmartySelectedAnswers({})
+              setSmartyTestScore(null)
+            }}
+          >
+            ← Smarty Study
+          </button>
+        </header>
+
+        <main className="smarty-study-main">
+          <section className="smarty-detail-page">
+
+            {/* BACK */}
+            <button
+              type="button"
+              className="smarty-detail-back"
+              onClick={() => {
+                setSmartyStudyView("dashboard")
+                setSmartyFlashcardIndex(0)
+                setSmartyFlashcardFlipped(false)
+                setSmartySelectedAnswers({})
+                setSmartyTestScore(null)
+              }}
+            >
+              ← Back to Smarty Study
+            </button>
+
+            {/* =================================================
+                IMPORTANT POINTS
+            ================================================= */}
+            {smartyStudyView === "importantPoints" && (
+              <>
+                <div className="smarty-detail-hero">
+                  <span>💡</span>
+                  <div>
+                    <span className="smarty-section-label">
+                      MATERIAL → SMART LEARNING
+                    </span>
+
+                    <h2>Important Points</h2>
+
+                    <p>
+                      Important information extracted from your
+                      uploaded study material.
+                    </p>
+                  </div>
+                </div>
+
+                {!smartyStudy?.topics?.length ? (
+                  <div className="smarty-empty-state">
+                    <div>📚</div>
+                    <h3>No study material analyzed yet</h3>
+                    <p>
+                      Upload your study material to generate
+                      important points.
+                    </p>
+                  </div>
+                ) : (
+                  <div className="smarty-topic-list">
+                    {smartyStudy.topics.map((topic, index) => (
+                      <article
+                        className="smarty-detail-card"
+                        key={topic._id || `${topic.title}-${index}`}
+                      >
+                        <div className="smarty-topic-card-header">
+                          <span className="smarty-topic-number">
+                            {index + 1}
+                          </span>
+
+                          <h3>{topic.title}</h3>
+                        </div>
+
+                        {topic.importantPoints?.length ? (
+                          <ul className="smarty-points-list">
+                            {topic.importantPoints.map(
+                              (point, pointIndex) => (
+                                <li key={pointIndex}>
+                                  {point}
+                                </li>
+                              )
+                            )}
+                          </ul>
+                        ) : (
+                          <p className="smarty-no-content">
+                            No important points were generated
+                            for this topic.
+                          </p>
+                        )}
+                      </article>
+                    ))}
+                  </div>
+                )}
+              </>
+            )}
+
+            {/* =================================================
+                SIMPLE EXPLANATIONS
+            ================================================= */}
+            {smartyStudyView === "explanations" && (
+              <>
+                <div className="smarty-detail-hero">
+                  <span>📖</span>
+                  <div>
+                    <span className="smarty-section-label">
+                      MATERIAL → SMART LEARNING
+                    </span>
+
+                    <h2>Simple Explanations</h2>
+
+                    <p>
+                      Concepts explained using the actual material
+                      you uploaded.
+                    </p>
+                  </div>
+                </div>
+
+                {!smartyStudy?.topics?.length ? (
+                  <div className="smarty-empty-state">
+                    <div>📚</div>
+                    <h3>No study material analyzed yet</h3>
+                    <p>
+                      Upload study material to generate
+                      explanations.
+                    </p>
+                  </div>
+                ) : (
+                  <div className="smarty-topic-list">
+                    {smartyStudy.topics.map((topic, index) => (
+                      <article
+                        className="smarty-detail-card"
+                        key={topic._id || `${topic.title}-${index}`}
+                      >
+                        <div className="smarty-topic-card-header">
+                          <span className="smarty-topic-number">
+                            {index + 1}
+                          </span>
+
+                          <h3>{topic.title}</h3>
+                        </div>
+
+                        <div className="smarty-explanation-box">
+                          {topic.simpleExplanation || (
+                            <span>
+                              No explanation was generated
+                              for this topic.
+                            </span>
+                          )}
+                        </div>
+                      </article>
+                    ))}
+                  </div>
+                )}
+              </>
+            )}
+
+            {/* =================================================
+                SHORT ANSWERS
+            ================================================= */}
+            {smartyStudyView === "shortAnswers" && (
+              <>
+                <div className="smarty-detail-hero">
+                  <span>✍️</span>
+                  <div>
+                    <span className="smarty-section-label">
+                      MATERIAL → SMART LEARNING
+                    </span>
+
+                    <h2>Short Answers</h2>
+
+                    <p>
+                      Quick answers generated from your uploaded
+                      study material.
+                    </p>
+                  </div>
+                </div>
+
+                {!smartyStudy?.topics?.length ? (
+                  <div className="smarty-empty-state">
+                    <div>📚</div>
+                    <h3>No study material analyzed yet</h3>
+                    <p>
+                      Upload study material to generate
+                      short answers.
+                    </p>
+                  </div>
+                ) : (
+                  <div className="smarty-topic-list">
+                    {smartyStudy.topics.map((topic, index) => (
+                      <article
+                        className="smarty-detail-card"
+                        key={topic._id || `${topic.title}-${index}`}
+                      >
+                        <div className="smarty-topic-card-header">
+                          <span className="smarty-topic-number">
+                            {index + 1}
+                          </span>
+
+                          <h3>{topic.title}</h3>
+                        </div>
+
+                        {topic.shortAnswers?.length ? (
+                          <div className="smarty-answer-list">
+                            {topic.shortAnswers.map(
+                              (item, answerIndex) => (
+                                <div
+                                  className="smarty-answer-item"
+                                  key={answerIndex}
+                                >
+                                  <strong>
+                                    {item.question ||
+                                      `Question ${answerIndex + 1}`}
+                                  </strong>
+
+                                  <p>
+  {typeof item === "string"
+    ? item
+    : item.answer ||
+      item.response ||
+      item.text ||
+      ""}
+</p>
+                                </div>
+                              )
+                            )}
+                          </div>
+                        ) : (
+                          <p className="smarty-no-content">
+                            No short answers were generated
+                            for this topic.
+                          </p>
+                        )}
+                      </article>
+                    ))}
+                  </div>
+                )}
+              </>
+            )}
+
+            {/* =================================================
+                FLASHCARDS
+            ================================================= */}
+            {smartyStudyView === "flashcards" && (
+              <>
+                <div className="smarty-detail-hero">
+                  <span>🗂️</span>
+                  <div>
+                    <span className="smarty-section-label">
+                      MATERIAL → SMART LEARNING
+                    </span>
+
+                    <h2>Flashcards</h2>
+
+                    <p>
+                      Revise the concepts generated from your
+                      actual study material.
+                    </p>
+                  </div>
+                </div>
+
+                {(() => {
+                  const flashcards =
+                    smartyStudy?.topics?.flatMap(
+                      (topic) =>
+                        (topic.flashcards || []).map(
+                          (card) => ({
+                            ...card,
+                            topicTitle: topic.title,
+                          })
+                        )
+                    ) || []
+
+                  if (!flashcards.length) {
+                    return (
+                      <div className="smarty-empty-state">
+                        <div>🗂️</div>
+                        <h3>No flashcards available</h3>
+                        <p>
+                          Upload and analyze study material
+                          to generate flashcards.
+                        </p>
+                      </div>
+                    )
+                  }
+
+                  const safeIndex = Math.min(
+                    smartyFlashcardIndex,
+                    flashcards.length - 1
+                  )
+
+                  const currentCard =
+                    flashcards[safeIndex]
+
+                  return (
+                    <div className="smarty-flashcard-page">
+                      <div className="smarty-flashcard-progress">
+                        Card {safeIndex + 1} of {flashcards.length}
+                      </div>
+
+                      <button
+                        type="button"
+                        className={`smarty-big-flashcard ${
+                          smartyFlashcardFlipped
+                            ? "is-flipped"
+                            : ""
+                        }`}
+                        onClick={() =>
+                          setSmartyFlashcardFlipped(
+                            (value) => !value
+                          )
+                        }
+                      >
+                        <span className="smarty-flashcard-label">
+                          {smartyFlashcardFlipped
+                            ? "ANSWER"
+                            : "QUESTION"}
+                        </span>
+
+                        <strong>
+                          {smartyFlashcardFlipped
+                            ? currentCard.answer ||
+                              currentCard.back ||
+                              "No answer available."
+                            : currentCard.question ||
+                              currentCard.front ||
+                              "No question available."}
+                        </strong>
+
+                        <small>
+                          {smartyFlashcardFlipped
+                            ? "Click to see question"
+                            : "Click to reveal answer"}
+                        </small>
+                      </button>
+
+                      <div className="smarty-flashcard-controls">
+                        <button
+                          type="button"
+                          disabled={safeIndex === 0}
+                          onClick={() => {
+                            setSmartyFlashcardIndex(
+                              (value) => Math.max(0, value - 1)
+                            )
+                            setSmartyFlashcardFlipped(false)
+                          }}
+                        >
+                          ← Previous
+                        </button>
+
+                        <button
+                          type="button"
+                          onClick={() => {
+                            if (
+                              safeIndex <
+                              flashcards.length - 1
+                            ) {
+                              setSmartyFlashcardIndex(
+                                (value) => value + 1
+                              )
+                              setSmartyFlashcardFlipped(false)
+                            }
+                          }}
+                          disabled={
+                            safeIndex ===
+                            flashcards.length - 1
+                          }
+                        >
+                          Next →
+                        </button>
+                      </div>
+                    </div>
+                  )
+                })()}
+              </>
+            )}
+
+            {/* =================================================
+                MCQs & QUESTIONS
+            ================================================= */}
+            {smartyStudyView === "mcqs" && (
+              <>
+                <div className="smarty-detail-hero">
+                  <span>❓</span>
+                  <div>
+                    <span className="smarty-section-label">
+                      MATERIAL → SMART LEARNING
+                    </span>
+
+                    <h2>MCQs & Questions</h2>
+
+                    <p>
+                      Practice questions generated from your
+                      uploaded study material.
+                    </p>
+                  </div>
+                </div>
+
+                {!smartyStudy?.topics?.length ? (
+                  <div className="smarty-empty-state">
+                    <div>❓</div>
+                    <h3>No questions available</h3>
+                    <p>
+                      Upload and analyze study material first.
+                    </p>
+                  </div>
+                ) : (
+                  <div className="smarty-question-list">
+                    {smartyStudy.topics.map(
+                      (topic, topicIndex) => (
+                        <article
+                          className="smarty-detail-card"
+                          key={
+                            topic._id ||
+                            `${topic.title}-${topicIndex}`
+                          }
+                        >
+                          <div className="smarty-topic-card-header">
+                            <span className="smarty-topic-number">
+                              {topicIndex + 1}
+                            </span>
+
+                            <h3>{topic.title}</h3>
+                          </div>
+
+                          {topic.mcqs?.map(
+                            (mcq, mcqIndex) => (
+                              <div
+                                className="smarty-mcq-item"
+                                key={mcqIndex}
+                              >
+                                <h4>
+                                  {mcq.question ||
+                                    `Question ${mcqIndex + 1}`}
+                                </h4>
+
+                                {mcq.options?.map(
+                                  (option, optionIndex) => {
+                                    const value =
+                                      typeof option ===
+                                      "string"
+                                        ? option
+                                        : option.text ||
+                                          option.label ||
+                                          option.value
+
+                                    return (
+                                      <button
+                                        type="button"
+                                        key={optionIndex}
+                                        className={`smarty-option ${
+                                          smartySelectedAnswers[
+                                            `${topicIndex}-${mcqIndex}`
+                                          ] ===
+                                          optionIndex
+                                            ? "selected"
+                                            : ""
+                                        }`}
+                                        onClick={() =>
+                                          setSmartySelectedAnswers(
+                                            (previous) => ({
+                                              ...previous,
+                                              [`${topicIndex}-${mcqIndex}`]:
+                                                optionIndex,
+                                            })
+                                          )
+                                        }
+                                      >
+                                        <span>
+                                          {String.fromCharCode(
+                                            65 + optionIndex
+                                          )}
+                                        </span>
+
+                                        {value}
+                                      </button>
+                                    )
+                                  }
+                                )}
+                              </div>
+                            )
+                          )}
+
+                          {topic.questions?.map(
+                            (question, questionIndex) => (
+                              <div
+                                className="smarty-written-question"
+                                key={questionIndex}
+                              >
+                                <strong>
+                                  Q{questionIndex + 1}.
+                                </strong>
+
+                                <span>
+                                  {typeof question ===
+                                  "string"
+                                    ? question
+                                    : question.question ||
+                                      question.text}
+                                </span>
+                              </div>
+                            )
+                          )}
+                        </article>
+                      )
+                    )}
+                  </div>
+                )}
+              </>
+            )}
+
+            {/* =================================================
+                MOCK TEST
+            ================================================= */}
+            {smartyStudyView === "mockTest" && (
+              <>
+                <div className="smarty-detail-hero">
+                  <span>📝</span>
+                  <div>
+                    <span className="smarty-section-label">
+                      MATERIAL → SMART LEARNING
+                    </span>
+
+                    <h2>Mock Test</h2>
+
+                    <p>
+                      Test yourself using questions generated
+                      from your actual study material.
+                    </p>
+                  </div>
+                </div>
+
+                {!smartyStudy?.topics?.length ? (
+                  <div className="smarty-empty-state">
+                    <div>📝</div>
+                    <h3>No mock test available</h3>
+                    <p>
+                      Upload and analyze study material first.
+                    </p>
+                  </div>
+                ) : (
+                  <div className="smarty-mock-test">
+                    {!smartyStudy?.mockTest?.length ? (
+                      <div className="smarty-empty-state">
+                        <div>📝</div>
+
+                        <h3>No mock test available</h3>
+
+                        <p>
+                          Upload and analyze study material first.
+                        </p>
+                      </div>
+                    ) : (
+                      <div className="smarty-mock-test">
+                        {smartyStudy.mockTest.map(
+                          (mcq, mcqIndex) => {
+                            const key = `mock-${mcqIndex}`
+
+                            return (
+                              <article
+                                className="smarty-test-question"
+                                key={key}
+                              >
+                                <span>
+                                  Question {mcqIndex + 1}
+                                </span>
+
+                                <h3>{mcq.question}</h3>
+
+                                <div>
+                                  {mcq.options?.map(
+                                    (option, optionIndex) => {
+                                      const value =
+                                        typeof option === "string"
+                                          ? option
+                                          : option?.text ||
+                                            option?.label ||
+                                            option?.value ||
+                                            ""
+
+                                      return (
+                                        <button
+                                          type="button"
+                                          key={optionIndex}
+                                          className={
+                                            smartySelectedAnswers[key] ===
+                                            optionIndex
+                                              ? "selected"
+                                              : ""
+                                          }
+                                          onClick={() =>
+                                            setSmartySelectedAnswers(
+                                              (previous) => ({
+                                                ...previous,
+                                                [key]: optionIndex,
+                                              })
+                                            )
+                                          }
+                                        >
+                                          {String.fromCharCode(
+                                            65 + optionIndex
+                                          )}. {value}
+                                        </button>
+                                      )
+                                    }
+                                  )}
+                                </div>
+                              </article>
+                            )
+                          }
+                        )}
+
+                        <button
+                          type="button"
+                          className="smarty-primary-btn"
+                          onClick={() => {
+                            let score = 0
+                            let total = 0
+
+                            smartyStudy.mockTest.forEach(
+                              (mcq, mcqIndex) => {
+                                total += 1
+
+                                const key = `mock-${mcqIndex}`
+
+                                const selected =
+                                  smartySelectedAnswers[key]
+
+                                let correctIndex = -1
+
+                                if (
+                                  typeof mcq.correctAnswer ===
+                                  "number"
+                                ) {
+                                  correctIndex =
+                                    mcq.correctAnswer
+                                } else if (
+                                  typeof mcq.correctAnswer ===
+                                  "string"
+                                ) {
+                                  const answer =
+                                    mcq.correctAnswer.trim()
+
+                                  if (/^[0-9]+$/.test(answer)) {
+                                    correctIndex = Number(answer)
+                                  } else if (
+                                    /^[A-Da-d]$/.test(answer)
+                                  ) {
+                                    correctIndex =
+                                      answer
+                                        .toUpperCase()
+                                        .charCodeAt(0) - 65
+                                  } else {
+                                    correctIndex =
+                                      mcq.options?.findIndex(
+                                        (option) =>
+                                          String(option)
+                                            .trim()
+                                            .toLowerCase() ===
+                                            answer.toLowerCase()
+                                      ) ?? -1
+                                  }
+                                }
+
+                                if (
+                                  selected !== undefined &&
+                                  selected === correctIndex
+                                ) {
+                                  score += 1
+                                }
+                              }
+                            )
+
+                            setSmartyTestScore({
+                              score,
+                              total,
+                            })
+                          }}
+                        >
+                          Submit Mock Test
+                        </button>
+
+                        {smartyTestScore && (
+                          <div className="smarty-test-result">
+                            <h3>Test Result</h3>
+
+                            <strong>
+                              {smartyTestScore.score} / {" "}
+                              {smartyTestScore.total}
+                            </strong>
+
+                            <p>
+                              Your result is based on the
+                              answers you submitted.
+                            </p>
+                          </div>
+                        )}
+                      </div>
+                    )}
+                  </div>
+                )}
+              </>
+            )}
+
+          </section>
+        </main>
+      </div>
+    )
+  }
+
+  if (page === "smartyStudy") {
+  return (
+    <div className="smarty-study-page">
+
+      {renderToast()}
+
+      {/* =====================================================
+          HEADER
+      ===================================================== */}
+
+      <header className="smarty-study-header">
+
+        <div className="smarty-study-header-left">
+
+          <div className="smarty-study-logo">
+            🧠
+          </div>
+
+          <div>
+            <h1>Smarty Study</h1>
+            <p>Your personal smart learning space</p>
+          </div>
+
+        </div>
+
+        <button
+          type="button"
+          className="smarty-study-home-btn"
+          onClick={() => setPage("dashboard")}
+        >
+          ← Home
+        </button>
+
+      </header>
+
+
+      <main className="smarty-study-main">
+
+        {smartyStudyLoading && (
+          <div className="students-message" role="status">
+            Loading your study material...
+          </div>
+        )}
+
+
+        {/* =====================================================
+            01. HERO
+        ===================================================== */}
+
+        <section className="smarty-study-hero">
+
+          <div className="smarty-hero-content">
+
+            <span className="smarty-hero-badge">
+              ✨ Learn • Practice • Master
+            </span>
+
+            <h2>
+              Study smarter,
+              <br />
+              not harder.
+            </h2>
+
+            <p>
+              Turn your study material into an interactive
+              learning experience designed to help you
+              understand, practice and remember.
+            </p>
+
+            <div className="smarty-hero-actions">
+
+              <button
+                type="button"
+                className="smarty-primary-btn"
+                onClick={() => setShowUploadMaterial(true)}
+              >
+                📚 Upload Study Material
+              </button>
+
+            </div>
+
+          </div>
+
+
+          <div className="smarty-hero-visual">
+
+            <div className="smarty-hero-orbit smarty-orbit-one">
+              📖
+            </div>
+
+            <div className="smarty-hero-orbit smarty-orbit-two">
+              💡
+            </div>
+
+            <div className="smarty-hero-orbit smarty-orbit-three">
+              🎯
+            </div>
+
+            <div className="smarty-hero-brain">
+              🧠
+            </div>
+
+            <div className="smarty-hero-floating-card smarty-float-card-one">
+              <strong>Understand</strong>
+              <span>Concepts made simple</span>
+            </div>
+
+            <div className="smarty-hero-floating-card smarty-float-card-two">
+              <strong>Practice</strong>
+              <span>Learn by doing</span>
+            </div>
+
+          </div>
+
+        </section>
+
+
+        {/* =====================================================
+            02. MATERIAL → SMART LEARNING
+        ===================================================== */}
+
+        <section className="smarty-output-section">
+
+          <div className="smarty-output-heading">
+
+            <span className="smarty-section-label">
+              MATERIAL → SMART LEARNING
+            </span>
+
+            <h2>
+              One material.
+              <br />
+              Multiple ways to learn.
+            </h2>
+
+            <p>
+              Smarty Study uses the material you upload to
+              create useful learning and revision resources.
+            </p>
+
+          </div>
+
+
+          <div className="smarty-output-grid">
+
+            <article
+  className="smarty-output-card"
+  onClick={() => {
+    setSmartyStudyView("importantPoints")
+  }}
+>
+
+              <div>💡</div>
+
+              <h3>
+                Important Points
+              </h3>
+
+              <p>
+                Identify the important information from
+                the material you are studying.
+              </p>
+
+            </article>
+
+
+            <article
+  className="smarty-output-card"
+  onClick={() => {
+    setSmartyStudyView("explanations")
+  }}
+>
+
+              <div>📖</div>
+
+              <h3>
+                Simple Explanations
+              </h3>
+
+              <p>
+                Difficult concepts can be explained in
+                simpler and easier language.
+              </p>
+
+            </article>
+
+
+            <article
+  className="smarty-output-card"
+  onClick={() => {
+    setSmartyStudyView("shortAnswers")
+  }}
+>
+
+              <div>✍️</div>
+
+              <h3>
+                Short Answers
+              </h3>
+
+              <p>
+                Get concise answers for understanding
+                and quick revision.
+              </p>
+
+            </article>
+
+
+            <article
+  className="smarty-output-card"
+  onClick={() => {
+    setSmartyStudyView("flashcards")
+    setSmartyFlashcardIndex(0)
+    setSmartyFlashcardFlipped(false)
+  }}
+>
+
+              <div>🗂️</div>
+
+              <h3>
+                Flashcards
+              </h3>
+
+              <p>
+                Revise concepts through quick
+                question-and-answer cards.
+              </p>
+
+            </article>
+
+
+            <article
+  className="smarty-output-card"
+  onClick={() => {
+    setSmartyStudyView("mcqs")
+    setSmartySelectedAnswers({})
+    setSmartyTestScore(null)
+  }}
+>
+
+              <div>❓</div>
+
+              <h3>
+                MCQs & Questions
+              </h3>
+
+              <p>
+                Practice questions based on the
+                material you are actually studying.
+              </p>
+
+            </article>
+
+
+           <article
+  className="smarty-output-card"
+  onClick={() => {
+    setSmartyStudyView("mockTest")
+    setSmartySelectedAnswers({})
+    setSmartyTestScore(null)
+  }}
+>
+
+              <div>📝</div>
+
+              <h3>
+                Mock Tests
+              </h3>
+
+              <p>
+                Test your preparation with a
+                complete practice session.
+              </p>
+
+            </article>
+
+          </div>
+
+        </section>
+
+                
+
+
+        {/* =====================================================
+            03. LEARNING JOURNEY
+        ===================================================== */}
+
+        <section
+          id="smarty-learning-path"
+          className="smarty-section"
+        >
+
+          <div className="smarty-section-heading">
+
+            <div>
+
+              <span className="smarty-section-label">
+                YOUR LEARNING JOURNEY
+              </span>
+
+              <h2>
+                From learning to mastery.
+              </h2>
+
+              <p>
+                Smarty Study turns studying into an active
+                process instead of simply reading notes.
+              </p>
+
+            </div>
+
+          </div>
+
+
+          <div className="smarty-learning-path">
+
+           <article
+  className="smarty-learning-card"
+  onClick={() => {
+    setSmartyLearningView("learn")
+  }}
+>
+
+              <div className="smarty-learning-number">
+                01
+              </div>
+
+              <div className="smarty-learning-icon">
+                🧠
+              </div>
+
+              <span>
+                UNDERSTAND
+              </span>
+
+              <h3>
+                Learn
+              </h3>
+
+              <p>
+                Understand concepts using simple explanations,
+                important points and short answers.
+              </p>
+
+            </article>
+
+
+            <article
+  className="smarty-learning-card"
+  onClick={() => {
+    setSmartyLearningView("practice")
+  }}
+>
+
+              <div className="smarty-learning-number">
+                02
+              </div>
+
+              <div className="smarty-learning-icon">
+                🎯
+              </div>
+
+              <span>
+                PRACTICE
+              </span>
+
+              <h3>
+                Practice
+              </h3>
+
+              <p>
+                Test your understanding with questions,
+                MCQs, flashcards and interactive challenges.
+              </p>
+
+            </article>
+
+
+            <article
+  className="smarty-learning-card"
+  onClick={() => {
+    setSmartyLearningView("challenge")
+  }}
+>
+
+              <div className="smarty-learning-number">
+                03
+              </div>
+
+              <div className="smarty-learning-icon">
+                ⚔️
+              </div>
+
+              <span>
+                CHALLENGE
+              </span>
+
+              <h3>
+                Challenge
+              </h3>
+
+              <p>
+                Challenge your understanding using different
+                interactive learning activities.
+              </p>
+
+            </article>
+
+
+            <article
+  className="smarty-learning-card"
+  onClick={() => {
+    setSmartyLearningView("master")
+  }}
+>
+
+              <div className="smarty-learning-number">
+                04
+              </div>
+
+              <div className="smarty-learning-icon">
+                🏆
+              </div>
+
+              <span>
+                MASTER
+              </span>
+
+              <h3>
+                Master
+              </h3>
+
+              <p>
+                Strengthen your understanding through
+                practice, revision and repeated learning.
+              </p>
+
+            </article>
+
+          </div>
+
+        </section>
+
+
+        {/* =====================================================
+            04. SMART LEARNING MODES
+        ===================================================== */}
+
+        <section className="smarty-section">
+
+          <div className="smarty-section-heading">
+
+            <div>
+
+              <span className="smarty-section-label">
+                SMART LEARNING MODES
+              </span>
+
+              <h2>
+                Learn in different ways.
+              </h2>
+
+              <p>
+                Different learning modes help you understand,
+                apply, explain and remember concepts.
+              </p>
+
+            </div>
+
+          </div>
+
+
+          <div className="smarty-mode-grid">
+
+
+            {/* SOCRATIC */}
+
+            <article
+  className="smarty-mode-card"
+  onClick={() => {
+    setSmartyLearningView("socratic")
+  }}
+>
+
+              <div className="smarty-mode-icon">
+                💬
+              </div>
+
+              <span className="smarty-mode-tag">
+                THINK
+              </span>
+
+              <h3>
+                Interactive Socratic Questioning
+              </h3>
+
+              <p>
+                Instead of immediately giving the answer,
+                Smarty Study guides you using counter-questions
+                so you can reach the answer yourself.
+              </p>
+
+              <div className="smarty-mode-footer">
+                Think → Question → Discover
+              </div>
+
+            </article>
+
+
+            {/* TEACH BACK */}
+
+            <article
+  className="smarty-mode-card"
+  onClick={() => {
+    setSmartyLearningView("teachBack")
+  }}
+>
+
+              <div className="smarty-mode-icon">
+                🗣️
+              </div>
+
+              <span className="smarty-mode-tag">
+                EXPLAIN
+              </span>
+
+              <h3>
+                Teach Back Mode
+              </h3>
+
+              <p>
+                Explain the concept in your own words.
+                Smarty Study evaluates your explanation and
+                identifies what you understood and what you missed.
+              </p>
+
+              <div className="smarty-mode-footer">
+                Learn → Explain → Evaluate
+              </div>
+
+            </article>
+
+
+            {/* STUDY QUEST */}
+
+           <article
+  className="smarty-mode-card"
+  onClick={() => {
+    setSmartyLearningView("studyQuest")
+  }}
+>
+
+              <div className="smarty-mode-icon">
+                🎮
+              </div>
+
+              <span className="smarty-mode-tag">
+                JOURNEY
+              </span>
+
+              <h3>
+                Study Quest
+              </h3>
+
+              <p>
+                Move through Learn, Practice, Challenge
+                and Master stages as you continue learning.
+              </p>
+
+              <div className="smarty-mode-footer">
+                Learn → Practice → Challenge → Master
+              </div>
+
+            </article>
+
+
+            {/* FIND THE MISTAKE */}
+
+           <article
+  className="smarty-mode-card"
+  onClick={() => {
+    setSmartyLearningView("findMistake")
+  }}
+>
+
+              <div className="smarty-mode-icon">
+                🔎
+              </div>
+
+              <span className="smarty-mode-tag">
+                DETECT
+              </span>
+
+              <h3>
+                Find the Mistake
+              </h3>
+
+              <p>
+                Find the mistake in an intentionally incorrect
+                statement or solution and understand why it is wrong.
+              </p>
+
+              <div className="smarty-mode-footer">
+                Find → Correct → Understand
+              </div>
+
+            </article>
+
+
+            {/* REAL LIFE */}
+
+           <article
+  className="smarty-mode-card"
+  onClick={() => {
+    setSmartyLearningView("realLife")
+  }}
+>
+
+              <div className="smarty-mode-icon">
+                🌍
+              </div>
+
+              <span className="smarty-mode-tag">
+                APPLY
+              </span>
+
+              <h3>
+                Real-Life Scenario
+              </h3>
+
+              <p>
+                Connect theory with realistic situations so
+                concepts become easier to understand and apply.
+              </p>
+
+              <div className="smarty-mode-footer">
+                Theory → Situation → Application
+              </div>
+
+            </article>
+
+
+            {/* EXAM ANSWER */}
+
+            <article
+  className="smarty-mode-card"
+  onClick={() => {
+    setSmartyLearningView("examAnswer")
+  }}
+>
+
+              <div className="smarty-mode-icon">
+                ✍️
+              </div>
+
+              <span className="smarty-mode-tag">
+                WRITE
+              </span>
+
+              <h3>
+                Exam Answer Mode
+              </h3>
+
+              <p>
+                Prepare 2-mark, 5-mark and 10-mark style answers
+                with important keywords and points.
+              </p>
+
+              <div className="smarty-mode-footer">
+                Understand → Structure → Write
+              </div>
+
+            </article>
+
+
+            {/* EXAM NIGHT */}
+
+            <article
+  className="smarty-mode-card"
+  onClick={() => {
+    setSmartyLearningView("examNight")
+  }}
+>
+
+              <div className="smarty-mode-icon">
+                🌙
+              </div>
+
+              <span className="smarty-mode-tag">
+                EXAM
+              </span>
+
+              <h3>
+                Exam Night Mode
+              </h3>
+
+              <p>
+                Organize limited study time around Must Learn,
+                Important Questions, Weak Topics, Mock Test
+                and Quick Revision.
+              </p>
+
+              <div className="smarty-mode-footer">
+                Focus → Practice → Revise
+              </div>
+
+            </article>
+
+
+            {/* SPACED REPETITION */}
+
+            <article
+  className="smarty-mode-card"
+  onClick={() => {
+    setSmartyLearningView("spacedRepetition")
+  }}
+>
+
+              <div className="smarty-mode-icon">
+                🔄
+              </div>
+
+              <span className="smarty-mode-tag">
+                REMEMBER
+              </span>
+
+              <h3>
+                Spaced Repetition
+              </h3>
+
+              <p>
+                Concepts that need another review can return
+                later so revision happens over time.
+              </p>
+
+              <div className="smarty-mode-footer">
+                Review → Remember → Review Again
+              </div>
+
+            </article>
+
+          </div>
+
+        </section>
+
+
+        {/* =====================================================
+            05. TEACH BACK
+        ===================================================== */}
+
+        <section
+          className="smarty-teachback-section"
+          role="button"
+          tabIndex={0}
+          onClick={() => setSmartyLearningView("result")}
+          onKeyDown={(event) => {
+            if (event.key === "Enter" || event.key === " ") {
+              setSmartyLearningView("result")
+            }
+          }}
+        >
+
+          <div className="smarty-teachback-left">
+
+            <span className="smarty-section-label">
+              TEACH BACK MODE
+            </span>
+
+            <h2>
+              Don't just read it.
+              <br />
+              Explain it.
+            </h2>
+
+            <p>
+              After learning a concept, explain it in your own
+              words. Smarty Study evaluates your explanation and
+              helps identify what you understood and what you missed.
+            </p>
+
+
+            <div className="smarty-teachback-flow">
+
+              <span>
+                🧠 Learn
+              </span>
+
+              <span>→</span>
+
+              <span>
+                🗣️ Explain
+              </span>
+
+              <span>→</span>
+
+              <span>
+                🔍 Evaluate
+              </span>
+
+              <span>→</span>
+
+              <span>
+                🎯 Improve
+              </span>
+
+            </div>
+
+          </div>
+
+
+          <div className="smarty-teachback-result">
+
+            <div className="smarty-result-header">
+
+              <div>
+
+                <span>
+                  TEACH BACK RESULT
+                </span>
+
+                <h3>
+                  Your answer
+                </h3>
+
+              </div>
+
+              <div className="smarty-result-status">
+                AI Evaluation
+              </div>
+
+            </div>
+
+
+            <div className="smarty-result-placeholder">
+
+              <div className="smarty-placeholder-icon">
+                🗣️
+              </div>
+
+              <h3>
+                Your result will appear here.
+              </h3>
+
+              <p>
+                Explain a concept in your own words and Smarty
+                Study can evaluate your answer, show what you
+                missed and continue with the next question.
+              </p>
+
+            </div>
+
+          </div>
+
+        </section>
+
+
+        {/* =====================================================
+            06. MASTERY MAP
+        ===================================================== */}
+
+        <section
+          className="smarty-mastery-section"
+          role="button"
+          tabIndex={0}
+          onClick={() => setSmartyLearningView("masteryMap")}
+          onKeyDown={(event) => {
+            if (event.key === "Enter" || event.key === " ") {
+              setSmartyLearningView("masteryMap")
+            }
+          }}
+        >
+
+          <div className="smarty-section-heading">
+
+            <div>
+
+              <span className="smarty-section-label">
+                MASTERY MAP
+              </span>
+
+              <h2>
+                Know what needs your attention.
+              </h2>
+
+              <p>
+                Your learning activity will determine which
+                concepts are mastered, need practice or need
+                more attention.
+              </p>
+
+            </div>
+
+          </div>
+
+
+          <div className="smarty-mastery-board">
+
+            <div className="smarty-mastery-empty">
+
+              <div className="smarty-mastery-empty-icon">
+                🗺️
+              </div>
+
+              <h3>
+                Your Mastery Map will appear here.
+              </h3>
+
+              <p>
+                Topics will be added automatically after your
+                uploaded material is analyzed and you start
+                learning and practicing.
+              </p>
+
+            </div>
+
+          </div>
+
+
+          <div className="smarty-mastery-legend">
+
+            <span>
+              🟢 Mastered
+            </span>
+
+            <span>
+              🟡 Needs Practice
+            </span>
+
+            <span>
+              🔴 Needs Attention
+            </span>
+
+          </div>
+
+        </section>
+
+
+        
+
+
+
+        {/* =====================================================
+            09. BOSS BATTLE — FINAL
+        ===================================================== */}
+
+        <section
+          className="smarty-boss-section"
+          role="button"
+          tabIndex={0}
+          onClick={() => setSmartyLearningView("bossBattle")}
+          onKeyDown={(event) => {
+            if (event.key === "Enter" || event.key === " ") {
+              setSmartyLearningView("bossBattle")
+            }
+          }}
+        >
+
+          <div className="smarty-boss-content">
+
+            <span className="smarty-boss-label">
+              ⚔️ FINAL CHALLENGE
+            </span>
+
+            <h2>
+              Boss Battle
+            </h2>
+
+            <p>
+              A final mixed challenge can combine MCQs,
+              concept questions, real-life situations,
+              Find the Mistake and Teach Back.
+            </p>
+
+            <div className="smarty-boss-requirement">
+              🔒 Unlocks after completing your learning journey
+            </div>
+
+          </div>
+
+
+          <div className="smarty-boss-visual">
+            ⚔️
+          </div>
+
+        </section>
+
+      </main>
+
+
+      {/* =====================================================
+          UPLOAD MODAL
+      ===================================================== */}
+
+      {showUploadMaterial && (
+
+        <div
+          className="smarty-upload-overlay"
+          onClick={(event) => {
+            if (event.target === event.currentTarget) {
+              setShowUploadMaterial(false)
+            }
+          }}
+        >
+
+          <div className="smarty-upload-modal">
+
+
+            <div className="smarty-upload-modal-header">
+
+              <div>
+
+                <span className="smarty-section-label">
+                  SMARTY STUDY
+                </span>
+
+                <h2>
+                  Upload Study Material
+                </h2>
+
+                <p>
+                  Add your notes, PDF or study resource to
+                  start your learning journey.
+                </p>
+
+              </div>
+
+
+              <button
+                type="button"
+                className="smarty-upload-close"
+                onClick={() => setShowUploadMaterial(false)}
+              >
+                ×
+              </button>
+
+            </div>
+
+
+            <div className="smarty-upload-form">
+
+
+              {/* MATERIAL TITLE */}
+
+              <div className="smarty-form-group">
+
+                <label>
+                  Material Title
+                </label>
+
+                <input
+                  type="text"
+                  value={materialForm.title}
+                  placeholder="Enter material title"
+                  onChange={(event) =>
+                    setMaterialForm((previous) => ({
+                      ...previous,
+                      title: event.target.value
+                    }))
+                  }
+                />
+
+              </div>
+
+
+              {/* MATERIAL TYPE */}
+
+              <div className="smarty-form-group">
+
+                <label>
+                  Material Type
+                </label>
+
+                <select
+                  value={materialForm.category}
+                  onChange={(event) =>
+                    setMaterialForm((previous) => ({
+                      ...previous,
+                      category: event.target.value
+                    }))
+                  }
+                >
+
+                  <option value="Notes">
+                    Notes
+                  </option>
+
+                  <option value="Previous Year Papers">
+                    Previous Year Papers
+                  </option>
+
+                  <option value="Question Banks">
+                    Question Banks
+                  </option>
+
+                  <option value="Assignments">
+                    Assignments
+                  </option>
+
+                  <option value="Study PDFs/Resources">
+                    Study PDFs / Resources
+                  </option>
+
+                  <option value="Practical/Viva Material">
+                    Practical / Viva Material
+                  </option>
+
+                </select>
+
+              </div>
+
+
+              {/* DESCRIPTION */}
+
+              <div className="smarty-form-group">
+
+                <label>
+                  Description <span>Optional</span>
+                </label>
+
+                <textarea
+                  rows="4"
+                  value={materialForm.description}
+                  placeholder="Tell us what this material contains..."
+                  onChange={(event) =>
+                    setMaterialForm((previous) => ({
+                      ...previous,
+                      description: event.target.value
+                    }))
+                  }
+                />
+
+              </div>
+
+
+              {/* FILE */}
+
+              <div className="smarty-form-group">
+
+                <label>
+                  Study Material File
+                </label>
+
+                <label
+                  htmlFor="study-material-file-input"
+                  className="smarty-file-dropzone"
+                >
+
+                  <div className="smarty-file-icon">
+                    📎
+                  </div>
+
+                  <strong>
+                    Choose your study material
+                  </strong>
+
+                  <span>
+                    PDF, DOC, DOCX, PPT, PPTX or image
+                  </span>
+
+                  {materialForm.file && (
+                    <small>
+                      Selected: {materialForm.file.name}
+                    </small>
+                  )}
+
+                </label>
+
+
+                <input
+                  id="study-material-file-input"
+                  type="file"
+                  accept=".pdf,.doc,.docx,.ppt,.pptx,.jpg,.jpeg,.png,.webp"
+                  className="smarty-hidden-file-input"
+                  onChange={(event) =>
+                    setMaterialForm((previous) => ({
+                      ...previous,
+                      file: event.target.files?.[0] || null
+                    }))
+                  }
+                />
+
+              </div>
+
+
+              {/* ACTIONS */}
+
+              <div className="smarty-upload-actions">
+
+                <button
+                  type="button"
+                  className="smarty-cancel-btn"
+                  onClick={() => setShowUploadMaterial(false)}
+                  disabled={materialUploading}
+                >
+                  Cancel
+                </button>
+
+
+                <button
+                  type="button"
+                  className="smarty-primary-btn"
+                  onClick={handleUploadMaterial}
+                  disabled={materialUploading}
+                >
+                  {materialUploading
+                    ? "Uploading..."
+                    : "📤 Upload Material"}
+                </button>
+
+              </div>
+
+
+            </div>
+
+          </div>
+
+        </div>
+
+      )}
+
+
+    </div>
+  )
+  }
 
   // =========================================================
   // YOUR ACTIVITY PAGE
@@ -8566,9 +12193,59 @@ if (page === "chat") {
 
             </div>
 
-            <div className="students-message">
-              No connected students yet.
-            </div>
+            {connectionsLoading ? (
+              <div className="students-message">
+                Loading connected students...
+              </div>
+            ) : connectedStudents.length === 0 ? (
+              <div className="students-message">
+                No connected students yet.
+              </div>
+            ) : (
+              <div className="students-grid">
+                {connectedStudents.map((student) => {
+                  const studentId = student._id || student.id
+
+                  return (
+                    <article className="student-card" key={studentId}>
+                      <button
+                        type="button"
+                        className="student-avatar student-avatar-button"
+                        aria-label={`View ${student.name || "student"}'s profile`}
+                        onClick={() => {
+                          handleViewProfile(studentId)
+                          setPage("student-profile")
+                        }}
+                      >
+                        {student.name?.charAt(0)?.toUpperCase() || "S"}
+                      </button>
+
+                      <div className="student-card-info">
+                        <h3>{student.name || "Student"}</h3>
+                        <p>
+                          {student.degree || "Degree not added"}
+                          {student.year ? ` • ${student.year}` : ""}
+                        </p>
+                        <span>{student.college || "College not added"}</span>
+                      </div>
+
+                      <button
+                        type="button"
+                        className="student-connect-button"
+                        onClick={() => {
+                          setActiveChatConnection({ otherUser: student })
+                          setChatMessages([])
+                          setChatText("")
+                          setPage("chat")
+                        }}
+                      >
+                        💬 Chat
+                      </button>
+                    </article>
+                  )
+                })}
+              </div>
+            )}
 
           </section>
 
@@ -8668,6 +12345,7 @@ if (page === "chat") {
 
   }
 
+  
 
   // =========================================================
   // DASHBOARD
@@ -8720,6 +12398,15 @@ if (page === "chat") {
             >
               Your Activity
             </button>
+
+            <button
+  className="dashboard-nav-link"
+  onClick={() =>
+    setPage("smartyStudy")
+  }
+>
+  Smarty Study
+</button>
 
           </nav>
 
@@ -9204,8 +12891,10 @@ if (page === "chat") {
 
       </main>
 
-
     </div>
-  ) 
+  )
 }
 export default App
+
+
+
